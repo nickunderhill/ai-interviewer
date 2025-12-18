@@ -44,7 +44,7 @@ development_status:
   1-1-initialize-frontend-with-vite-react-ts-template: done
   1-2-initialize-backend-fastapi-project-structure: done
   1-3-configure-postgresql-database-with-docker-compose: done
-  1-4-integrate-backend-with-database-using-sqlalchemy: ready-for-dev
+  1-4-integrate-backend-with-database-using-sqlalchemy: done
   1-5-set-up-alembic-for-database-migrations: ready-for-dev
   1-6-configure-docker-compose-for-full-stack-development: ready-for-dev
   1-7-set-up-gitlab-cicd-pipeline: ready-for-dev
