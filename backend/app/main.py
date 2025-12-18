@@ -1,3 +1,6 @@
+import os
+from typing import Dict, Any
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -10,10 +13,11 @@ app = FastAPI(
 )
 
 # Configure CORS for frontend integration
-# TODO: Update origins in production to match actual frontend URL
+# Allow origins from environment variable, default to localhost for development
+allowed_origins = os.getenv("CORS_ORIGINS", "http://localhost:5173").split(",")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],  # Vite dev server
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -21,7 +25,7 @@ app.add_middleware(
 
 
 @app.get("/", tags=["Health"])
-async def root():
+async def root() -> Dict[str, Any]:
     """
     Root endpoint - health check.
     Returns basic API information and status.
@@ -35,7 +39,7 @@ async def root():
 
 
 @app.get("/api/v1/health", tags=["Health"])
-async def health_check():
+async def health_check() -> Dict[str, str]:
     """
     Health check endpoint for monitoring and deployment verification.
     """
