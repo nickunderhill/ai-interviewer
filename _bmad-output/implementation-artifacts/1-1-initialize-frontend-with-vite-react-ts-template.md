@@ -1,6 +1,6 @@
 # Story 1.1: Initialize Frontend with Vite React-TS Template
 
-Status: review
+Status: done
 
 ## Story
 
