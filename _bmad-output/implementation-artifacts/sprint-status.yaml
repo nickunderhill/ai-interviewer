@@ -1,0 +1,144 @@
+# generated: 2025-12-18
+# project: ai-interviewer
+# project_key: ai-interviewer
+# tracking_system: file-system
+# story_location: _bmad-output/implementation-artifacts
+
+# STATUS DEFINITIONS:
+# ==================
+# Epic Status:
+#   - backlog: Epic not yet started
+#   - in-progress: Epic actively being worked on
+#   - done: All stories in epic completed
+#
+# Epic Status Transitions:
+#   - backlog → in-progress: Automatically when first story is created (via create-story)
+#   - in-progress → done: Manually when all stories reach 'done' status
+#
+# Story Status:
+#   - backlog: Story only exists in epic file
+#   - ready-for-dev: Story file created in stories folder
+#   - in-progress: Developer actively working on implementation
+#   - review: Ready for code review (via Dev's code-review workflow)
+#   - done: Story completed
+#
+# Retrospective Status:
+#   - optional: Can be completed but not required
+#   - done: Retrospective has been completed
+#
+# WORKFLOW NOTES:
+# ===============
+# - Epic transitions to 'in-progress' automatically when first story is created
+# - Stories can be worked in parallel if team capacity allows
+# - SM typically creates next story after previous one is 'done' to incorporate learnings
+# - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
+
+generated: 2025-12-18
+project: ai-interviewer
+project_key: ai-interviewer
+tracking_system: file-system
+story_location: _bmad-output/implementation-artifacts
+
+development_status:
+  epic-1: in-progress
+  1-1-initialize-frontend-with-vite-react-ts-template: in-progress
+  1-2-initialize-backend-fastapi-project-structure: backlog
+  1-3-configure-postgresql-database-with-docker-compose: backlog
+  1-4-integrate-backend-with-database-using-sqlalchemy: backlog
+  1-5-set-up-alembic-for-database-migrations: backlog
+  1-6-configure-docker-compose-for-full-stack-development: backlog
+  1-7-set-up-gitlab-cicd-pipeline: backlog
+  epic-1-retrospective: optional
+
+  epic-2: backlog
+  2-1-create-user-model-and-database-schema: backlog
+  2-2-implement-password-hashing-with-bcrypt: backlog
+  2-3-implement-jwt-token-generation-and-validation: backlog
+  2-4-create-user-registration-endpoint: backlog
+  2-5-create-user-login-endpoint: backlog
+  2-6-implement-authentication-middleware-with-jwt: backlog
+  2-7-create-user-profile-viewing-endpoint: backlog
+  2-8-add-api-key-storage-to-user-model: backlog
+  2-9-implement-api-key-encryption-service: backlog
+  2-10-create-api-key-configuration-endpoint: backlog
+  2-11-create-api-key-update-endpoint: backlog
+  2-12-create-user-logout-frontend-token-invalidation: backlog
+  epic-2-retrospective: optional
+
+  epic-3: backlog
+  3-1-create-resume-model-and-database-schema: backlog
+  3-2-create-resume-upload-paste-endpoint: backlog
+  3-3-create-resume-viewing-endpoint: backlog
+  3-4-create-resume-update-endpoint: backlog
+  3-5-create-resume-delete-endpoint: backlog
+  3-6-create-job-posting-model-and-database-schema: backlog
+  3-7-create-job-posting-creation-endpoint: backlog
+  3-8-create-job-posting-list-endpoint: backlog
+  3-9-create-job-posting-detail-endpoint: backlog
+  3-10-create-job-posting-update-endpoint: backlog
+  3-11-create-job-posting-delete-endpoint: backlog
+  epic-3-retrospective: optional
+
+  epic-4: backlog
+  4-1-create-session-and-message-models: backlog
+  4-2-create-session-creation-endpoint: backlog
+  4-3-create-session-list-endpoint: backlog
+  4-4-create-session-detail-endpoint: backlog
+  4-5-create-operation-model-for-long-running-ai-tasks: backlog
+  4-6-implement-openai-service-for-api-calls: backlog
+  4-7-implement-question-generation-service-with-dual-context: backlog
+  4-8-create-question-generation-endpoint-with-async-pattern: backlog
+  4-9-create-operation-status-polling-endpoint: backlog
+  4-10-store-generated-question-as-session-message: backlog
+  4-11-create-answer-submission-endpoint: backlog
+  4-12-create-session-messages-retrieval-endpoint: backlog
+  4-13-create-session-resume-capability: backlog
+  4-14-create-session-completion-endpoint: backlog
+  epic-4-retrospective: optional
+
+  epic-5: backlog
+  5-1-create-feedback-model: backlog
+  5-2-implement-feedback-analysis-service: backlog
+  5-3-create-feedback-generation-endpoint-with-async-pattern: backlog
+  5-4-store-generated-feedback: backlog
+  5-5-create-feedback-retrieval-endpoint: backlog
+  5-6-create-dimension-scores-display-component: backlog
+  5-7-create-knowledge-gaps-display-component: backlog
+  5-8-create-learning-recommendations-display-component: backlog
+  epic-5-retrospective: optional
+
+  epic-6: backlog
+  6-1-create-session-history-list-view: backlog
+  6-2-create-session-detail-view-with-full-qa-history: backlog
+  6-3-create-performance-metrics-dashboard: backlog
+  6-4-implement-score-comparison-across-sessions: backlog
+  6-5-create-score-trends-visualization: backlog
+  6-6-implement-session-filtering-by-date-range: backlog
+  6-7-implement-session-filtering-by-job-posting: backlog
+  epic-6-retrospective: optional
+
+  epic-7: backlog
+  7-1-add-retake-tracking-fields-to-session-model: backlog
+  7-2-create-retake-creation-endpoint: backlog
+  7-3-display-retake-information-in-session-views: backlog
+  7-4-create-score-comparison-across-retakes: backlog
+  7-5-create-dimension-level-improvement-tracking: backlog
+  epic-7-retrospective: optional
+
+  epic-8: backlog
+  8-1-implement-comprehensive-openai-integration-error-handling: backlog
+  8-2-create-user-friendly-error-messages-for-ai-failures: backlog
+  8-3-implement-operation-status-transparency: backlog
+  8-4-implement-automatic-retry-logic-with-user-control: backlog
+  8-5-implement-secure-api-key-storage-and-validation: backlog
+  8-6-implement-complete-data-isolation-between-users: backlog
+  8-7-implement-password-security-best-practices: backlog
+  8-8-implement-session-security-with-jwt: backlog
+  8-9-implement-api-response-time-performance-standards: backlog
+  8-10-implement-ai-operation-timeout-and-resource-management: backlog
+  8-11-implement-frontend-error-boundaries-and-fallbacks: backlog
+  8-12-implement-comprehensive-logging-and-monitoring: backlog
+  8-13-implement-database-connection-pooling-and-optimization: backlog
+  8-14-implement-cors-and-security-headers: backlog
+  8-15-implement-input-validation-and-sanitization: backlog
+  epic-8-retrospective: optional
