@@ -1,5 +1,5 @@
 ---
-stepsCompleted: [1, 2, 3, 4, 6, 7, 8, 9]
+stepsCompleted: [1, 2, 3, 4, 6, 7, 8, 9, 10]
 inputDocuments:
   - '_bmad-output/analysis/product-brief-ai-interviewer-2025-12-17.md'
 documentCounts:
@@ -8,7 +8,7 @@ documentCounts:
   brainstorming: 0
   projectDocs: 0
 workflowType: 'prd'
-lastStep: 9
+lastStep: 10
 project_name: 'ai-interviewer'
 user_name: 'Nick'
 date: '2025-12-17'
@@ -1069,3 +1069,181 @@ intermediate skill level
 - **FR65**: System does not share résumé content with any third parties beyond
   user's OpenAI account
 - **FR66**: System isolates session data per user with no cross-user visibility
+
+## Non-Functional Requirements
+
+### Performance
+
+**NFR-P1: Response Times**
+
+- Standard UI interactions (navigation, button clicks, form submissions) must
+  complete within 300ms
+- Page initial load must complete within 5 seconds on standard broadband
+  connection
+- API operations for data retrieval (load history, fetch session) must complete
+  within 500ms
+
+**NFR-P2: AI Processing**
+
+- Question generation must complete within 10 seconds with progress indication
+- Answer analysis and feedback generation must complete within 30 seconds with
+  progress indication
+- System displays transparent loading states during all AI operations
+
+**NFR-P3: UI Responsiveness**
+
+- UI remains responsive during background AI processing (non-blocking
+  operations)
+- Users can view previous Q&A while waiting for new questions or feedback
+- Polling for AI operation status occurs every 2-3 seconds without impacting UI
+  performance
+
+### Security
+
+**NFR-S1: Authentication & Authorization**
+
+- All user access requires authentication (no anonymous access to sessions or
+  data)
+- Session data isolated per user (no cross-user data visibility)
+- JWT-based authentication with secure token storage
+
+**NFR-S2: Data Encryption**
+
+- OpenAI API keys encrypted at rest using industry-standard encryption (AES-256
+  or equivalent)
+- All data transmission occurs over HTTPS only (no HTTP access)
+- Sensitive data (passwords, API keys) never logged in plain text
+
+**NFR-S3: API Key Protection**
+
+- User API keys never exposed to frontend/client
+- API proxy pattern: backend acts as intermediary for all OpenAI calls
+- API keys stored separately from other user data with restricted access
+
+**NFR-S4: Data Privacy**
+
+- Résumé content not shared with third parties beyond user's OpenAI account
+- No tracking or analytics that compromise user privacy in MVP
+- Session data remains private to individual users
+
+**NFR-S5: Security Best Practices**
+
+- XSS protection through React's default escaping mechanisms
+- CSRF tokens for all state-changing operations
+- Secure cookie handling with HttpOnly and Secure flags
+- Input validation and sanitization on all user-submitted data
+
+### Reliability
+
+**NFR-R1: System Availability**
+
+- System maintains 95%+ uptime during validation period
+- Graceful degradation when OpenAI API unavailable (clear error messages, retry
+  guidance)
+- Database operations use transactions to maintain data integrity
+
+**NFR-R2: Data Integrity**
+
+- Zero data loss for submitted answers and generated feedback
+- All Q&A saved to database immediately upon submission (auto-save)
+- Atomic operations with rollback capability on failure
+- Session state persistence enables resumption after browser close
+
+**NFR-R3: Error Handling**
+
+- OpenAI API failures handled gracefully with user-friendly error messages
+- Retry logic implemented for transient API failures (3 retries with exponential
+  backoff)
+- System degrades gracefully rather than crashing on unexpected errors
+- Users informed of errors with actionable next steps
+
+**NFR-R4: Session Recovery**
+
+- Users can resume incomplete sessions after browser close or connection loss
+- No loss of progress within a session due to network interruptions
+- Session state synchronized to database in real-time
+
+### Maintainability & Reproducibility
+
+**NFR-M1: Code Quality**
+
+- Clean, documented code supporting future research iterations
+- Modular architecture enabling component replacement or enhancement
+- Consistent coding standards across frontend and backend
+
+**NFR-M2: Deployment**
+
+- One-command local deployment via Docker Compose
+- Environment-based configuration (dev, staging, production)
+- Automated database migrations for schema changes
+
+**NFR-M3: Testing & CI/CD**
+
+- Automated test suite covering critical paths (auth, session creation, Q&A
+  flow)
+- GitLab CI/CD pipeline runs tests and linting on every commit
+- Build failures prevent deployment to prevent regressions
+
+**NFR-M4: Documentation**
+
+- Complete setup documentation for external validation
+- API documentation for reproducibility
+- Architecture documentation for future contributors
+- User documentation for BYOK setup and basic usage
+
+**NFR-M5: Observability**
+
+- Basic logging for debugging and troubleshooting
+- API failure rate monitoring
+- Session completion rate tracking for validation metrics
+
+### Accessibility
+
+**NFR-A1: Basic WCAG Compliance**
+
+- Semantic HTML structure with proper heading hierarchy
+- All interactive elements accessible via keyboard (Tab, Enter, Esc navigation)
+- Visible focus indicators for keyboard users
+- Minimum 4.5:1 color contrast ratio for text
+
+**NFR-A2: Screen Reader Support**
+
+- ARIA labels for dynamic content ("New question loaded", "Feedback received")
+- Form labels properly associated with inputs
+- Error messages communicated to assistive technologies
+- Text-based Q&A interface inherently accessible (no complex visual interactions
+  required)
+
+**NFR-A3: Responsive Design**
+
+- Desktop-first design (1024px+ optimal experience)
+- Responsive down to 768px viewport (tablet support)
+- Mobile viewports (< 768px) functional but not optimized (deferred to post-MVP)
+
+### Browser Compatibility
+
+**NFR-B1: Supported Browsers**
+
+- Chrome, Firefox, Safari, Edge (evergreen/latest versions only)
+- Modern JavaScript features (ES6+, async/await) without legacy polyfills
+- No support for IE11 or older browsers
+
+**NFR-B2: Progressive Enhancement**
+
+- Core functionality works without JavaScript disabled warning displayed
+- Graceful fallbacks for unsupported features
+- Basic responsive behavior without complex media queries
+
+### Scalability (MVP Constraints)
+
+**NFR-SC1: MVP Capacity**
+
+- System supports 10-50 concurrent users without performance degradation
+- Database handles up to 1000 total sessions without optimization required
+- OpenAI API rate limit handling (user-specific limits via BYOK model)
+
+**NFR-SC2: Growth Readiness**
+
+- Architecture supports horizontal scaling post-MVP if needed
+- Database schema supports efficient querying at 10x scale
+- No hard-coded limits that would require refactoring for growth
