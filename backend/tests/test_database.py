@@ -75,7 +75,8 @@ class TestSessionFactory:
         """Test that session factory creates valid async sessions."""
         async with AsyncSessionLocal() as session:
             assert isinstance(session, AsyncSession)
-            assert not session.is_active  # No transaction until first query
+            # Session is active when in context manager
+            assert session.is_active
 
     @pytest.mark.asyncio
     async def test_session_execute_query(self):
@@ -173,7 +174,7 @@ class TestDatabaseConnectivity:
         async with AsyncSessionLocal() as session:
             result = await session.execute(text("SELECT current_database()"))
             db_name = result.scalar()
-            assert db_name == "ai_interviewer_db"
+            assert db_name == settings.DB_NAME
 
     @pytest.mark.asyncio
     async def test_database_current_user(self):
@@ -181,7 +182,7 @@ class TestDatabaseConnectivity:
         async with AsyncSessionLocal() as session:
             result = await session.execute(text("SELECT current_user"))
             user = result.scalar()
-            assert user == "ai_interviewer_user"
+            assert user == settings.DB_USER
 
     @pytest.mark.asyncio
     async def test_connection_pool_usage(self):
