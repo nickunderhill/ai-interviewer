@@ -18,44 +18,65 @@ AI-powered mock interview system for technical interview preparation.
 
 ## Quick Start
 
-### 1. Database Setup
+### Option 1: Docker Compose (Recommended)
 
-The application uses PostgreSQL running in Docker.
+Start all services (frontend, backend, database) with one command:
 
 ```bash
-# Copy environment template and customize
-cp .env.example .env
+# Ensure .env file exists in backend/
+# Default values work for development
 
-# IMPORTANT: Edit .env and change POSTGRES_PASSWORD
-# Generate a secure password:
-openssl rand -base64 32
+# Build and start all services
+docker-compose up --build
 
-# Start PostgreSQL container
+# Or run in background (detached mode)
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+```
+
+**Services will be available at:**
+
+- Frontend: http://localhost:3000
+- Backend API: http://localhost:8000
+- API Docs: http://localhost:8000/docs
+- Database: localhost:5432
+
+**Hot reload is enabled** - changes to frontend or backend code will
+automatically reload.
+
+**Stop services:**
+
+```bash
+docker-compose down
+
+# To remove volumes (database data)
+docker-compose down -v
+```
+
+### Option 2: Local Development (Without Docker)
+
+#### 1. Database Setup
+
+```bash
+# Start only PostgreSQL in Docker
 docker-compose up -d postgres
 
-# Verify database is running (should show "healthy" status)
+# Verify database is running
 docker-compose ps
-
-# Check logs to confirm "database system is ready to accept connections"
-docker-compose logs postgres
 ```
 
-**Test database connection:**
+**Important:** Change DB_HOST in backend/.env from `postgres` to `localhost`
+when running backend locally.
 
-```bash
-# Using psql from within container
-docker-compose exec postgres psql -U ai_interviewer_user -d ai_interviewer_db
-
-# Once connected:
-\l                 # List databases
-\dt                # List tables
-\q                 # Quit
-```
-
-### 2. Backend Setup
+#### 2. Backend Setup
 
 ```bash
 cd backend
+
+# Edit .env - change DB_HOST=postgres to DB_HOST=localhost
+sed -i '' 's/DB_HOST=postgres/DB_HOST=localhost/' .env
 
 # Create virtual environment
 python3 -m venv venv
@@ -70,9 +91,7 @@ uvicorn app.main:app --reload --port 8000
 
 Backend will be available at: http://localhost:8000
 
-API documentation: http://localhost:8000/docs
-
-### 3. Frontend Setup
+#### 3. Frontend Setup
 
 ```bash
 cd frontend
@@ -84,93 +103,342 @@ pnpm install
 pnpm run dev
 ```
 
-Frontend will be available at: http://localhost:5173
+Frontend will be available at: http://localhost:5173 (or 3000 if configured)
 
-## Database Management
+## Docker Commands Reference
 
-### Reset Database (Warning: Destroys All Data)
-
-```bash
-# Stop containers and remove volumes
-docker-compose down -v
-
-# Start fresh
-docker-compose up -d postgres
-```
-
-### View Volumes
+### Service Management
 
 ```bash
-# List all volumes
-docker volume ls
+# Start all services
+docker-compose up
 
-# Inspect PostgreSQL volume
-docker volume inspect ai-interviewer_postgres_data
-```
+# Start in background
+docker-compose up -d
 
-### Stop Services
-
-```bash
-# Stop all services
+# Stop all services (keeps data)
 docker-compose down
 
-# Stop only database (keeps data)
-docker-compose stop postgres
+# Stop and remove volumes (deletes database data)
+docker-compose down -v
+
+# Restart specific service
+docker-compose restart backend
+
+# View running containers
+docker-compose ps
+```
+
+### Logs and Debugging
+
+```bash
+# View all logs
+docker-compose logs
+
+# Follow logs (like tail -f)
+docker-compose logs -f
+
+# View specific service logs
+docker-compose logs backend
+docker-compose logs frontend
+docker-compose logs postgres
+
+# Execute command in running container
+docker-compose exec backend bash
+docker-compose exec postgres psql -U ai_interviewer_user -d ai_interviewer_db
+```
+
+### Rebuilding
+
+```bash
+# Rebuild all services
+docker-compose build
+
+# Rebuild specific service
+docker-compose build backend
+
+# Rebuild and start
+docker-compose up --build
+
+# Force rebuild (no cache)
+docker-compose build --no-cache
+```
+
+### Database Management
+
+```bash
+# Connect to database
+docker-compose exec postgres psql -U ai_interviewer_user -d ai_interviewer_db
+
+# Run Alembic migrations in Docker
+docker-compose exec backend alembic upgrade head
+
+# Create new migration
+docker-compose exec backend alembic revision --autogenerate -m "description"
+
+# Reset database (WARNING: Destroys all data)
+docker-compose down -v
+docker-compose up -d
 ```
 
 ## Troubleshooting
 
-### Port 5432 Already in Use
-
-If you have PostgreSQL running locally:
+### Port Already in Use (3000, 8000, or 5432)
 
 ```bash
-# macOS
-brew services stop postgresql
+# Find process using port
+lsof -i :3000
+lsof -i :8000
+lsof -i :5432
 
-# Linux
-sudo systemctl stop postgresql
+# Kill process
+kill -9 <PID>
 
-# Or change port in docker-compose.yml:
+# Or stop local services
+brew services stop postgresql  # macOS
+sudo systemctl stop postgresql # Linux
+
+# Alternative: Change port in docker-compose.yml
 ports:
-  - "5433:5432"  # Use 5433 on host instead
+  - "3001:3000"  # Frontend on 3001
+  - "8001:8000"  # Backend on 8001
+  - "5433:5432"  # Postgres on 5433
 ```
+
+### Frontend Hot Reload Not Working
+
+Issue: Changes to frontend files don't trigger reload in Docker.
+
+**Solution:** Verify `vite.config.ts` has polling enabled:
+
+```typescript
+server: {
+  host: '0.0.0.0',
+  port: 3000,
+  watch: {
+    usePolling: true,  // Required for Docker
+    interval: 1000,
+  },
+}
+```
+
+### Backend Hot Reload Not Working
+
+Issue: Changes to backend files don't trigger reload.
+
+**Solution:**
+
+1. Verify volume mount in docker-compose.yml: `./backend/app:/app/app:ro`
+2. Check command has `--reload` flag: `uvicorn app.main:app --reload`
+3. View backend logs: `docker-compose logs backend`
 
 ### Database Connection Failed
 
-1. Verify container is running and healthy: `docker-compose ps`
-2. Check logs: `docker-compose logs postgres`
-3. Ensure `.env` file exists with correct credentials
-4. Verify password matches in both POSTGRES_PASSWORD and DB_PASSWORD
+```bash
+# 1. Verify containers are running
+docker-compose ps
 
-### Container Restarts Repeatedly
+# 2. Check backend environment
+docker-compose exec backend env | grep DB_
 
-Check logs for errors: `docker-compose logs postgres`
+# Expected: DB_HOST=postgres (not localhost)
 
-Common fixes:
+# 3. Check postgres logs
+docker-compose logs postgres
 
-- Verify `.env` file syntax (no quotes around values)
-- Check disk space: `df -h`
-- Remove corrupted volume: `docker-compose down -v`
+# 4. Test connection from backend
+docker-compose exec backend python -c "from app.core.database import engine; print('Connected')"
+```
+
+### Build Errors
+
+```bash
+# Clear Docker cache and rebuild
+docker-compose down
+docker system prune -a
+docker-compose build --no-cache
+docker-compose up
+```
+
+### "Cannot connect to Docker daemon"
+
+```bash
+# Ensure Docker Desktop is running
+open -a Docker  # macOS
+
+# Or start Docker service
+sudo systemctl start docker  # Linux
+```
 
 ## Project Structure
 
 ```
 .
-├── backend/           # FastAPI backend
-├── frontend/          # React frontend
-├── docker-compose.yml # Database orchestration
-├── .env.example       # Environment template
-└── .env              # Your local config (not in git)
+├── backend/
+│   ├── app/               # FastAPI application code
+│   ├── alembic/           # Database migrations
+│   ├── tests/             # Backend tests
+│   ├── Dockerfile         # Backend container definition
+│   ├── .dockerignore      # Excluded from Docker build
+│   ├── requirements.txt   # Python dependencies
+│   └── .env               # Backend environment variables
+├── frontend/
+│   ├── src/               # React application code
+│   ├── public/            # Static assets
+│   ├── Dockerfile.dev     # Frontend dev container
+│   ├── .dockerignore      # Excluded from Docker build
+│   ├── vite.config.ts     # Vite configuration (Docker-compatible)
+│   └── package.json       # Node dependencies
+├── docker-compose.yml     # Multi-service orchestration
+├── .gitignore             # Git exclusions
+└── README.md              # This file
 ```
 
 ## Development Workflow
+
+### Using Docker (Recommended)
+
+```bash
+# Start all services
+docker-compose up
+
+# Make changes to code - hot reload automatically reloads
+
+# View logs
+docker-compose logs -f
+
+# Stop services
+docker-compose down
+```
+
+### Using Local Development
 
 1. Start database: `docker-compose up -d postgres`
 2. Start backend:
    `cd backend && source venv/bin/activate && uvicorn app.main:app --reload`
 3. Start frontend: `cd frontend && pnpm run dev`
-4. Access application at http://localhost:5173
+
+**Note:** Remember to change `DB_HOST=postgres` to `DB_HOST=localhost` in
+backend/.env for local development.
+
+## CI/CD Pipeline
+
+This project uses GitHub Actions for automated testing, linting, and deployment.
+
+### Workflow Jobs
+
+The workflow consists of four jobs with dependencies:
+
+1. **Build** - Install dependencies for frontend and backend (using matrix
+   strategy)
+2. **Test** - Run pytest for backend tests with coverage (depends on build)
+3. **Lint** - Run Ruff for backend and ESLint for frontend (depends on build)
+4. **Deploy** - Build and push Docker images to GitHub Container Registry (main
+   branch only, depends on test and lint)
+
+### Running Tests Locally
+
+**Backend Tests:**
+
+```bash
+cd backend
+source venv/bin/activate
+pip install pytest pytest-cov pytest-asyncio httpx
+
+# Run tests with coverage
+pytest tests/ -v --cov=app --cov-report=term
+
+# Run specific test file
+pytest tests/test_main.py -v
+```
+
+**Frontend Tests:**
+
+```bash
+cd frontend
+pnpm install
+
+# Run tests
+pnpm test --run
+
+# Run tests in watch mode
+pnpm test
+```
+
+### Running Linting Locally
+
+**Backend Linting:**
+
+```bash
+cd backend
+source venv/bin/activate
+pip install ruff
+
+# Check code quality
+ruff check app/ tests/
+
+# Auto-fix issues
+ruff check --fix app/ tests/
+
+# Format code
+ruff format app/ tests/
+```
+
+**Frontend Linting:**
+
+```bash
+cd frontend
+pnpm install
+
+# Run ESLint
+pnpm run lint
+
+# Auto-fix issues
+pnpm run lint -- --fix
+```
+
+### Workflow Configuration
+
+Workflow is defined in `.github/workflows/ci.yml` with the following features:
+
+- **Caching** - Dependencies cached using actions/cache and setup actions
+- **Artifacts** - Test coverage reports uploaded using actions/upload-artifact
+- **Service Containers** - PostgreSQL service container for integration tests
+- **Branch Protection** - Deploy job runs only on main branch
+- **Container Registry** - Images pushed to GitHub Container Registry (ghcr.io)
+- **Matrix Strategy** - Build, test, and lint jobs use matrix for
+  backend/frontend
+
+### GitHub Actions Secrets and Variables
+
+The following are automatically provided by GitHub Actions:
+
+- `GITHUB_TOKEN` - Authentication token (automatically provided)
+- `REGISTRY` - GitHub Container Registry URL (ghcr.io)
+- `IMAGE_NAME` - Repository name (from github.repository)
+- `github.actor` - Username triggering the workflow
+- `github.ref` - Branch/tag reference
+- `github.sha` - Current commit SHA
+
+### Viewing Workflow Status
+
+1. Navigate to **Actions** tab in GitHub repository
+2. Click on a workflow run to see job details
+3. Click on a job to view logs and artifacts
+4. Coverage reports available in workflow artifacts
+
+### Docker Images
+
+After successful deployment, Docker images are available:
+
+```bash
+# Pull images from GitHub Container Registry
+docker pull ghcr.io/OWNER/REPO/backend:latest
+docker pull ghcr.io/OWNER/REPO/frontend:latest
+
+# Or specific commit
+docker pull ghcr.io/OWNER/REPO/backend:main-SHA
+```
 
 ## License
 

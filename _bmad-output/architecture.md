@@ -184,7 +184,7 @@ capability areas:
 - **Docker Compose Deployment**: MVP targets local/single-server deployment (not
   distributed systems)
 - **No CDN/Edge Compute**: Simple hosting model for research validation
-- **GitLab CI/CD**: Automation constrained to GitLab ecosystem
+- **GitHub Actions**: CI/CD automation using GitHub's native workflow system
 - **PostgreSQL Scaling**: Vertical scaling only for MVP (no sharding,
   replication, or clustering)
 
@@ -726,10 +726,11 @@ backend/
 
 **CI/CD:**
 
-- **Platform**: GitLab CI/CD (per PRD)
-- **Pipeline Stages**: Build → Test → Lint → Deploy
+- **Platform**: GitHub Actions
+- **Workflow Jobs**: Build → Test → Lint → Deploy
 - **Docker**: Build images, run tests in containers
-- **Rationale**: Automated quality checks, consistent builds
+- **Rationale**: Automated quality checks, consistent builds, native GitHub
+  integration
 - **Affects**: Code quality enforcement, deployment process
 
 **Logging:**
@@ -1910,7 +1911,9 @@ ai-interviewer/
 │   ├── development.md
 │   └── deployment.md
 │
-└── .gitlab-ci.yml                   # GitLab CI/CD pipeline
+└── .github/
+    └── workflows/
+        └── ci-cd.yml                # GitHub Actions CI/CD pipeline
 ```
 
 ### Architectural Boundaries
@@ -2359,16 +2362,16 @@ docker-compose -f docker-compose.yml up -d --build
 
 **Environment Configuration:**
 - `.env.production`: Production environment variables
-- Secrets: Injected via CI/CD or orchestration platform
+- Secrets: Injected via GitHub Actions secrets or orchestration platform
 - Database migrations: Run before deployment (`alembic upgrade head`)
 
-**CI/CD Structure (GitLab):**
-- `.gitlab-ci.yml`: Pipeline definition
-- Stages:
+**CI/CD Structure (GitHub Actions):**
+- `.github/workflows/ci-cd.yml`: Workflow definition
+- Jobs:
   1. **Build**: Install dependencies, compile TypeScript
   2. **Test**: Run backend pytest, frontend tests (if any)
   3. **Lint**: Ruff (backend), ESLint (frontend)
-  4. **Deploy**: Build Docker images, push to registry, deploy to server
+  4. **Deploy**: Build Docker images, push to GitHub Container Registry, deploy to server
 
 ## Architecture Validation Results
 

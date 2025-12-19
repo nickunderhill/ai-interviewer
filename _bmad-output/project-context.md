@@ -56,7 +56,7 @@ conventions that prevent implementation mistakes._
 **Infrastructure:**
 
 - Docker Compose - orchestration
-- GitLab CI/CD - pipeline
+- GitHub Actions - CI/CD workflow
 
 ## Critical Implementation Rules
 

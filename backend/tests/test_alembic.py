@@ -2,13 +2,13 @@
 Tests for Alembic configuration and migration functionality.
 """
 
-import pytest
-from pathlib import Path
-from alembic.config import Config
-from alembic import command
-from alembic.script import ScriptDirectory
 import subprocess
 import sys
+from pathlib import Path
+
+import pytest
+from alembic.config import Config
+from alembic.script import ScriptDirectory
 
 
 class TestAlembicConfiguration:
@@ -51,7 +51,7 @@ class TestAlembicConfiguration:
         backend_dir = Path(__file__).parent.parent
         ini_path = backend_dir / "alembic.ini"
 
-        with open(ini_path, "r") as f:
+        with open(ini_path) as f:
             content = f.read()
             assert "file_template" in content, "file_template should be configured"
             # Check for %% (escaped) since that's what's in the ini file
@@ -64,7 +64,7 @@ class TestAlembicConfiguration:
         backend_dir = Path(__file__).parent.parent
         ini_path = backend_dir / "alembic.ini"
 
-        with open(ini_path, "r") as f:
+        with open(ini_path) as f:
             content = f.read()
             assert "timezone = UTC" in content, "timezone should be set to UTC"
 
@@ -76,7 +76,7 @@ class TestAlembicEnvConfiguration:
         """Test that env.py imports Base from app.core.database."""
         env_file = Path(__file__).parent.parent / "alembic" / "env.py"
 
-        with open(env_file, "r") as f:
+        with open(env_file) as f:
             content = f.read()
             assert "from app.core.database import Base" in content
             assert "target_metadata = Base.metadata" in content
@@ -85,7 +85,7 @@ class TestAlembicEnvConfiguration:
         """Test that env.py imports settings from app.core.config."""
         env_file = Path(__file__).parent.parent / "alembic" / "env.py"
 
-        with open(env_file, "r") as f:
+        with open(env_file) as f:
             content = f.read()
             assert "from app.core.config import settings" in content
             assert "settings.database_url_sync" in content
@@ -94,7 +94,7 @@ class TestAlembicEnvConfiguration:
         """Test that env.py has compare_type and compare_server_default enabled."""
         env_file = Path(__file__).parent.parent / "alembic" / "env.py"
 
-        with open(env_file, "r") as f:
+        with open(env_file) as f:
             content = f.read()
             assert "compare_type=True" in content
             assert "compare_server_default=True" in content
@@ -103,7 +103,7 @@ class TestAlembicEnvConfiguration:
         """Test that env.py adds backend directory to sys.path."""
         env_file = Path(__file__).parent.parent / "alembic" / "env.py"
 
-        with open(env_file, "r") as f:
+        with open(env_file) as f:
             content = f.read()
             assert "sys.path.insert" in content
             assert "backend_dir" in content
@@ -179,7 +179,7 @@ class TestAlembicIntegration:
 
         # Check file exists and has content
         assert env_file.exists()
-        with open(env_file, "r") as f:
+        with open(env_file) as f:
             content = f.read()
             assert len(content) > 0
             assert "def run_migrations_offline" in content
@@ -198,30 +198,3 @@ class TestAlembicDocumentation:
         """Test that script.py.mako template exists."""
         template_file = Path(__file__).parent.parent / "alembic" / "script.py.mako"
         assert template_file.exists(), "script.py.mako template should exist"
-
-
-class TestAlembicIntegration:
-    """Test Alembic integration with the database."""
-
-    def test_alembic_version_table_exists(self):
-        """Test that alembic_version table exists after initialization."""
-        result = subprocess.run(
-            ["alembic", "current"],
-            cwd=Path(__file__).parent.parent,
-            capture_output=True,
-            text=True,
-        )
-        assert result.returncode == 0, f"alembic current failed: {result.stderr}"
-        # If alembic_version table exists, command succeeds
-
-    def test_alembic_current_returns_revision(self):
-        """Test that alembic current shows a revision ID."""
-        result = subprocess.run(
-            ["alembic", "current"],
-            cwd=Path(__file__).parent.parent,
-            capture_output=True,
-            text=True,
-        )
-        assert result.returncode == 0, f"alembic current failed: {result.stderr}"
-        # Should show current revision (might be empty if no migrations applied yet)
-        # But command should execute successfully if database is configured

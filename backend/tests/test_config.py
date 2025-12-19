@@ -4,6 +4,7 @@ Tests Pydantic Settings and environment variable loading.
 """
 
 import pytest
+
 from app.core.config import Settings, get_settings, settings
 
 

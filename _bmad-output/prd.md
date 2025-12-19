@@ -76,7 +76,7 @@ who land roles matching their actual capabilities.
 - **Backend:** FastAPI (Python)
 - **Database:** PostgreSQL
 - **AI Integration:** OpenAI API (user-provided keys)
-- **Infrastructure:** Docker containerization, GitLab CI/CD
+- **Infrastructure:** Docker containerization, GitHub Actions CI/CD
 
 **Domain Considerations:**
 
@@ -222,7 +222,7 @@ research validation and community adoption:
 - React frontend (SPA) for all user interactions
 - OpenAI API integration with user-provided keys
 - Docker Compose for local deployment (backend + DB + frontend)
-- GitLab CI/CD: build, tests, lint
+- GitHub Actions: build, tests, lint
 
 **MVP Exclusions** (Explicitly Out):
 
@@ -792,7 +792,7 @@ intermediate skill level
 - React frontend (SPA)
 - PostgreSQL database
 - Docker Compose deployment
-- GitLab CI/CD (build, test, lint)
+- GitHub Actions (build, test, lint)
 
 **Explicit MVP Exclusions:**
 
@@ -1181,7 +1181,7 @@ intermediate skill level
 
 - Automated test suite covering critical paths (auth, session creation, Q&A
   flow)
-- GitLab CI/CD pipeline runs tests and linting on every commit
+- GitHub Actions workflow runs tests and linting on every commit
 - Build failures prevent deployment to prevent regressions
 
 **NFR-M4: Documentation**

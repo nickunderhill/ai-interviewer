@@ -1,4 +1,5 @@
 services:
+  # PostgreSQL Database Service
   postgres:
     image: postgres:15-alpine
     container_name: ai-interviewer-postgres
@@ -16,7 +17,77 @@ services:
       timeout: 5s
       retries: 5
     restart: unless-stopped
+    networks:
+      - app-network
+
+  # FastAPI Backend Service
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: ai-interviewer-backend
+    environment:
+      # Database connection (use service name 'postgres' as host)
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: ${POSTGRES_DB:-ai_interviewer_db}
+      DB_USER: ${POSTGRES_USER:-ai_interviewer_user}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-dev_password_change_in_production}
+      # Application settings
+      DEBUG: ${DEBUG:-true}
+      SECRET_KEY: ${SECRET_KEY:-dev-secret-key-change-in-production}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
+      ENVIRONMENT: ${ENVIRONMENT:-development}
+    ports:
+      - '8000:8000'
+    volumes:
+      # Mount source code for hot reload (read-write for file watching)
+      - ./backend/app:/app/app
+      - ./backend/alembic:/app/alembic:ro
+      - ./backend/alembic.ini:/app/alembic.ini:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    restart: unless-stopped
+    networks:
+      - app-network
+
+  # Vite + React Frontend Service
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: ai-interviewer-frontend
+    environment:
+      # API URL pointing to backend service
+      VITE_API_BASE_URL: http://localhost:8000/api/v1
+    ports:
+      - '3000:3000'
+    volumes:
+      # Mount source code for hot reload (read-write for file watching)
+      - ./frontend/src:/app/src
+      - ./frontend/public:/app/public:ro
+      - ./frontend/index.html:/app/index.html:ro
+      - ./frontend/vite.config.ts:/app/vite.config.ts:ro
+      - ./frontend/vitest.config.ts:/app/vitest.config.ts:ro
+      - ./frontend/tsconfig.json:/app/tsconfig.json:ro
+      - ./frontend/tsconfig.app.json:/app/tsconfig.app.json:ro
+      - ./frontend/tsconfig.node.json:/app/tsconfig.node.json:ro
+      - ./frontend/eslint.config.js:/app/eslint.config.js:ro
+      # Prevent mounting node_modules (use container's version)
+      - /app/node_modules
+    depends_on:
+      - backend
+    command: pnpm run dev --host 0.0.0.0 --port 3000
+    restart: unless-stopped
+    networks:
+      - app-network
 
 volumes:
   postgres_data:
     driver: local
+
+networks:
+  app-network:
+    driver: bridge

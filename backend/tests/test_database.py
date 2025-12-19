@@ -9,12 +9,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
 from app.core.database import (
-    engine,
     AsyncSessionLocal,
     Base,
+    close_db,
+    engine,
     get_db,
     init_db,
-    close_db,
 )
 
 
@@ -99,9 +99,7 @@ class TestGetDbDependency:
     @pytest.mark.asyncio
     async def test_get_db_closes_session(self):
         """Test that get_db properly closes session after use."""
-        session_instance = None
         async for session in get_db():
-            session_instance = session
             # Simulate using the session
             await session.execute(text("SELECT 1"))
             break
@@ -214,11 +212,10 @@ class TestDatabaseConnectivity:
     async def test_session_isolation(self):
         """Test that sessions are isolated from each other."""
         # Create two separate sessions
-        async with AsyncSessionLocal() as session1:
-            async with AsyncSessionLocal() as session2:
-                # Both should work independently
-                result1 = await session1.execute(text("SELECT 1 as val"))
-                result2 = await session2.execute(text("SELECT 2 as val"))
+        async with AsyncSessionLocal() as session1, AsyncSessionLocal() as session2:
+            # Both should work independently
+            result1 = await session1.execute(text("SELECT 1 as val"))
+            result2 = await session2.execute(text("SELECT 2 as val"))
 
-                assert result1.scalar() == 1
-                assert result2.scalar() == 2
+            assert result1.scalar() == 1
+            assert result2.scalar() == 2

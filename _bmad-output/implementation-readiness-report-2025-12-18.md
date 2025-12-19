@@ -192,7 +192,7 @@ with no cross-user visibility
   consistent standards
 - NFR-M2: Deployment - One-command Docker Compose, environment-based config,
   automated migrations
-- NFR-M3: Testing & CI/CD - Automated test suite, GitLab CI/CD pipeline, build
+- NFR-M3: Testing & CI/CD - Automated test suite, GitHub Actions workflow, build
   failures prevent deployment
 - NFR-M4: Documentation - Complete setup, API, architecture, and user
   documentation
@@ -609,7 +609,7 @@ dependency flow
 4. Story 1.4 (SQLAlchemy) → Depends on 1.3 only ✓
 5. Story 1.5 (Alembic) → Depends on 1.4 only ✓
 6. Story 1.6 (Docker Compose Full) → Depends on 1.1-1.5 ✓
-7. Story 1.7 (GitLab CI/CD) → Depends on 1.1-1.6 ✓
+7. Story 1.7 (GitHub Actions) → Depends on 1.1-1.6 ✓
 
 **Epic 4 (Interactive Sessions) - Complex Dependency Test:**
 

@@ -3,10 +3,11 @@ Database connection and session management using SQLAlchemy async.
 Provides async engine, session factory, and dependency injection for FastAPI.
 """
 
-from typing import AsyncGenerator
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
-from sqlalchemy.orm import declarative_base
 import logging
+from collections.abc import AsyncGenerator
+
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.orm import declarative_base
 
 from app.core.config import settings
 
@@ -86,7 +87,7 @@ async def init_db() -> None:
                 logger.info("✓ Connection URL: [configured]")
         except Exception:
             logger.info("✓ Connection URL: [configured]")
-        logger.info(f"✓ Pool size: 5-20 connections")
+        logger.info("✓ Pool size: 5-20 connections")
 
     except Exception as e:
         logger.error(f"✗ Database connection failed: {str(e)}")

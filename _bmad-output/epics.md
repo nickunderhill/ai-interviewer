@@ -153,7 +153,7 @@ stories.
   standards
 - **NFR-M2**: One-command deployment via Docker Compose; environment-based
   configuration; automated migrations
-- **NFR-M3**: Automated test suite covering critical paths; GitLab CI/CD
+- **NFR-M3**: Automated test suite covering critical paths; GitHub Actions
   pipeline; build failures prevent deployment
 - **NFR-M4**: Complete setup, API, architecture, and user documentation
 - **NFR-M5**: Basic logging; API failure monitoring; session completion tracking
@@ -204,7 +204,7 @@ stories.
   operations (2-3 second intervals)
 - **Testing**: pytest for backend, co-located tests for frontend, mock OpenAI
   API calls
-- **CI/CD**: GitLab CI/CD pipeline with build, test, lint, and deploy stages
+- **CI/CD**: GitHub Actions workflow with build, test, lint, and deploy jobs
 - **Project Context**: Comprehensive implementation rules documented in
   project-context.md
 
@@ -315,7 +315,7 @@ pipeline, and all core infrastructure components operational. This establishes
 the foundation for all subsequent development work.
 
 **FRs covered:** Architecture requirements (Vite React-TS starter template,
-FastAPI setup, Docker Compose orchestration, PostgreSQL database, GitLab CI/CD
+FastAPI setup, Docker Compose orchestration, PostgreSQL database, GitHub Actions
 pipeline, complete project structure per architecture document)
 
 ### Epic 2: User Authentication & Profile Management
@@ -477,21 +477,22 @@ API is accessible at http://localhost:8000 **And** code changes trigger hot
 reload in both frontend (Vite HMR) and backend (uvicorn reload) **And**
 environment variables are properly configured for each service
 
-### Story 1.7: Set Up GitLab CI/CD Pipeline
+### Story 1.7: Set Up GitHub Actions Pipeline
 
-As a developer, I want to configure a GitLab CI/CD pipeline with build, test,
-lint, and deploy stages, So that code quality is maintained and deployments are
-automated.
+As a developer, I want to configure a GitHub Actions CI/CD workflow with build,
+test, lint, and deploy stages, So that code quality is maintained and
+deployments are automated.
 
 **Acceptance Criteria:**
 
-**Given** the project is in a GitLab repository **When** I create .gitlab-ci.yml
-with four stages (build, test, lint, deploy) **Then** the build stage installs
-dependencies for frontend and backend **And** the test stage runs pytest for
-backend tests **And** the lint stage runs Ruff for backend and ESLint for
-frontend **And** the deploy stage builds Docker images and pushes to registry
-(for main branch only) **And** build failures prevent progression to later
-stages **And** the pipeline runs automatically on every commit
+**Given** the project is in a GitHub repository **When** I create
+.github/workflows/ci-cd.yml with four stages (build, test, lint, deploy)
+**Then** the build stage installs dependencies for frontend and backend **And**
+the test stage runs pytest for backend tests **And** the lint stage runs Ruff
+for backend and ESLint for frontend **And** the deploy stage builds Docker
+images and pushes to registry (for main branch only) **And** build failures
+prevent progression to later stages **And** the pipeline runs automatically on
+every commit
 
 ## Epic 2: User Authentication & Profile Management
 

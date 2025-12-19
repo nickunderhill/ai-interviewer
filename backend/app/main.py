@@ -3,17 +3,16 @@ FastAPI application entry point.
 Configures API, middleware, and lifecycle events.
 """
 
-from typing import Dict, Any
+import logging
 from contextlib import asynccontextmanager
+from typing import Any
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
-import logging
-import sys
 
 from app.core.config import settings
-from app.core.database import init_db, close_db, AsyncSessionLocal
+from app.core.database import AsyncSessionLocal, close_db, init_db
 
 # Configure logging only if not already configured
 if not logging.getLogger().handlers:
@@ -64,13 +63,13 @@ app.add_middleware(
 
 
 @app.get("/", tags=["Health"])
-async def root() -> Dict[str, Any]:
+async def root() -> dict[str, Any]:
     """Root endpoint - basic health check."""
     return {"message": "AI Interviewer API", "status": "running", "version": "1.0.0"}
 
 
 @app.get("/health", tags=["Health"])
-async def health_check() -> Dict[str, Any]:
+async def health_check() -> dict[str, Any]:
     """
     Health check endpoint.
     Verifies database connectivity and application status.
@@ -81,10 +80,7 @@ async def health_check() -> Dict[str, Any]:
             result = await session.execute(text("SELECT 1"))
             value = result.scalar()
             # Validate query actually returned expected result
-            if value == 1:
-                db_status = "connected"
-            else:
-                db_status = "error: unexpected query result"
+            db_status = "connected" if value == 1 else "error: unexpected query result"
     except Exception as e:
         logger.error(f"Health check failed: {str(e)}")
         db_status = f"error: {str(e)}"
@@ -97,7 +93,7 @@ async def health_check() -> Dict[str, Any]:
 
 
 @app.get("/api/v1/health", tags=["Health"])
-async def health_check_v1() -> Dict[str, str]:
+async def health_check_v1() -> dict[str, str]:
     """
     Health check endpoint for monitoring and deployment verification (v1 API path).
     """
