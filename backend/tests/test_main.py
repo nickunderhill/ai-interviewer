@@ -3,8 +3,8 @@ Smoke tests for FastAPI application endpoints.
 Updated to test database integration.
 """
 
-import pytest
 from httpx import ASGITransport, AsyncClient
+import pytest
 
 from app.main import app
 

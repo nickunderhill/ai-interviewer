@@ -3,8 +3,8 @@ FastAPI application entry point.
 Configures API, middleware, and lifecycle events.
 """
 
-import logging
 from contextlib import asynccontextmanager
+import logging
 from typing import Any
 
 from fastapi import FastAPI

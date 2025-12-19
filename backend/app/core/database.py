@@ -3,8 +3,8 @@ Database connection and session management using SQLAlchemy async.
 Provides async engine, session factory, and dependency injection for FastAPI.
 """
 
-import logging
 from collections.abc import AsyncGenerator
+import logging
 
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import declarative_base

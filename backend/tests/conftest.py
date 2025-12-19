@@ -5,8 +5,8 @@ Pytest configuration and fixtures for testing.
 import asyncio
 from collections.abc import AsyncGenerator, Generator
 
-import pytest
 from httpx import AsyncClient
+import pytest
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from app.core.config import settings
