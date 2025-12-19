@@ -2,13 +2,13 @@
 Tests for Alembic configuration and migration functionality.
 """
 
+from pathlib import Path
 import subprocess
 import sys
-from pathlib import Path
 
-import pytest
 from alembic.config import Config
 from alembic.script import ScriptDirectory
+import pytest
 
 
 class TestAlembicConfiguration:

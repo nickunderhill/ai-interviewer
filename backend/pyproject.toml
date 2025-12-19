@@ -53,6 +53,10 @@ ignore = [
 "__init__.py" = ["F401"]  # Unused imports in __init__.py
 "tests/*" = ["S101"]      # Allow assert in tests
 
+[tool.ruff.lint.isort]
+force-sort-within-sections = true
+known-first-party = ["app"]
+
 [tool.ruff.format]
 quote-style = "double"
 indent-style = "space"
