@@ -12,9 +12,7 @@ from app.main import app
 @pytest.mark.asyncio
 async def test_root_endpoint():
     """Test that root endpoint returns running status."""
-    async with AsyncClient(
-        transport=ASGITransport(app=app), base_url="http://test"
-    ) as client:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
         response = await client.get("/")
         assert response.status_code == 200
         data = response.json()
@@ -26,9 +24,7 @@ async def test_root_endpoint():
 @pytest.mark.asyncio
 async def test_health_check_endpoint():
     """Test that health check endpoint verifies database connectivity."""
-    async with AsyncClient(
-        transport=ASGITransport(app=app), base_url="http://test"
-    ) as client:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
         response = await client.get("/health")
         assert response.status_code == 200
         data = response.json()
@@ -44,9 +40,7 @@ async def test_health_check_endpoint():
 @pytest.mark.asyncio
 async def test_health_check_v1_endpoint():
     """Test that v1 health check endpoint returns healthy status."""
-    async with AsyncClient(
-        transport=ASGITransport(app=app), base_url="http://test"
-    ) as client:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
         response = await client.get("/api/v1/health")
         assert response.status_code == 200
         data = response.json()
@@ -56,9 +50,7 @@ async def test_health_check_v1_endpoint():
 @pytest.mark.asyncio
 async def test_root_endpoint_returns_dict():
     """Test that root endpoint returns a dictionary structure."""
-    async with AsyncClient(
-        transport=ASGITransport(app=app), base_url="http://test"
-    ) as client:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
         response = await client.get("/")
         assert response.status_code == 200
         assert isinstance(response.json(), dict)
@@ -67,9 +59,7 @@ async def test_root_endpoint_returns_dict():
 @pytest.mark.asyncio
 async def test_health_check_returns_dict():
     """Test that health check endpoint returns a dictionary structure."""
-    async with AsyncClient(
-        transport=ASGITransport(app=app), base_url="http://test"
-    ) as client:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
         response = await client.get("/api/v1/health")
         assert response.status_code == 200
         assert isinstance(response.json(), dict)

@@ -56,9 +56,7 @@ class TestAlembicConfiguration:
             content = f.read()
             assert "file_template" in content, "file_template should be configured"
             # Check for %% (escaped) since that's what's in the ini file
-            assert (
-                "%%(year)d%%(month).2d%%(day).2d" in content
-            ), "file_template should include date"
+            assert "%%(year)d%%(month).2d%%(day).2d" in content, "file_template should include date"
 
     def test_alembic_config_has_timezone(self):
         """Test that timezone is set to UTC."""
