@@ -47,7 +47,7 @@ development_status:
   1-4-integrate-backend-with-database-using-sqlalchemy: done
   1-5-set-up-alembic-for-database-migrations: done
   1-6-configure-docker-compose-for-full-stack-development: done
-  1-7-set-up-github-actions-pipeline: in-progress
+  1-7-set-up-github-actions-pipeline: done
   epic-1-retrospective: optional
 
   epic-2: backlog
