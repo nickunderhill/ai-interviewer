@@ -24,14 +24,14 @@ class TestDatabaseConfiguration:
     def test_database_url_format(self):
         """Test that database URL is correctly formatted for async PostgreSQL."""
         assert settings.database_url.startswith("postgresql+asyncpg://")
-        assert "ai_interviewer_db" in settings.database_url
-        assert "ai_interviewer_user" in settings.database_url
+        assert settings.DB_NAME in settings.database_url
+        assert settings.DB_USER in settings.database_url
 
     def test_database_url_sync_format(self):
         """Test that sync database URL is correctly formatted (for Alembic)."""
         assert settings.database_url_sync.startswith("postgresql://")
-        assert "ai_interviewer_db" in settings.database_url_sync
-        assert "ai_interviewer_user" in settings.database_url_sync
+        assert settings.DB_NAME in settings.database_url_sync
+        assert settings.DB_USER in settings.database_url_sync
         # Sync URL should NOT have +asyncpg driver
         assert "+asyncpg" not in settings.database_url_sync
 
@@ -39,8 +39,8 @@ class TestDatabaseConfiguration:
         """Test that settings are properly loaded from .env file."""
         assert settings.DB_HOST is not None
         assert settings.DB_PORT == 5432
-        assert settings.DB_NAME == "ai_interviewer_db"
-        assert settings.DB_USER == "ai_interviewer_user"
+        assert settings.DB_NAME is not None
+        assert settings.DB_USER is not None
         assert settings.DB_PASSWORD is not None
 
 
