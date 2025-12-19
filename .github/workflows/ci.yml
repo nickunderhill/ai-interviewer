@@ -18,6 +18,7 @@ env:
   DB_NAME: ai_interviewer_test_db
   DB_USER: test_user
   DB_PASSWORD: test_password
+  SECRET_KEY: test-secret-key-for-ci-do-not-use-in-production
 
 jobs:
   # ============================================================================
