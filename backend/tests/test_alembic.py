@@ -6,9 +6,10 @@ from pathlib import Path
 import subprocess
 import sys
 
+import pytest
+
 from alembic.config import Config
 from alembic.script import ScriptDirectory
-import pytest
 
 
 class TestAlembicConfiguration:
