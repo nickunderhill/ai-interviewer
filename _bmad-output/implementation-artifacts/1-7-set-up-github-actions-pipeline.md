@@ -11,8 +11,8 @@ are automated.
 ## Acceptance Criteria
 
 1. **Given** the project is in a GitHub repository **When** I create
-  .github/workflows/ci.yml with four jobs (build, test, lint, deploy)
-   **Then** the build job installs dependencies for frontend and backend
+   .github/workflows/ci.yml with four jobs (build, test, lint, deploy) **Then**
+   the build job installs dependencies for frontend and backend
 
 2. **Given** the workflow is configured **Then** the test job runs pytest for
    backend tests **And** the lint job runs Ruff for backend and ESLint for
