@@ -4,6 +4,7 @@ Pytest configuration and fixtures for testing.
 
 import asyncio
 from collections.abc import AsyncGenerator, Generator
+import os
 import uuid
 
 from httpx import AsyncClient
@@ -14,6 +15,10 @@ from sqlalchemy.ext.asyncio import (
     async_sessionmaker,
     create_async_engine,
 )
+
+# Ensure security settings are available during tests even if the developer
+# hasn't exported them in the shell running pytest.
+os.environ.setdefault("SECRET_KEY", "test-secret")
 
 from app.core.config import settings
 from app.core.database import Base, get_db

@@ -52,8 +52,8 @@ development_status:
 
   epic-2: in-progress
   2-1-create-user-model-and-database-schema: done
-  2-2-implement-password-hashing-with-bcrypt: ready-for-dev
-  2-3-implement-jwt-token-generation-and-validation: ready-for-dev
+  2-2-implement-password-hashing-with-bcrypt: done
+  2-3-implement-jwt-token-generation-and-validation: done
   2-4-create-user-registration-endpoint: ready-for-dev
   2-5-create-user-login-endpoint: ready-for-dev
   2-6-implement-authentication-middleware-with-jwt: ready-for-dev
