@@ -19,6 +19,7 @@ sys.path.insert(0, str(backend_dir))
 try:
     from app.core.config import settings
     from app.core.database import Base
+    import app.models.user  # noqa: F401
 except ImportError as e:
     raise ImportError(
         f"Failed to import required modules: {e}\n"
@@ -30,6 +31,7 @@ except ImportError as e:
 # This is CRITICAL for autogenerate to work correctly
 # Uncomment and add as you create models in Epic 2+:
 # from app.models.user import User
+
 # from app.models.session import InterviewSession
 # from app.models.job_posting import JobPosting
 # from app.models.message import SessionMessage

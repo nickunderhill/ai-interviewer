@@ -1,6 +1,6 @@
 # Story 2.1: Create User Model and Database Schema
 
-Status: ready-for-dev
+Status: done
 
 ## Story
 
@@ -21,21 +21,21 @@ PostgreSQL.
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Implement `User` ORM model (AC: #1)
+- [x] Task 1: Implement `User` ORM model (AC: #1)
 
-  - [ ] Create `backend/app/models/user.py` with SQLAlchemy declarative model
-  - [ ] Add `email` unique constraint and non-null constraints
-  - [ ] Add `created_at` / `updated_at` timezone-aware UTC timestamps
+  - [x] Create `backend/app/models/user.py` with SQLAlchemy declarative model
+  - [x] Add `email` unique constraint and non-null constraints
+  - [x] Add `created_at` / `updated_at` timezone-aware UTC timestamps
 
-- [ ] Task 2: Create and apply Alembic migration (AC: #1)
+- [x] Task 2: Create and apply Alembic migration (AC: #1)
 
-  - [ ] Autogenerate migration for `users` table
-  - [ ] Verify table/column naming follows snake_case conventions
-  - [ ] Apply migration to development DB
+  - [x] Autogenerate migration for `users` table
+  - [x] Verify table/column naming follows snake_case conventions
+  - [x] Apply migration to development DB
 
-- [ ] Task 3: Add minimal tests around schema expectations (AC: #1)
-  - [ ] Verify unique email constraint enforced
-  - [ ] Verify timestamps are populated and timezone-aware
+- [x] Task 3: Add minimal tests around schema expectations (AC: #1)
+  - [x] Verify unique email constraint enforced
+  - [x] Verify timestamps are populated and timezone-aware
 
 ## Dev Notes
 
@@ -56,3 +56,52 @@ PostgreSQL.
   - `email`: unique indexed string
   - `hashed_password`: string
   - `created_at`, `updated_at`: timezone-aware timestamps (UTC)
+
+## Dev Agent Record
+
+### Agent Model Used
+
+GPT-5.2
+
+### Implementation Notes
+
+- Implemented SQLAlchemy 2.0 declarative `User` model with UUID PK, unique
+  email, and timezone-aware timestamps.
+- Registered model import in Alembic env so `--autogenerate` discovers metadata.
+- Generated and applied Alembic migration `75cc412b7425`.
+
+### Test Results
+
+- `DB_HOST=localhost pytest -q` (71 passed)
+
+## File List
+
+Files created:
+
+- `backend/app/models/user.py`
+- `backend/alembic/versions/20251220_0522_75cc412b7425_create_users_table.py`
+- `backend/tests/test_user_model.py`
+
+Files modified:
+
+- `backend/alembic/env.py`
+- `backend/tests/conftest.py`
+
+## Change Log
+
+- 2025-12-20: Added `users` table model + migration + schema tests.
+- 2025-12-20: Senior review fixes: isolated test DB schema + assert UTC
+  timestamps.
+
+## Senior Developer Review (AI)
+
+**Date:** 2025-12-20
+
+**Outcome:** Approved (changes applied)
+
+**Findings addressed:**
+
+- HIGH: Prevented destructive test DB behavior by running schema creation in an
+  isolated, per-test Postgres schema.
+- MEDIUM: Strengthened timestamp test to assert UTC (offset 0), not just
+  tz-aware.

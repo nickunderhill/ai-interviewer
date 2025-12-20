@@ -4,10 +4,16 @@ Pytest configuration and fixtures for testing.
 
 import asyncio
 from collections.abc import AsyncGenerator, Generator
+import uuid
 
 from httpx import AsyncClient
 import pytest
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+import sqlalchemy as sa
+from sqlalchemy.ext.asyncio import (
+    AsyncSession,
+    async_sessionmaker,
+    create_async_engine,
+)
 
 from app.core.config import settings
 from app.core.database import Base, get_db
@@ -34,11 +40,21 @@ async def db_session() -> AsyncGenerator[AsyncSession, None]:
         f"@{settings.DB_HOST}:{settings.DB_PORT}/{settings.DB_NAME}"
     )
 
-    engine = create_async_engine(test_database_url, echo=False)
+    schema_name = f"test_{uuid.uuid4().hex}"
 
-    # Create tables
+    engine = create_async_engine(
+        test_database_url,
+        echo=False,
+        connect_args={"server_settings": {"search_path": schema_name}},
+    )
+
+    # Import models so they're registered with Base.metadata
+    from app.models import user as _user  # noqa: F401
+
+    # Create isolated schema + tables (prevents dropping dev DB objects)
     async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.drop_all)
+        await conn.execute(sa.text(f'CREATE SCHEMA IF NOT EXISTS "{schema_name}"'))
+        await conn.execute(sa.text(f'SET search_path TO "{schema_name}"'))
         await conn.run_sync(Base.metadata.create_all)
 
     # Create session
@@ -47,9 +63,9 @@ async def db_session() -> AsyncGenerator[AsyncSession, None]:
     async with async_session() as session:
         yield session
 
-    # Cleanup
+    # Cleanup: drop the isolated schema and everything created in it
     async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.drop_all)
+        await conn.execute(sa.text(f'DROP SCHEMA IF EXISTS "{schema_name}" CASCADE'))
 
     await engine.dispose()
 
