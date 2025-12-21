@@ -62,7 +62,7 @@ development_status:
   2-9-implement-api-key-encryption-service: done
   2-10-create-api-key-configuration-endpoint: done
   2-11-create-api-key-update-endpoint: done
-  2-12-create-user-logout-frontend-token-invalidation: ready-for-dev
+  2-12-create-user-logout-frontend-token-invalidation: done
   epic-2-retrospective: optional
 
   epic-3: backlog
