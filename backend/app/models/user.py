@@ -33,6 +33,11 @@ class User(Base):
         nullable=False,
     )
 
+    encrypted_api_key: Mapped[str | None] = mapped_column(
+        String,
+        nullable=True,
+    )
+
     created_at: Mapped[dt.datetime] = mapped_column(
         DateTime(timezone=True),
         default=utcnow,

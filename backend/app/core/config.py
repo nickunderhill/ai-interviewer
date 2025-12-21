@@ -26,8 +26,11 @@ class Settings(BaseSettings):
     SECRET_KEY: str  # Required - no default for security
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440  # 24 hours
+    ENCRYPTION_KEY: str  # Required for encrypting API keys
 
-    model_config = SettingsConfigDict(env_file=".env", case_sensitive=True, extra="ignore")
+    model_config = SettingsConfigDict(
+        env_file=".env", case_sensitive=True, extra="ignore"
+    )
 
     @property
     def database_url(self) -> str:

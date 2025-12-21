@@ -56,12 +56,12 @@ development_status:
   2-3-implement-jwt-token-generation-and-validation: done
   2-4-create-user-registration-endpoint: done
   2-5-create-user-login-endpoint: done
-  2-6-implement-authentication-middleware-with-jwt: ready-for-dev
-  2-7-create-user-profile-viewing-endpoint: ready-for-dev
-  2-8-add-api-key-storage-to-user-model: ready-for-dev
-  2-9-implement-api-key-encryption-service: ready-for-dev
-  2-10-create-api-key-configuration-endpoint: ready-for-dev
-  2-11-create-api-key-update-endpoint: ready-for-dev
+  2-6-implement-authentication-middleware-with-jwt: done
+  2-7-create-user-profile-viewing-endpoint: done
+  2-8-add-api-key-storage-to-user-model: done
+  2-9-implement-api-key-encryption-service: done
+  2-10-create-api-key-configuration-endpoint: done
+  2-11-create-api-key-update-endpoint: done
   2-12-create-user-logout-frontend-token-invalidation: ready-for-dev
   epic-2-retrospective: optional
 
