@@ -1,6 +1,6 @@
 # Story 2.4: Create User Registration Endpoint
 
-Status: ready-for-dev
+Status: done
 
 ## Story
 
@@ -19,22 +19,22 @@ I can access the AI interview system.
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Add request/response schemas (AC: #1)
+- [x] Task 1: Add request/response schemas (AC: #1)
 
-  - [ ] Create Pydantic request schema (email, password)
-  - [ ] Create Pydantic response schema (id, email, created_at)
+  - [x] Create Pydantic request schema (email, password)
+  - [x] Create Pydantic response schema (id, email, created_at)
 
-- [ ] Task 2: Implement registration endpoint (AC: #1)
+- [x] Task 2: Implement registration endpoint (AC: #1)
 
-  - [ ] Add route handler under `backend/app/api/v1/endpoints/` (auth)
-  - [ ] Enforce unique email (409 on conflict)
-  - [ ] Hash password before insert
-  - [ ] Return 201 with user data excluding password hash
+  - [x] Add route handler under `backend/app/api/v1/endpoints/` (auth)
+  - [x] Enforce unique email (409 on conflict)
+  - [x] Hash password before insert
+  - [x] Return 201 with user data excluding password hash
 
-- [ ] Task 3: Add endpoint tests (AC: #1)
-  - [ ] Successful registration
-  - [ ] Duplicate email returns 409
-  - [ ] Invalid email returns 422
+- [x] Task 3: Add endpoint tests (AC: #1)
+  - [x] Successful registration
+  - [x] Duplicate email returns 409
+  - [x] Invalid email returns 422
 
 ## Dev Notes
 
@@ -52,3 +52,56 @@ I can access the AI interview system.
   - `backend/app/schemas/auth.py` (or `users.py` depending on existing layout)
   - `backend/app/services/user_service.py`
   - `backend/tests/api/v1/test_auth_register.py`
+
+## Dev Agent Record
+
+### Agent Model Used
+
+GPT-5.2
+
+### Implementation Notes
+
+- Added `/api/v1/auth/register` endpoint that hashes passwords with bcrypt and
+  returns user data without the password hash.
+- Returns 409 on duplicate email using the project error shape.
+
+### Test Results
+
+- `pytest -q` (96 passed)
+
+## File List
+
+Files created:
+
+- `backend/app/api/v1/endpoints/auth.py`
+- `backend/app/schemas/auth.py`
+- `backend/app/services/user_service.py`
+- `backend/tests/api/v1/test_auth_register.py`
+
+Files modified:
+
+- `backend/app/main.py`
+- `backend/app/services/user_service.py`
+- `backend/tests/api/v1/test_auth_register.py`
+- `backend/tests/conftest.py`
+
+## Change Log
+
+- 2025-12-20: Added registration endpoint + schemas + service + tests.
+- 2025-12-21: Code review fixes: added DB assertions for hashing + email
+  normalization behavior; updated story metadata.
+
+## Senior Developer Review (AI)
+
+Date: 2025-12-21
+
+Outcome: Approved (after fixes)
+
+### Action Items
+
+- [x] [MEDIUM] Add test coverage proving password is hashed in DB (not just
+      omitted from response).
+- [x] [MEDIUM] Add test coverage for email normalization and case-insensitive
+      uniqueness.
+- [x] [MEDIUM] Keep story File List and test counts consistent with repo
+      changes.

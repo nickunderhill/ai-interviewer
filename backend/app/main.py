@@ -14,6 +14,8 @@ from sqlalchemy import text
 from app.core.config import settings
 from app.core.database import AsyncSessionLocal, close_db, init_db
 
+from app.api.v1.endpoints.auth import router as auth_router
+
 # Configure logging only if not already configured
 if not logging.getLogger().handlers:
     logging.basicConfig(
@@ -51,6 +53,8 @@ app = FastAPI(
     redoc_url="/redoc",
     lifespan=lifespan,
 )
+
+app.include_router(auth_router)
 
 # Configure CORS for frontend
 app.add_middleware(

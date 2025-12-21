@@ -19,6 +19,7 @@ from sqlalchemy.ext.asyncio import (
 # Ensure security settings are available during tests even if the developer
 # hasn't exported them in the shell running pytest.
 os.environ.setdefault("SECRET_KEY", "test-secret")
+os.environ.setdefault("DB_HOST", "localhost")
 
 from app.core.config import settings
 from app.core.database import Base, get_db
