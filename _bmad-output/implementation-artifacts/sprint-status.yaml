@@ -79,21 +79,21 @@ development_status:
   3-11-create-job-posting-delete-endpoint: done
   epic-3-retrospective: optional
 
-  epic-4: backlog
-  4-1-create-session-and-message-models: backlog
-  4-2-create-session-creation-endpoint: backlog
-  4-3-create-session-list-endpoint: backlog
-  4-4-create-session-detail-endpoint: backlog
-  4-5-create-operation-model-for-long-running-ai-tasks: backlog
-  4-6-implement-openai-service-for-api-calls: backlog
-  4-7-implement-question-generation-service-with-dual-context: backlog
-  4-8-create-question-generation-endpoint-with-async-pattern: backlog
-  4-9-create-operation-status-polling-endpoint: backlog
-  4-10-store-generated-question-as-session-message: backlog
-  4-11-create-answer-submission-endpoint: backlog
-  4-12-create-session-messages-retrieval-endpoint: backlog
-  4-13-create-session-resume-capability: backlog
-  4-14-create-session-completion-endpoint: backlog
+  epic-4: in-progress
+  4-1-create-session-and-message-models: ready-for-dev
+  4-2-create-session-creation-endpoint: ready-for-dev
+  4-3-create-session-list-endpoint: ready-for-dev
+  4-4-create-session-detail-endpoint: ready-for-dev
+  4-5-create-operation-model-for-long-running-ai-tasks: ready-for-dev
+  4-6-implement-openai-service-for-api-calls: ready-for-dev
+  4-7-implement-question-generation-service-with-dual-context: ready-for-dev
+  4-8-create-question-generation-endpoint-with-async-pattern: ready-for-dev
+  4-9-create-operation-status-polling-endpoint: ready-for-dev
+  4-10-store-generated-question-as-session-message: ready-for-dev
+  4-11-create-answer-submission-endpoint: ready-for-dev
+  4-12-create-session-messages-retrieval-endpoint: ready-for-dev
+  4-13-create-session-resume-capability: ready-for-dev
+  4-14-create-session-completion-endpoint: ready-for-dev
   epic-4-retrospective: optional
 
   epic-5: backlog
