@@ -36,6 +36,7 @@ services:
       # Application settings
       DEBUG: ${DEBUG:-true}
       SECRET_KEY: ${SECRET_KEY:-dev-secret-key-change-in-production}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY:-dev-encryption-key-32-chars-min}
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
       ENVIRONMENT: ${ENVIRONMENT:-development}
     ports:
@@ -43,7 +44,7 @@ services:
     volumes:
       # Mount source code for hot reload (read-write for file watching)
       - ./backend/app:/app/app
-      - ./backend/alembic:/app/alembic:ro
+      - ./backend/alembic:/app/alembic
       - ./backend/alembic.ini:/app/alembic.ini:ro
     depends_on:
       postgres:

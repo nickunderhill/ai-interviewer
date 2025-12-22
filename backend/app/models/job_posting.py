@@ -14,6 +14,7 @@ from app.core.database import Base
 
 if TYPE_CHECKING:
     from app.models.user import User
+    from app.models.interview_session import InterviewSession
 
 
 def utcnow() -> dt.datetime:
@@ -80,6 +81,12 @@ class JobPosting(Base):
     user: Mapped["User"] = relationship(
         "User",
         back_populates="job_postings",
+    )
+
+    # Relationship to InterviewSessions (one-to-many)
+    interview_sessions: Mapped[List["InterviewSession"]] = relationship(
+        "InterviewSession",
+        back_populates="job_posting",
     )
 
     # Composite index for efficient ordering by created_at within user

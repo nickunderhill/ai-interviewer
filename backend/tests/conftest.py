@@ -62,6 +62,8 @@ async def db_session() -> AsyncGenerator[AsyncSession, None]:
     from app.models import user as _user  # noqa: F401
     from app.models import resume as _resume  # noqa: F401
     from app.models import job_posting as _job_posting  # noqa: F401
+    from app.models import interview_session as _interview_session  # noqa: F401
+    from app.models import session_message as _session_message  # noqa: F401
 
     # Create isolated schema + tables (prevents dropping dev DB objects)
     async with engine.begin() as conn:

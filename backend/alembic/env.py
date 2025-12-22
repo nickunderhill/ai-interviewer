@@ -22,6 +22,8 @@ try:
     import app.models.user  # noqa: F401
     import app.models.resume  # noqa: F401
     import app.models.job_posting  # noqa: F401
+    import app.models.interview_session  # noqa: F401
+    import app.models.session_message  # noqa: F401
 except ImportError as e:
     raise ImportError(
         f"Failed to import required modules: {e}\n"
@@ -31,14 +33,9 @@ except ImportError as e:
 
 # Import all models here to ensure they're registered with Base.metadata
 # This is CRITICAL for autogenerate to work correctly
-# Uncomment and add as you create models in Epic 2+:
-# from app.models.user import User
-
-# from app.models.session import InterviewSession
 from app.models.job_posting import JobPosting  # noqa: F401
-
-# from app.models.message import SessionMessage
-# from app.models.feedback import Feedback
+from app.models.interview_session import InterviewSession  # noqa: F401
+from app.models.session_message import SessionMessage  # noqa: F401
 
 # Alembic Config object
 config = context.config
