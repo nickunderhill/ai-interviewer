@@ -18,6 +18,7 @@ from app.api.v1.endpoints.auth import router as auth_router
 from app.api.v1.endpoints.users import router as users_router
 from app.api.v1.endpoints.resumes import router as resumes_router
 from app.api.v1.endpoints.job_postings import router as job_postings_router
+from app.api.v1.endpoints.sessions import router as sessions_router
 
 # Configure logging only if not already configured
 if not logging.getLogger().handlers:
@@ -63,6 +64,7 @@ app.include_router(resumes_router, prefix="/api/v1/resumes", tags=["Resumes"])
 app.include_router(
     job_postings_router, prefix="/api/v1/job-postings", tags=["Job Postings"]
 )
+app.include_router(sessions_router, prefix="/api/v1/sessions", tags=["Sessions"])
 
 # Configure CORS for frontend
 app.add_middleware(
