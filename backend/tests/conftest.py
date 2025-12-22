@@ -145,3 +145,187 @@ def auth_headers(test_user) -> dict[str, str]:
 
     token = create_access_token({"user_id": str(test_user.id)})
     return {"Authorization": f"Bearer {token}"}
+
+
+@pytest.fixture
+async def test_job_posting(db_session: AsyncSession, test_user):
+    """Create a test job posting for the test user."""
+    from app.models.job_posting import JobPosting
+
+    job_posting = JobPosting(
+        user_id=test_user.id,
+        title="Senior Python Developer",
+        company="Test Corp",
+        description="Test job description for interview practice",
+        experience_level="Senior",
+        tech_stack=["Python", "FastAPI", "PostgreSQL"],
+    )
+    db_session.add(job_posting)
+    await db_session.commit()
+    await db_session.refresh(job_posting)
+    return {
+        "id": job_posting.id,
+        "title": job_posting.title,
+        "company": job_posting.company,
+        "description": job_posting.description,
+        "user_id": job_posting.user_id,
+    }
+
+
+@pytest.fixture
+async def other_user_job_posting(db_session: AsyncSession):
+    """Create a job posting owned by another user."""
+    from app.models.user import User
+    from app.models.job_posting import JobPosting
+    from app.core.security import hash_password
+
+    other_user = User(
+        email="otheruser@example.com",
+        hashed_password=hash_password("password123"),
+    )
+    db_session.add(other_user)
+    await db_session.commit()
+    await db_session.refresh(other_user)
+
+    job_posting = JobPosting(
+        user_id=other_user.id,
+        title="Other User's Job",
+        description="Job posting for another user",
+    )
+    db_session.add(job_posting)
+    await db_session.commit()
+    await db_session.refresh(job_posting)
+    return {
+        "id": job_posting.id,
+        "title": job_posting.title,
+        "user_id": job_posting.user_id,
+    }
+
+
+@pytest.fixture
+async def test_sessions(db_session: AsyncSession, test_user, test_job_posting):
+    """Create multiple test sessions with different statuses."""
+    from app.models.interview_session import InterviewSession
+
+    sessions = []
+    for status in ["active", "paused", "completed"]:
+        session = InterviewSession(
+            user_id=test_user.id,
+            job_posting_id=test_job_posting["id"],
+            status=status,
+            current_question_number=0,
+        )
+        db_session.add(session)
+        sessions.append(session)
+
+    await db_session.commit()
+    for session in sessions:
+        await db_session.refresh(session)
+
+    return [
+        {
+            "id": session.id,
+            "user_id": session.user_id,
+            "status": session.status,
+        }
+        for session in sessions
+    ]
+
+
+@pytest.fixture
+async def other_user_session(db_session: AsyncSession, other_user_job_posting):
+    """Create a session owned by another user."""
+    from app.models.interview_session import InterviewSession
+
+    session = InterviewSession(
+        user_id=other_user_job_posting["user_id"],
+        job_posting_id=other_user_job_posting["id"],
+        status="active",
+        current_question_number=0,
+    )
+    db_session.add(session)
+    await db_session.commit()
+    await db_session.refresh(session)
+    return {
+        "id": session.id,
+        "user_id": session.user_id,
+    }
+
+
+@pytest.fixture
+async def test_session_with_resume(
+    db_session: AsyncSession, test_user, test_job_posting
+):
+    """Create a test session with user having a resume."""
+    from app.models.interview_session import InterviewSession
+    from app.models.resume import Resume
+
+    # Create resume for test user
+    resume = Resume(
+        user_id=test_user.id,
+        content="Test resume content with skills and experience",
+    )
+    db_session.add(resume)
+    await db_session.commit()
+
+    # Create session
+    session = InterviewSession(
+        user_id=test_user.id,
+        job_posting_id=test_job_posting["id"],
+        status="active",
+        current_question_number=0,
+    )
+    db_session.add(session)
+    await db_session.commit()
+    await db_session.refresh(session)
+
+    return {
+        "id": session.id,
+        "user_id": session.user_id,
+        "has_resume": True,
+    }
+
+
+@pytest.fixture
+async def test_session_no_resume(db_session: AsyncSession, test_job_posting):
+    """Create a test session with a user who has no resume."""
+    from app.models.user import User
+    from app.models.interview_session import InterviewSession
+    from app.core.security import hash_password
+
+    # Create user without resume
+    user_no_resume = User(
+        email="noresume@example.com",
+        hashed_password=hash_password("password123"),
+    )
+    db_session.add(user_no_resume)
+    await db_session.commit()
+    await db_session.refresh(user_no_resume)
+
+    # Create job posting for this user
+    from app.models.job_posting import JobPosting
+
+    job_posting = JobPosting(
+        user_id=user_no_resume.id,
+        title="Test Job",
+        description="Test description",
+    )
+    db_session.add(job_posting)
+    await db_session.commit()
+
+    # Create session
+    session = InterviewSession(
+        user_id=user_no_resume.id,
+        job_posting_id=job_posting.id,
+        status="active",
+        current_question_number=0,
+    )
+    db_session.add(session)
+    await db_session.commit()
+    await db_session.refresh(session)
+
+    return {
+        "id": session.id,
+        "user_id": session.user_id,
+        "has_resume": False,
+    }

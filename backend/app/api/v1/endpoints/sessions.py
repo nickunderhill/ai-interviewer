@@ -2,13 +2,15 @@
 API endpoints for interview sessions.
 """
 
-from fastapi import APIRouter, Depends, status
+from typing import List, Optional
+from uuid import UUID
+from fastapi import APIRouter, Depends, Path, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.core.dependencies import get_current_user
 from app.models.user import User
-from app.schemas.session import SessionCreate, SessionResponse
+from app.schemas.session import SessionCreate, SessionResponse, SessionDetailResponse
 from app.services import session_service
 
 router = APIRouter()
@@ -34,3 +36,67 @@ async def create_session(
     """
     session = await session_service.create_session(db, session_data, current_user)
     return SessionResponse.model_validate(session)
+
+
+@router.get(
+    "",
+    response_model=List[SessionResponse],
+    status_code=status.HTTP_200_OK,
+    summary="List user's interview sessions",
+)
+async def list_sessions(
+    status_param: Optional[str] = Query(
+        None,
+        alias="status",
+        description="Filter by status: active, paused, or completed",
+    ),
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> List[SessionResponse]:
+    """
+    Get all interview sessions for the authenticated user.
+
+    - **status**: Optional filter by session status
+    - Returns sessions ordered by created_at DESC (newest first)
+    - Returns empty array if no sessions found
+    """
+    sessions = await session_service.get_sessions_by_user(
+        db, current_user, status_param
+    )
+    return [SessionResponse.model_validate(session) for session in sessions]
+
+
+@router.get(
+    "/{session_id}",
+    response_model=SessionDetailResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Get session details",
+)
+async def get_session(
+    session_id: UUID = Path(..., description="Session UUID"),
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> SessionDetailResponse:
+    """
+    Get full details of a specific interview session.
+
+    - **session_id**: UUID of the session
+    - Returns full session with job posting details and resume content
+    - Returns 404 if not found or unauthorized
+    """
+    session = await session_service.get_session_by_id(db, session_id, current_user)
+
+    # Manually build response to handle the user.resume relationship
+    response_data = {
+        "id": session.id,
+        "user_id": session.user_id,
+        "job_posting_id": session.job_posting_id,
+        "status": session.status,
+        "current_question_number": session.current_question_number,
+        "created_at": session.created_at,
+        "updated_at": session.updated_at,
+        "job_posting": session.job_posting,
+        "resume": session.user.resume if session.user and session.user.resume else None,
+    }
+
+    return SessionDetailResponse.model_validate(response_data)
