@@ -65,18 +65,18 @@ development_status:
   2-12-create-user-logout-frontend-token-invalidation: done
   epic-2-retrospective: optional
 
-  epic-3: backlog
-  3-1-create-resume-model-and-database-schema: backlog
-  3-2-create-resume-upload-paste-endpoint: backlog
-  3-3-create-resume-viewing-endpoint: backlog
-  3-4-create-resume-update-endpoint: backlog
-  3-5-create-resume-delete-endpoint: backlog
-  3-6-create-job-posting-model-and-database-schema: backlog
-  3-7-create-job-posting-creation-endpoint: backlog
-  3-8-create-job-posting-list-endpoint: backlog
-  3-9-create-job-posting-detail-endpoint: backlog
-  3-10-create-job-posting-update-endpoint: backlog
-  3-11-create-job-posting-delete-endpoint: backlog
+  epic-3: in-progress
+  3-1-create-resume-model-and-database-schema: done
+  3-2-create-resume-upload-paste-endpoint: done
+  3-3-create-resume-viewing-endpoint: done
+  3-4-create-resume-update-endpoint: done
+  3-5-create-resume-delete-endpoint: done
+  3-6-create-job-posting-model-and-database-schema: done
+  3-7-create-job-posting-creation-endpoint: done
+  3-8-create-job-posting-list-endpoint: done
+  3-9-create-job-posting-detail-endpoint: done
+  3-10-create-job-posting-update-endpoint: done
+  3-11-create-job-posting-delete-endpoint: done
   epic-3-retrospective: optional
 
   epic-4: backlog

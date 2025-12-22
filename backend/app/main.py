@@ -16,6 +16,8 @@ from app.core.database import AsyncSessionLocal, close_db, init_db
 
 from app.api.v1.endpoints.auth import router as auth_router
 from app.api.v1.endpoints.users import router as users_router
+from app.api.v1.endpoints.resumes import router as resumes_router
+from app.api.v1.endpoints.job_postings import router as job_postings_router
 
 # Configure logging only if not already configured
 if not logging.getLogger().handlers:
@@ -57,6 +59,10 @@ app = FastAPI(
 
 app.include_router(auth_router)
 app.include_router(users_router)
+app.include_router(resumes_router, prefix="/api/v1/resumes", tags=["Resumes"])
+app.include_router(
+    job_postings_router, prefix="/api/v1/job-postings", tags=["Job Postings"]
+)
 
 # Configure CORS for frontend
 app.add_middleware(

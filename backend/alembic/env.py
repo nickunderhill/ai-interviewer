@@ -20,6 +20,8 @@ try:
     from app.core.config import settings
     from app.core.database import Base
     import app.models.user  # noqa: F401
+    import app.models.resume  # noqa: F401
+    import app.models.job_posting  # noqa: F401
 except ImportError as e:
     raise ImportError(
         f"Failed to import required modules: {e}\n"
@@ -33,7 +35,8 @@ except ImportError as e:
 # from app.models.user import User
 
 # from app.models.session import InterviewSession
-# from app.models.job_posting import JobPosting
+from app.models.job_posting import JobPosting  # noqa: F401
+
 # from app.models.message import SessionMessage
 # from app.models.feedback import Feedback
 

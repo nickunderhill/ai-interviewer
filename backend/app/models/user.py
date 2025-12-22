@@ -1,11 +1,16 @@
 import datetime as dt
 import uuid
+from typing import TYPE_CHECKING, List, Optional
 
 from sqlalchemy import DateTime, String
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
+
+if TYPE_CHECKING:
+    from app.models.resume import Resume
+    from app.models.job_posting import JobPosting
 
 
 def utcnow() -> dt.datetime:
@@ -49,4 +54,19 @@ class User(Base):
         default=utcnow,
         onupdate=utcnow,
         nullable=False,
+    )
+
+    # Relationship to Resume (one-to-one)
+    resume: Mapped[Optional["Resume"]] = relationship(
+        "Resume",
+        back_populates="user",
+        uselist=False,
+        cascade="all, delete-orphan",
+    )
+
+    # Relationship to JobPostings (one-to-many)
+    job_postings: Mapped[List["JobPosting"]] = relationship(
+        "JobPosting",
+        back_populates="user",
+        cascade="all, delete-orphan",
     )

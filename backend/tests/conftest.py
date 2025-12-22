@@ -60,6 +60,8 @@ async def db_session() -> AsyncGenerator[AsyncSession, None]:
 
     # Import models so they're registered with Base.metadata
     from app.models import user as _user  # noqa: F401
+    from app.models import resume as _resume  # noqa: F401
+    from app.models import job_posting as _job_posting  # noqa: F401
 
     # Create isolated schema + tables (prevents dropping dev DB objects)
     async with engine.begin() as conn:
