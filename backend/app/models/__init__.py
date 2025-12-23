@@ -7,6 +7,7 @@ from app.models.resume import Resume
 from app.models.job_posting import JobPosting
 from app.models.interview_session import InterviewSession
 from app.models.session_message import SessionMessage
+from app.models.operation import Operation
 
 __all__ = [
     "User",
@@ -14,4 +15,5 @@ __all__ = [
     "JobPosting",
     "InterviewSession",
     "SessionMessage",
+    "Operation",
 ]

@@ -44,6 +44,7 @@ services:
     volumes:
       # Mount source code for hot reload (read-write for file watching)
       - ./backend/app:/app/app
+      - ./backend/tests:/app/tests
       - ./backend/alembic:/app/alembic
       - ./backend/alembic.ini:/app/alembic.ini:ro
     depends_on:

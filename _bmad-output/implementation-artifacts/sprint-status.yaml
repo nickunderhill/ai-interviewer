@@ -80,11 +80,11 @@ development_status:
   epic-3-retrospective: optional
 
   epic-4: in-progress
-  4-1-create-session-and-message-models: ready-for-dev
-  4-2-create-session-creation-endpoint: ready-for-dev
-  4-3-create-session-list-endpoint: ready-for-dev
-  4-4-create-session-detail-endpoint: ready-for-dev
-  4-5-create-operation-model-for-long-running-ai-tasks: ready-for-dev
+  4-1-create-session-and-message-models: done
+  4-2-create-session-creation-endpoint: done
+  4-3-create-session-list-endpoint: done
+  4-4-create-session-detail-endpoint: done
+  4-5-create-operation-model-for-long-running-ai-tasks: review
   4-6-implement-openai-service-for-api-calls: ready-for-dev
   4-7-implement-question-generation-service-with-dual-context: ready-for-dev
   4-8-create-question-generation-endpoint-with-async-pattern: ready-for-dev
