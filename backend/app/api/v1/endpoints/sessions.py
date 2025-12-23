@@ -178,7 +178,10 @@ async def pause_session(
     result = await db.execute(
         select(InterviewSession)
         .options(selectinload(InterviewSession.job_posting))
-        .where(InterviewSession.id == session_id)
+        .where(
+            InterviewSession.id == session_id,
+            InterviewSession.user_id == current_user.id,
+        )
     )
     session = result.scalar_one()
     return SessionResponse.model_validate(session)
@@ -236,7 +239,10 @@ async def resume_session(
     result = await db.execute(
         select(InterviewSession)
         .options(selectinload(InterviewSession.job_posting))
-        .where(InterviewSession.id == session_id)
+        .where(
+            InterviewSession.id == session_id,
+            InterviewSession.user_id == current_user.id,
+        )
     )
     session = result.scalar_one()
     return SessionResponse.model_validate(session)

@@ -48,7 +48,7 @@ class JobPostingDetail(BaseModel):
     company: Optional[str] = None
     description: str
     experience_level: Optional[str] = None
-    tech_stack: List[str] = []
+    tech_stack: List[str] = Field(default_factory=list)
 
 
 class ResumeDetail(BaseModel):
@@ -87,7 +87,7 @@ class SessionDetailResponse(BaseModel):
     updated_at: dt.datetime
     job_posting: Optional[JobPostingDetail] = None
     resume: Optional[ResumeDetail] = None
-    messages: List[MessageResponse] = []
+    messages: List[MessageResponse] = Field(default_factory=list)
 
 
 class AnswerCreate(BaseModel):
