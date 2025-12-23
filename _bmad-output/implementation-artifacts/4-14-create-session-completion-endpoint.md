@@ -1,6 +1,6 @@
 # Story 4.14: Create Session Completion Endpoint
 
-Status: ready-for-dev
+Status: review
 
 ## Story
 
@@ -18,34 +18,34 @@ my completed sessions list.
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Create session completion endpoint (AC: #1)
+- [x] Task 1: Create session completion endpoint (AC: #1)
 
-  - [ ] Add POST /api/v1/sessions/{id}/complete to sessions.py router
-  - [ ] Use path parameter for session UUID
-  - [ ] Use get_current_user dependency for authentication
-  - [ ] Validate session exists and belongs to user
-  - [ ] Validate session is 'active' or 'paused' (not already completed)
-  - [ ] Update session status to 'completed'
-  - [ ] Return 200 OK with SessionResponse
-  - [ ] Return 400 Bad Request if session already completed
-  - [ ] Return 404 Not Found if session doesn't exist or unauthorized
+    - [x] Add POST /api/v1/sessions/{id}/complete to sessions.py router
+    - [x] Use path parameter for session UUID
+    - [x] Use get_current_user dependency for authentication
+    - [x] Validate session exists and belongs to user
+    - [x] Validate session is 'active' or 'paused' (not already completed)
+    - [x] Update session status to 'completed'
+    - [x] Return 200 OK with SessionResponse
+    - [x] Return 400 Bad Request if session already completed
+    - [x] Return 404 Not Found if session doesn't exist or unauthorized
 
-- [ ] Task 2: Verify completed sessions filtering (AC: #1)
+- [x] Task 2: Verify completed sessions filtering (AC: #1)
 
-  - [ ] Verify GET /api/v1/sessions?status=active excludes completed
-  - [ ] Verify GET /api/v1/sessions?status=completed includes only completed
-  - [ ] Document that completed sessions preserve all data
+    - [x] Verify GET /api/v1/sessions?status=active excludes completed
+    - [x] Verify GET /api/v1/sessions?status=completed includes only completed
+    - [x] Document that completed sessions preserve all data
 
-- [ ] Task 3: Add comprehensive tests (AC: #1)
-  - [ ] Add tests to `backend/tests/api/v1/test_sessions.py`
-  - [ ] Test completing active session updates status
-  - [ ] Test completing paused session updates status
-  - [ ] Test cannot complete already completed session
-  - [ ] Test completed session appears in completed list
-  - [ ] Test completed session not in active list
-  - [ ] Test completed session messages preserved
-  - [ ] Test 404 for non-existent session
-  - [ ] Test 401 for unauthenticated request
+- [x] Task 3: Add comprehensive tests (AC: #1)
+    - [x] Add tests to `backend/tests/api/v1/test_sessions.py`
+    - [x] Test completing active session updates status
+    - [x] Test completing paused session updates status
+    - [x] Test cannot complete already completed session
+    - [x] Test completed session appears in completed list
+    - [x] Test completed session not in active list
+    - [x] Test completed session messages preserved
+    - [x] Test 404 for non-existent session
+    - [x] Test 401 for unauthenticated request
 
 ## Dev Notes
 
@@ -498,3 +498,27 @@ NOTES:
 - Session State: Terminal states, data preservation
 - API Patterns: POST for actions, idempotency
 - Frontend Integration: Completion workflows
+
+## Dev Agent Record
+
+### Debug Log
+
+- 2025-12-23: Added completion endpoint + tests; verified full backend test suite green.
+
+### Completion Notes
+
+- Implemented POST `/api/v1/sessions/{id}/complete` to transition `active|paused → completed`.
+- Returns 404 `SESSION_NOT_FOUND` for missing or unauthorized sessions.
+- Returns 400 `SESSION_ALREADY_COMPLETED` for completed sessions (terminal).
+- Verified list filtering for `status=active` and `status=completed`; messages preserved after completion.
+
+## File List
+
+- backend/app/api/v1/endpoints/sessions.py (modified)
+- backend/tests/api/v1/test_sessions.py (modified)
+- _bmad-output/implementation-artifacts/sprint-status.yaml (modified)
+- _bmad-output/implementation-artifacts/4-14-create-session-completion-endpoint.md (modified)
+
+## Change Log
+
+- 2025-12-23: Implemented session completion endpoint and integration tests; updated story + sprint tracking.

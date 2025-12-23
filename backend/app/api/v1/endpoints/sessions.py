@@ -249,6 +249,77 @@ async def resume_session(
 
 
 @router.post(
+    "/{session_id}/complete",
+    response_model=SessionResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Mark session as completed",
+)
+async def complete_session(
+    session_id: UUID = Path(..., description="Session UUID"),
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> SessionResponse:
+    """Mark an interview session as completed.
+
+    - Returns updated session with status='completed'
+    - Returns 400 if session is already completed
+    - Returns 404 if session not found or unauthorized
+    """
+
+    result = await db.execute(
+        select(InterviewSession)
+        .options(selectinload(InterviewSession.job_posting))
+        .where(
+            InterviewSession.id == session_id,
+            InterviewSession.user_id == current_user.id,
+        )
+    )
+    session = result.scalar_one_or_none()
+
+    if not session:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={
+                "code": "SESSION_NOT_FOUND",
+                "message": "Session not found or you don't have permission to access it",
+            },
+        )
+
+    if session.status == "completed":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={
+                "code": "SESSION_ALREADY_COMPLETED",
+                "message": "Session is already completed. Completed sessions cannot be modified.",
+            },
+        )
+
+    # Only active or paused sessions can be completed
+    if session.status not in ("active", "paused"):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={
+                "code": "INVALID_SESSION_STATE",
+                "message": f"Cannot complete {session.status} session.",
+            },
+        )
+
+    session.status = "completed"
+    await db.commit()
+
+    result = await db.execute(
+        select(InterviewSession)
+        .options(selectinload(InterviewSession.job_posting))
+        .where(
+            InterviewSession.id == session_id,
+            InterviewSession.user_id == current_user.id,
+        )
+    )
+    session = result.scalar_one()
+    return SessionResponse.model_validate(session)
+
+
+@router.post(
     "/{session_id}/generate-question",
     response_model=OperationResponse,
     status_code=status.HTTP_202_ACCEPTED,
