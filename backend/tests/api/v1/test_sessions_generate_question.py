@@ -32,7 +32,9 @@ async def test_generate_question_returns_operation(
 
     # Verify operation was created in database
     operation_id = UUID(data["id"])
-    result = await db_session.execute(select(Operation).where(Operation.id == operation_id))
+    result = await db_session.execute(
+        select(Operation).where(Operation.id == operation_id)
+    )
     operation = result.scalar_one_or_none()
     assert operation is not None
     assert operation.operation_type == "question_generation"
@@ -63,7 +65,7 @@ async def test_background_task_completes_successfully(
     await db_session.refresh(operation)
 
     # Run background task
-    await generate_question_task(operation.id, test_active_session['id'])
+    await generate_question_task(operation.id, test_active_session["id"])
 
     # Verify operation was updated
     await db_session.refresh(operation)
@@ -118,7 +120,7 @@ async def test_background_task_handles_generation_error(
     await db_session.refresh(operation)
 
     # Run background task
-    await generate_question_task(operation.id, test_active_session['id'])
+    await generate_question_task(operation.id, test_active_session["id"])
 
     # Verify operation was marked as failed
     await db_session.refresh(operation)
@@ -236,7 +238,7 @@ async def test_generate_question_updates_operation_to_processing(
         mock_generate.side_effect = check_processing
 
         # Run task
-        await generate_question_task(operation.id, test_active_session['id'])
+        await generate_question_task(operation.id, test_active_session["id"])
 
 
 @pytest.mark.asyncio
