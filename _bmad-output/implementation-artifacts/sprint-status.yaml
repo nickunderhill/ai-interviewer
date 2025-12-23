@@ -92,7 +92,7 @@ development_status:
   4-10-store-generated-question-as-session-message: done
   4-11-create-answer-submission-endpoint: done
   4-12-create-session-messages-retrieval-endpoint: done
-  4-13-create-session-resume-capability: ready-for-dev
+  4-13-create-session-resume-capability: review
   4-14-create-session-completion-endpoint: ready-for-dev
   epic-4-retrospective: optional
 

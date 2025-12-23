@@ -15,6 +15,7 @@ from fastapi import (
 )
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from app.core.database import get_db
 from app.core.dependencies import get_current_user
@@ -118,9 +119,127 @@ async def get_session(
         "resume": (
             session.user.resume if session.user and session.user.resume else None
         ),
+        "messages": session.messages,
     }
 
     return SessionDetailResponse.model_validate(response_data)
+
+
+@router.put(
+    "/{session_id}/pause",
+    response_model=SessionResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Pause an active session",
+)
+async def pause_session(
+    session_id: UUID = Path(..., description="Session UUID"),
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> SessionResponse:
+    """Pause an active interview session.
+
+    - Returns updated session with status='paused'
+    - Returns 400 if session is not active
+    - Returns 404 if session not found or unauthorized
+    """
+
+    result = await db.execute(
+        select(InterviewSession)
+        .options(selectinload(InterviewSession.job_posting))
+        .where(
+            InterviewSession.id == session_id,
+            InterviewSession.user_id == current_user.id,
+        )
+    )
+    session = result.scalar_one_or_none()
+
+    if not session:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={
+                "code": "SESSION_NOT_FOUND",
+                "message": "Session not found or you don't have permission to access it",
+            },
+        )
+
+    if session.status != "active":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={
+                "code": "INVALID_SESSION_STATE",
+                "message": f"Cannot pause {session.status} session. Only active sessions can be paused.",
+            },
+        )
+
+    session.status = "paused"
+    await db.commit()
+
+    # Reload with relationship(s) eagerly loaded for response validation
+    result = await db.execute(
+        select(InterviewSession)
+        .options(selectinload(InterviewSession.job_posting))
+        .where(InterviewSession.id == session_id)
+    )
+    session = result.scalar_one()
+    return SessionResponse.model_validate(session)
+
+
+@router.put(
+    "/{session_id}/resume",
+    response_model=SessionResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Resume a paused session",
+)
+async def resume_session(
+    session_id: UUID = Path(..., description="Session UUID"),
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> SessionResponse:
+    """Resume a paused interview session.
+
+    - Returns updated session with status='active'
+    - Returns 400 if session is not paused
+    - Returns 404 if session not found or unauthorized
+    """
+
+    result = await db.execute(
+        select(InterviewSession)
+        .options(selectinload(InterviewSession.job_posting))
+        .where(
+            InterviewSession.id == session_id,
+            InterviewSession.user_id == current_user.id,
+        )
+    )
+    session = result.scalar_one_or_none()
+
+    if not session:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={
+                "code": "SESSION_NOT_FOUND",
+                "message": "Session not found or you don't have permission to access it",
+            },
+        )
+
+    if session.status != "paused":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={
+                "code": "INVALID_SESSION_STATE",
+                "message": f"Cannot resume {session.status} session. Only paused sessions can be resumed.",
+            },
+        )
+
+    session.status = "active"
+    await db.commit()
+
+    result = await db.execute(
+        select(InterviewSession)
+        .options(selectinload(InterviewSession.job_posting))
+        .where(InterviewSession.id == session_id)
+    )
+    session = result.scalar_one()
+    return SessionResponse.model_validate(session)
 
 
 @router.post(

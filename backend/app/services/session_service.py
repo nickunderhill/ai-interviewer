@@ -110,6 +110,7 @@ async def get_session_by_id(
         .options(
             selectinload(InterviewSession.job_posting),
             selectinload(InterviewSession.user).selectinload(User.resume),
+            selectinload(InterviewSession.messages),
         )
     )
     session = result.scalar_one_or_none()

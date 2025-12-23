@@ -60,6 +60,19 @@ class ResumeDetail(BaseModel):
     content: str
 
 
+class MessageResponse(BaseModel):
+    """Response schema for SessionMessage."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID4
+    session_id: UUID4
+    message_type: str
+    content: str
+    question_type: Optional[str] = None
+    created_at: dt.datetime
+
+
 class SessionDetailResponse(BaseModel):
     """Detailed session response including full job posting and resume."""
 
@@ -74,22 +87,10 @@ class SessionDetailResponse(BaseModel):
     updated_at: dt.datetime
     job_posting: Optional[JobPostingDetail] = None
     resume: Optional[ResumeDetail] = None
+    messages: List[MessageResponse] = []
 
 
 class AnswerCreate(BaseModel):
     """Request schema for submitting an answer."""
 
     answer_text: str = Field(..., min_length=1, description="User's answer text")
-
-
-class MessageResponse(BaseModel):
-    """Response schema for SessionMessage."""
-
-    model_config = ConfigDict(from_attributes=True)
-
-    id: UUID4
-    session_id: UUID4
-    message_type: str
-    content: str
-    question_type: Optional[str] = None
-    created_at: dt.datetime

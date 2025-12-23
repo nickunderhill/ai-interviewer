@@ -1,6 +1,6 @@
 # Story 4.13: Create Session Resume Capability
 
-Status: ready-for-dev
+Status: review
 
 ## Story
 
@@ -19,43 +19,43 @@ lose progress if I close my browser.
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Create session pause endpoint (AC: #1)
+- [x] Task 1: Create session pause endpoint (AC: #1)
 
-  - [ ] Add PUT /api/v1/sessions/{id}/pause to sessions.py router
-  - [ ] Validate session exists and belongs to user
-  - [ ] Validate session is currently 'active' (can't pause completed session)
-  - [ ] Update session status to 'paused'
-  - [ ] Return 200 OK with updated session
-  - [ ] Return 400 Bad Request if session not active
+  - [x] Add PUT /api/v1/sessions/{id}/pause to sessions.py router
+  - [x] Validate session exists and belongs to user
+  - [x] Validate session is currently 'active' (can't pause completed session)
+  - [x] Update session status to 'paused'
+  - [x] Return 200 OK with updated session
+  - [x] Return 400 Bad Request if session not active
 
-- [ ] Task 2: Create session resume endpoint (AC: #1)
+- [x] Task 2: Create session resume endpoint (AC: #1)
 
-  - [ ] Add PUT /api/v1/sessions/{id}/resume to sessions.py router
-  - [ ] Validate session exists and belongs to user
-  - [ ] Validate session is currently 'paused'
-  - [ ] Update session status to 'active'
-  - [ ] Return 200 OK with updated session
-  - [ ] Return 400 Bad Request if session not paused
+  - [x] Add PUT /api/v1/sessions/{id}/resume to sessions.py router
+  - [x] Validate session exists and belongs to user
+  - [x] Validate session is currently 'paused'
+  - [x] Update session status to 'active'
+  - [x] Return 200 OK with updated session
+  - [x] Return 400 Bad Request if session not paused
 
-- [ ] Task 3: Enhance session detail endpoint for resume (AC: #1)
+- [x] Task 3: Enhance session detail endpoint for resume (AC: #1)
 
-  - [ ] Verify GET /api/v1/sessions/{id} returns all resume context
-  - [ ] Ensure includes: session metadata, job_posting, resume, messages
-  - [ ] Document frontend requirements for resume:
+    - [x] Verify GET /api/v1/sessions/{id} returns all resume context
+    - [x] Ensure includes: session metadata, job_posting, resume, messages
+    - [x] Document frontend requirements for resume:
     - Check session.status ('active' or 'paused')
     - Get current_question_number for progress
     - Load messages via /api/v1/sessions/{id}/messages
     - Reconstruct conversation UI
 
-- [ ] Task 4: Add comprehensive tests (AC: #1)
-  - [ ] Add tests to `backend/tests/api/v1/test_sessions.py`
-  - [ ] Test pausing active session updates status
-  - [ ] Test resuming paused session updates status
-  - [ ] Test cannot pause completed session
-  - [ ] Test cannot resume active session
-  - [ ] Test session detail provides full context
-  - [ ] Test 404 for non-existent session
-  - [ ] Test 401 for unauthenticated request
+- [x] Task 4: Add comprehensive tests (AC: #1)
+    - [x] Add tests to `backend/tests/api/v1/test_sessions.py`
+    - [x] Test pausing active session updates status
+    - [x] Test resuming paused session updates status
+    - [x] Test cannot pause completed session
+    - [x] Test cannot resume active session
+    - [x] Test session detail provides full context
+    - [x] Test 404 for non-existent session
+    - [x] Test 401 for unauthenticated request
 
 ## Dev Notes
 
@@ -483,3 +483,41 @@ async def test_paused_session(
 - Session State: Status transitions, state machine
 - API Patterns: PUT endpoints, idempotency
 - Frontend Integration: State reconstruction from API
+
+## Dev Agent Record
+
+### Debug Log
+
+- 2025-12-23: Added pause/resume endpoints, extended session detail resume
+    context, and added tests; verified full backend suite green (347 tests).
+
+### Completion Notes
+
+- Task 1 complete: PUT `/api/v1/sessions/{id}/pause` enforces ownership (404)
+  and state (400) and returns updated `SessionResponse`.
+- Task 2 complete: PUT `/api/v1/sessions/{id}/resume` enforces ownership (404)
+  and state (400) and returns updated `SessionResponse`.
+- Task 3 complete: GET `/api/v1/sessions/{id}` includes `messages` in addition
+    to session metadata, job posting, and resume.
+- Frontend resume requirements: read `status` + `current_question_number`, and
+    render from `messages` (also available via `/api/v1/sessions/{id}/messages`).
+- Task 4 complete: added tests for pause/resume, invalid state, 404, 401, and
+    session detail resume context.
+
+## File List
+
+- backend/app/api/v1/endpoints/sessions.py (modified)
+- backend/app/schemas/session.py (modified)
+- backend/app/services/session_service.py (modified)
+- backend/tests/api/v1/test_sessions.py (added)
+- \_bmad-output/implementation-artifacts/sprint-status.yaml (modified)
+- \_bmad-output/implementation-artifacts/4-13-create-session-resume-capability.md
+  (modified)
+
+## Change Log
+
+- 2025-12-23: Implemented session pause endpoint + initial integration tests;
+  marked story in-progress in sprint-status.
+- 2025-12-23: Implemented session resume endpoint + integration tests.
+- 2025-12-23: Extended session detail response to include message history for
+    resume.
