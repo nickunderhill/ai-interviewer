@@ -21,6 +21,16 @@ class Operation(Base):
 
     Supports tracking operations like question generation and feedback
     analysis with JSON results and error handling.
+
+    Operation Types:
+        - 'question_generation': AI question generation tasks
+        - 'feedback_analysis': Feedback analysis tasks
+
+    Status Values:
+        - 'pending': Operation created, not started
+        - 'processing': Operation in progress
+        - 'completed': Operation finished successfully
+        - 'failed': Operation encountered error
     """
 
     __tablename__ = "operations"
@@ -69,7 +79,7 @@ class Operation(Base):
 
     __table_args__ = (
         Index(
-            "ix_operations_type_status",
+            "ix_operations_operation_type_status",
             "operation_type",
             "status",
         ),

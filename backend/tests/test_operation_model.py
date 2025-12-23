@@ -80,6 +80,9 @@ async def test_operation_timestamps_utc(db_session: AsyncSession):
 
     assert operation.created_at.tzinfo is not None
     assert operation.updated_at.tzinfo is not None
+    # Verify UTC (offset should be 0)
+    assert operation.created_at.utcoffset().total_seconds() == 0
+    assert operation.updated_at.utcoffset().total_seconds() == 0
 
 
 @pytest.mark.asyncio
