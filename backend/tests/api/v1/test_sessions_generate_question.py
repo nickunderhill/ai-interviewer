@@ -41,15 +41,20 @@ async def test_generate_question_returns_operation(
 
 
 @pytest.mark.asyncio
+@patch("app.tasks.question_tasks.AsyncSessionLocal")
 @patch("app.tasks.question_tasks.generate_question")
 async def test_background_task_completes_successfully(
     mock_generate,
+    mock_session_local,
     async_client: AsyncClient,
     auth_headers: dict,
     test_active_session: dict,
     db_session: AsyncSession,
 ):
     """Test background task generates question successfully."""
+    # Configure mock to use the test's db_session
+    mock_session_local.return_value.__aenter__.return_value = db_session
+    
     mock_generate.return_value = {
         "question_text": "What is your experience with Python?",
         "question_type": "technical",
@@ -75,12 +80,17 @@ async def test_background_task_completes_successfully(
 
 
 @pytest.mark.asyncio
+@patch("app.tasks.question_tasks.AsyncSessionLocal")
 async def test_background_task_handles_session_not_found(
+    mock_session_local,
     async_client: AsyncClient,
     auth_headers: dict,
     db_session: AsyncSession,
 ):
     """Test background task handles missing session."""
+    # Configure mock to use the test's db_session
+    mock_session_local.return_value.__aenter__.return_value = db_session
+    
     from app.tasks.question_tasks import generate_question_task
 
     # Create operation
@@ -100,15 +110,19 @@ async def test_background_task_handles_session_not_found(
 
 
 @pytest.mark.asyncio
+@patch("app.tasks.question_tasks.AsyncSessionLocal")
 @patch("app.tasks.question_tasks.generate_question")
 async def test_background_task_handles_generation_error(
     mock_generate,
+    mock_session_local,
     async_client: AsyncClient,
     auth_headers: dict,
     test_active_session: dict,
     db_session: AsyncSession,
 ):
     """Test background task handles OpenAI errors gracefully."""
+    # Configure mock to use the test's db_session
+    mock_session_local.return_value.__aenter__.return_value = db_session
     mock_generate.side_effect = Exception("OpenAI API error")
 
     from app.tasks.question_tasks import generate_question_task
