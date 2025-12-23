@@ -118,20 +118,34 @@ class _HybridClient:
     This avoids event loop mismatches with TestClient when using AsyncSession.
     """
 
-    def __init__(self, app, base_url: str = "http://test"):
+    def __init__(
+        self, app, loop: asyncio.AbstractEventLoop, base_url: str = "http://test"
+    ):
         self._app = app
+        self._loop = loop
         self._base_url = base_url
 
     def get(self, *args, **kwargs):
-        # Synchronous GET for tests that don't use asyncio
-        import anyio
+        """Synchronous GET for tests that don't use asyncio.
+
+        IMPORTANT: Reuse the same event loop that created async fixtures (e.g.
+        AsyncSession) to avoid cross-event-loop SQLAlchemy/asyncpg errors.
+        """
         from httpx import AsyncClient
 
         async def _call():
             async with AsyncClient(app=self._app, base_url=self._base_url) as ac:
                 return await ac.get(*args, **kwargs)
 
-        return anyio.run(_call)
+        if self._loop.is_closed():
+            raise RuntimeError("Test event loop is closed; cannot run sync HTTP call")
+        if self._loop.is_running():
+            raise RuntimeError(
+                "client.get() cannot run while the loop is running; "
+                "use the 'async_client' fixture instead"
+            )
+
+        return self._loop.run_until_complete(_call())
 
     async def post(self, *args, **kwargs):
         from httpx import AsyncClient
@@ -147,14 +161,14 @@ class _HybridClient:
 
 
 @pytest.fixture
-def client(override_get_db) -> Generator:
+def client(override_get_db, event_loop) -> Generator:
     """Provide a hybrid test client compatible with both sync and async tests."""
     # Add test protected endpoint for auth dependency testing
     from tests.api.v1.test_auth_dependency import create_test_protected_endpoint
 
     create_test_protected_endpoint(app)
 
-    yield _HybridClient(app)
+    yield _HybridClient(app, loop=event_loop)
 
 
 @pytest_asyncio.fixture

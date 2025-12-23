@@ -1,6 +1,6 @@
 # Story 4.12: Create Session Messages Retrieval Endpoint
 
-Status: ready-for-dev
+Status: done
 
 ## Story
 
@@ -19,36 +19,67 @@ review the conversation history.
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Implement messages retrieval service (AC: #1)
+- [x] Task 1: Implement messages retrieval service (AC: #1)
 
-  - [ ] Add get_session_messages function to
+  - [x] Add get_session_messages function to
         `backend/app/services/session_service.py`
-  - [ ] Validate session exists and belongs to user
-  - [ ] Query SessionMessage filtered by session_id
-  - [ ] Order by created_at ASC (chronological conversation flow)
-  - [ ] Return list of SessionMessage objects
-  - [ ] Return 404 if session not found or unauthorized
+  - [x] Validate session exists and belongs to user
+  - [x] Query SessionMessage filtered by session_id
+  - [x] Order by created_at ASC (chronological conversation flow)
+  - [x] Return list of SessionMessage objects
+  - [x] Return 404 if session not found or unauthorized
 
-- [ ] Task 2: Create messages retrieval endpoint (AC: #1)
+- [x] Task 2: Create messages retrieval endpoint (AC: #1)
 
-  - [ ] Add GET /api/v1/sessions/{id}/messages to sessions.py router
-  - [ ] Use path parameter for session UUID
-  - [ ] Use get_current_user dependency for authentication
-  - [ ] Call session_service.get_session_messages
-  - [ ] Return 200 OK with list of MessageResponse
-  - [ ] Return empty array if no messages (not 404)
-  - [ ] Return 404 Not Found if session doesn't exist or unauthorized
+  - [x] Add GET /api/v1/sessions/{id}/messages to sessions.py router
+  - [x] Use path parameter for session UUID
+  - [x] Use get_current_user dependency for authentication
+  - [x] Call session_service.get_session_messages
+  - [x] Return 200 OK with list of MessageResponse
+  - [x] Return empty array if no messages (not 404)
+  - [x] Return 404 Not Found if session doesn't exist or unauthorized
 
-- [ ] Task 3: Add comprehensive tests (AC: #1)
-  - [ ] Add tests to `backend/tests/api/v1/test_sessions.py`
-  - [ ] Test retrieves messages in chronological order
-  - [ ] Test questions and answers are both included
-  - [ ] Test message_type and question_type fields correct
-  - [ ] Test empty result returns empty array
-  - [ ] Test 404 for non-existent session
-  - [ ] Test 404 for other user's session
-  - [ ] Test 401 for unauthenticated request
-  - [ ] Test ordering (oldest first)
+- [x] Task 3: Add comprehensive tests (AC: #1)
+  - [x] Add tests to `backend/tests/api/v1/test_sessions_get_messages.py`
+  - [x] Test retrieves messages in chronological order
+  - [x] Test questions and answers are both included
+  - [x] Test message_type and question_type fields correct
+  - [x] Test empty result returns empty array
+  - [x] Test 404 for non-existent session
+  - [x] Test 404 for other user's session
+  - [x] Test 401 for unauthenticated request
+  - [x] Test ordering (oldest first)
+
+## Dev Agent Record
+
+### File List
+
+- backend/app/api/v1/endpoints/sessions.py
+- backend/app/services/session_service.py
+- backend/tests/api/v1/test_sessions_get_messages.py
+- backend/tests/conftest.py
+- backend/app/main.py
+- backend/app/models/user.py
+- backend/app/models/interview_session.py
+- \_bmad-output/implementation-artifacts/sprint-status.yaml
+
+### Change Log
+
+- Implemented `GET /api/v1/sessions/{id}/messages` endpoint returning
+  chronological session Q&A history.
+- Added `get_session_messages` service method enforcing ownership (404 on
+  missing/unauthorized) and ordering by `created_at ASC`.
+- Added endpoint tests covering success, empty, unauthenticated (401), not found
+  (404), and other-user (404).
+- Stabilized async test environment to keep the full suite green.
+
+## Senior Developer Review (AI)
+
+Reviewer: Nick (AI-assisted) on 2025-12-23
+
+- Updated story status/tasks to match implementation.
+- Corrected test file path in documentation.
+- Hardened hybrid client to reduce async DB event-loop mismatch risk.
 
 ## Dev Notes
 
