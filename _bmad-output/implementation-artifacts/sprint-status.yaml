@@ -85,8 +85,8 @@ development_status:
   4-3-create-session-list-endpoint: done
   4-4-create-session-detail-endpoint: done
   4-5-create-operation-model-for-long-running-ai-tasks: done
-  4-6-implement-openai-service-for-api-calls: review
-  4-7-implement-question-generation-service-with-dual-context: review
+  4-6-implement-openai-service-for-api-calls: done
+  4-7-implement-question-generation-service-with-dual-context: done
   4-8-create-question-generation-endpoint-with-async-pattern: ready-for-dev
   4-9-create-operation-status-polling-endpoint: ready-for-dev
   4-10-store-generated-question-as-session-message: ready-for-dev

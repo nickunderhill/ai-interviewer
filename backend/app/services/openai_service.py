@@ -49,26 +49,20 @@ class OpenAIService:
 
         try:
             # Decrypt user's API key
-            decrypted_key = decrypt_api_key(
-                user.openai_api_key_encrypted
-            )
+            decrypted_key = decrypt_api_key(user.openai_api_key_encrypted)
 
             # Initialize OpenAI client with user's key
             self.client = OpenAI(api_key=decrypted_key)
             self.user_id = user.id
 
         except Exception as e:
-            logger.error(
-                f"Failed to decrypt API key for user {user.id}: "
-                f"{str(e)}"
-            )
+            logger.error(f"Failed to decrypt API key for user {user.id}: {str(e)}")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail={
                     "code": "API_KEY_DECRYPTION_FAILED",
                     "message": (
-                        "Failed to decrypt API key. Please "
-                        "reconfigure your API key."
+                        "Failed to decrypt API key. Please " "reconfigure your API key."
                     ),
                 },
             )
@@ -76,9 +70,7 @@ class OpenAIService:
     @retry(
         stop=stop_after_attempt(3),
         wait=wait_exponential(multiplier=1, min=1, max=8),
-        retry=retry_if_exception_type(
-            (RateLimitError, APIConnectionError)
-        ),
+        retry=retry_if_exception_type((RateLimitError, APIConnectionError)),
         before_sleep=before_sleep_log(logger, logging.WARNING),
     )
     def _make_api_call(self, api_func, **kwargs):
@@ -112,8 +104,7 @@ class OpenAIService:
 
         except APIConnectionError as e:
             logger.error(
-                f"OpenAI connection error for user {self.user_id}: "
-                f"{str(e)}"
+                f"OpenAI connection error for user {self.user_id}: {str(e)}"
             )
             raise HTTPException(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
@@ -127,10 +118,7 @@ class OpenAIService:
             )
 
         except APIError as e:
-            logger.error(
-                f"OpenAI API error for user {self.user_id}: "
-                f"{str(e)}"
-            )
+            logger.error(f"OpenAI API error for user {self.user_id}: {str(e)}")
 
             # Check for authentication errors (invalid API key)
             if e.status_code == 401:
@@ -155,17 +143,13 @@ class OpenAIService:
 
         except Exception as e:
             logger.error(
-                f"Unexpected error in OpenAI call for "
-                f"user {self.user_id}: {str(e)}"
+                f"Unexpected error in OpenAI call for user {self.user_id}: {str(e)}"
             )
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail={
                     "code": "UNEXPECTED_ERROR",
-                    "message": (
-                        "An unexpected error occurred. "
-                        "Please try again."
-                    ),
+                    "message": ("An unexpected error occurred. " "Please try again."),
                 },
             )
 

@@ -1,6 +1,6 @@
 # Story 4.7: Implement Question Generation Service with Dual-Context
 
-Status: ready-for-dev
+Status: review
 
 ## Story
 
@@ -21,53 +21,109 @@ candidate's résumé.
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Create question generation service (AC: #1)
+- [x] Task 1: Create question generation service (AC: #1)
 
-  - [ ] Create `backend/app/services/question_generation_service.py`
-  - [ ] Implement generate_question function accepting session object
-  - [ ] Load job posting details from session.job_posting relationship
-  - [ ] Load resume content from session.user.resume relationship
-  - [ ] Handle missing resume gracefully (use job posting only if no resume)
-  - [ ] Handle missing job posting gracefully (edge case)
+  - [x] Create `backend/app/services/question_generation_service.py`
+  - [x] Implement generate_question function accepting session object
+  - [x] Load job posting details from session.job_posting relationship
+  - [x] Load resume content from session.user.resume relationship
+  - [x] Handle missing resume gracefully (use job posting only if no resume)
+  - [x] Handle missing job posting gracefully (edge case)
 
-- [ ] Task 2: Implement question type rotation logic (AC: #1)
+- [x] Task 2: Implement question type rotation logic (AC: #1)
 
-  - [ ] Create get_question_type_for_round function
-  - [ ] Rotate between: technical, behavioral, situational
-  - [ ] Use current_question_number to determine type
-  - [ ] Pattern: Q1=technical, Q2=behavioral, Q3=situational, Q4=technical, etc.
-  - [ ] Return question type string
+  - [x] Create get_question_type_for_round function
+  - [x] Rotate between: technical, behavioral, situational
+  - [x] Use current_question_number to determine type
+  - [x] Pattern: Q1=technical, Q2=behavioral, Q3=situational, Q4=technical, etc.
+  - [x] Return question type string
 
-- [ ] Task 3: Construct dual-context prompt (AC: #1)
+- [x] Task 3: Construct dual-context prompt (AC: #1)
 
-  - [ ] Create build_question_prompt function
-  - [ ] Accept job posting details, resume content, question type
-  - [ ] Build structured prompt with clear sections:
+  - [x] Create build_question_prompt function
+  - [x] Accept job posting details, resume content, question type
+  - [x] Build structured prompt with clear sections:
     - Job context (role, company, description, tech stack, experience level)
     - Candidate context (resume content)
     - Question type requirement
     - Output format instructions
-  - [ ] Use clear instructions for AI to generate single, specific question
-  - [ ] Return formatted prompt string
+  - [x] Use clear instructions for AI to generate single, specific question
+  - [x] Return formatted prompt string
 
-- [ ] Task 4: Integrate with OpenAI service (AC: #1)
+- [x] Task 4: Integrate with OpenAI service (AC: #1)
 
-  - [ ] Instantiate OpenAIService with user object
-  - [ ] Call generate_chat_completion with constructed prompt
-  - [ ] Parse AI response to extract question text
-  - [ ] Handle malformed AI responses
-  - [ ] Return dict with question text and question_type
-  - [ ] Let OpenAI service handle retry logic and API errors
+  - [x] Instantiate OpenAIService with user object
+  - [x] Call generate_chat_completion with constructed prompt
+  - [x] Parse AI response to extract question text
+  - [x] Handle malformed AI responses
+  - [x] Return dict with question text and question_type
+  - [x] Let OpenAI service handle retry logic and API errors
 
-- [ ] Task 5: Add comprehensive tests (AC: #1)
-  - [ ] Create `backend/tests/services/test_question_generation_service.py`
-  - [ ] Mock OpenAI service responses
-  - [ ] Test question generation with full context (job + resume)
-  - [ ] Test question generation with job posting only (no resume)
-  - [ ] Test question type rotation logic
-  - [ ] Test prompt construction includes all context
-  - [ ] Test error handling when OpenAI fails
-  - [ ] Test each question type generates appropriate prompt
+- [x] Task 5: Add comprehensive tests (AC: #1)
+  - [x] Create `backend/tests/services/test_question_generation_service.py`
+  - [x] Mock OpenAI service responses
+  - [x] Test question generation with full context (job + resume)
+  - [x] Test question generation with job posting only (no resume)
+  - [x] Test question type rotation logic
+  - [x] Test prompt construction includes all context
+  - [x] Test error handling when OpenAI fails
+  - [x] Test each question type generates appropriate prompt
+
+## Dev Agent Record
+
+### Implementation Summary
+Implemented dual-context question generation service that creates personalized interview questions by combining job posting requirements with candidate resume. All acceptance criteria met with 12 comprehensive tests covering question type rotation, prompt building, and full/partial context scenarios.
+
+### Files Created/Modified
+- **Created:** `backend/app/services/question_generation_service.py` (187 lines)
+  - get_question_type_for_round() - Rotates through technical → behavioral → situational
+  - build_question_prompt() - Constructs dual-context prompts with job + resume
+  - generate_question() - Main async function integrating with OpenAIService
+  - Graceful handling of missing resume (fallback to job-only context)
+
+- **Created:** `backend/tests/services/test_question_generation_service.py` (310 lines)
+  - 12 comprehensive tests covering all scenarios
+  - Tests for question type rotation (including edge cases)
+  - Tests for prompt construction with/without resume
+  - Tests for each question type (technical, behavioral, situational)
+  - Tests for question generation success and error handling
+
+### Key Decisions Made
+1. **Dual-context approach:** Core innovation - questions reference both job requirements AND candidate background
+2. **Question type rotation:** Deterministic pattern (technical → behavioral → situational) for comprehensive coverage
+3. **Graceful degradation:** If no resume, generates questions based on job posting only
+4. **Temperature 0.7:** Balances creativity (unique questions) with consistency
+5. **Max tokens 200:** Single question shouldn't exceed this, prevents runaway costs
+6. **String cleanup:** Strips quotes and whitespace from AI responses for clean output
+7. **Async function:** Matches FastAPI endpoint pattern (even though OpenAI calls are sync)
+
+### Prompt Engineering Strategy
+- **Structured sections:** Clear job context + candidate context + task instructions
+- **Specific requirements:** ONE question, interview-ready, no meta-text
+- **Type-specific instructions:** 
+  - Technical: Tests skills/knowledge, references candidate background
+  - Behavioral: STAR format, past experiences, mentions resume
+  - Situational: Hypothetical scenarios, relevant to experience level
+- **Relevance emphasis:** AI instructed to make questions relevant to both contexts
+
+### Test Coverage
+- ✅ Question type rotation for rounds 1-7 and edge cases (0, 100, 101)
+- ✅ Prompt construction with full context (all fields)
+- ✅ Prompt construction without resume (fallback messaging)
+- ✅ Behavioral and situational type-specific prompts
+- ✅ Successful question generation with resume
+- ✅ Successful question generation without resume
+- ✅ Missing job posting validation
+- ✅ Question type cycles correctly (6 rounds)
+- ✅ Response cleaning (quotes/whitespace removal)
+- ✅ OpenAI service failure handling
+- **Result:** 12/12 tests passing
+
+### Verification
+```bash
+pytest tests/services/test_question_generation_service.py -v
+# Result: 12 passed, 1 warning in 0.20s
+```
 
 ## Dev Notes
 

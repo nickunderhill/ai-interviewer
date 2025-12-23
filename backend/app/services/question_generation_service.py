@@ -53,11 +53,7 @@ def build_question_prompt(
     """
     company_text = f" at {job_company}" if job_company else ""
     tech_text = f"\nTech Stack: {tech_stack}" if tech_stack else ""
-    exp_text = (
-        f"\nExperience Level: {experience_level}"
-        if experience_level
-        else ""
-    )
+    exp_text = f"\nExperience Level: {experience_level}" if experience_level else ""
 
     # Build job context section
     job_context = f"""**Job Role:**
@@ -83,9 +79,7 @@ def build_question_prompt(
         "situational": "Generate a situational interview question presenting a hypothetical scenario related to the job role. Ask how the candidate would handle it. If the candidate's resume is available, make the scenario relevant to their experience level.",
     }
 
-    instruction = type_instructions.get(
-        question_type, type_instructions["technical"]
-    )
+    instruction = type_instructions.get(question_type, type_instructions["technical"])
 
     prompt = f"""You are an expert technical interviewer. Generate ONE interview question based on the context below.
 
@@ -122,15 +116,11 @@ async def generate_question(session: InterviewSession) -> Dict[str, str]:
     """
     # Validate session has required relationships loaded
     if not session.job_posting:
-        logger.error(
-            f"Session {session.id} missing job_posting relationship"
-        )
+        logger.error(f"Session {session.id} missing job_posting relationship")
         raise ValueError("Session must have job_posting loaded")
 
     # Determine question type based on round
-    question_type = get_question_type_for_round(
-        session.current_question_number + 1
-    )
+    question_type = get_question_type_for_round(session.current_question_number + 1)
 
     # Extract job posting details
     job_posting = session.job_posting
@@ -170,9 +160,7 @@ async def generate_question(session: InterviewSession) -> Dict[str, str]:
         # Clean up response (remove quotes or extra whitespace)
         question_text = question_text.strip().strip('"').strip("'")
 
-        logger.info(
-            f"Generated {question_type} question for session {session.id}"
-        )
+        logger.info(f"Generated {question_type} question for session {session.id}")
 
         return {
             "question_text": question_text,
@@ -180,7 +168,5 @@ async def generate_question(session: InterviewSession) -> Dict[str, str]:
         }
 
     except Exception as e:
-        logger.error(
-            f"Failed to generate question for session {session.id}: {str(e)}"
-        )
+        logger.error(f"Failed to generate question for session {session.id}: {str(e)}")
         raise

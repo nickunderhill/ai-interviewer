@@ -144,9 +144,7 @@ async def test_generate_question_success_with_resume(
     # Verify OpenAI service was called correctly
     mock_openai_service.assert_called_once_with(mock_user)
     mock_service_instance.generate_chat_completion.assert_called_once()
-    call_args = (
-        mock_service_instance.generate_chat_completion.call_args
-    )
+    call_args = mock_service_instance.generate_chat_completion.call_args
     assert call_args[1]["model"] == "gpt-3.5-turbo"
     assert call_args[1]["temperature"] == 0.7
     assert call_args[1]["max_tokens"] == 200
@@ -180,16 +178,11 @@ async def test_generate_question_without_resume(mock_openai_service):
 
     result = await generate_question(mock_session)
 
-    assert (
-        result["question_text"]
-        == "Tell me about a time you worked in a team"
-    )
+    assert result["question_text"] == "Tell me about a time you worked in a team"
     assert result["question_type"] == "behavioral"
 
     # Verify prompt was still generated
-    call_args = (
-        mock_service_instance.generate_chat_completion.call_args
-    )
+    call_args = mock_service_instance.generate_chat_completion.call_args
     prompt = call_args[1]["messages"][0]["content"]
     assert "No resume provided" in prompt
 
@@ -223,9 +216,7 @@ async def test_generate_question_cycles_through_types(
     mock_user.resume = None
 
     mock_service_instance = Mock()
-    mock_service_instance.generate_chat_completion.return_value = (
-        "Test question"
-    )
+    mock_service_instance.generate_chat_completion.return_value = "Test question"
     mock_openai_service.return_value = mock_service_instance
 
     # Test questions 1-6 to verify full cycle
@@ -304,8 +295,8 @@ async def test_generate_question_openai_failure(mock_openai_service):
 
     # Mock OpenAI service to raise exception
     mock_service_instance = Mock()
-    mock_service_instance.generate_chat_completion.side_effect = (
-        Exception("OpenAI API error")
+    mock_service_instance.generate_chat_completion.side_effect = Exception(
+        "OpenAI API error"
     )
     mock_openai_service.return_value = mock_service_instance
 

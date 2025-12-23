@@ -30,18 +30,14 @@ def mock_user_no_key():
 
 @patch("app.services.openai_service.decrypt_api_key")
 @patch("app.services.openai_service.OpenAI")
-def test_openai_service_initialization(
-    mock_openai, mock_decrypt, mock_user
-):
+def test_openai_service_initialization(mock_openai, mock_decrypt, mock_user):
     """Test successful service initialization."""
     mock_decrypt.return_value = "sk-test-key"
 
     service = OpenAIService(mock_user)
 
     assert service.user_id == mock_user.id
-    mock_decrypt.assert_called_once_with(
-        mock_user.openai_api_key_encrypted
-    )
+    mock_decrypt.assert_called_once_with(mock_user.openai_api_key_encrypted)
     mock_openai.assert_called_once_with(api_key="sk-test-key")
 
 
@@ -56,9 +52,7 @@ def test_openai_service_no_api_key(mock_user_no_key):
 
 @patch("app.services.openai_service.decrypt_api_key")
 @patch("app.services.openai_service.OpenAI")
-def test_openai_service_decryption_failure(
-    mock_openai, mock_decrypt, mock_user
-):
+def test_openai_service_decryption_failure(mock_openai, mock_decrypt, mock_user):
     """Test initialization fails when decryption fails."""
     mock_decrypt.side_effect = Exception("Decryption failed")
 
@@ -71,9 +65,7 @@ def test_openai_service_decryption_failure(
 
 @patch("app.services.openai_service.decrypt_api_key")
 @patch("app.services.openai_service.OpenAI")
-def test_generate_chat_completion_success(
-    mock_openai, mock_decrypt, mock_user
-):
+def test_generate_chat_completion_success(mock_openai, mock_decrypt, mock_user):
     """Test successful chat completion."""
     mock_decrypt.return_value = "sk-test-key"
 
@@ -98,9 +90,7 @@ def test_generate_chat_completion_success(
     call_args = mock_client.chat.completions.create.call_args
     assert call_args[1]["model"] == "gpt-3.5-turbo"
     assert call_args[1]["temperature"] == 0.7
-    assert call_args[1]["messages"] == [
-        {"role": "user", "content": "Test prompt"}
-    ]
+    assert call_args[1]["messages"] == [{"role": "user", "content": "Test prompt"}]
 
 
 @patch("app.services.openai_service.decrypt_api_key")
@@ -137,9 +127,7 @@ def test_generate_chat_completion_with_custom_params(
 
 @patch("app.services.openai_service.decrypt_api_key")
 @patch("app.services.openai_service.OpenAI")
-def test_generate_chat_completion_rate_limit(
-    mock_openai, mock_decrypt, mock_user
-):
+def test_generate_chat_completion_rate_limit(mock_openai, mock_decrypt, mock_user):
     """Test rate limit error handling."""
     mock_decrypt.return_value = "sk-test-key"
 
@@ -157,9 +145,7 @@ def test_generate_chat_completion_rate_limit(
     service = OpenAIService(mock_user)
 
     with pytest.raises(HTTPException) as exc_info:
-        service.generate_chat_completion(
-            messages=[{"role": "user", "content": "Test"}]
-        )
+        service.generate_chat_completion(messages=[{"role": "user", "content": "Test"}])
 
     assert exc_info.value.status_code == 429
     assert "OPENAI_RATE_LIMIT" in str(exc_info.value.detail)
@@ -181,9 +167,7 @@ def test_generate_chat_completion_connection_error(
     service = OpenAIService(mock_user)
 
     with pytest.raises(HTTPException) as exc_info:
-        service.generate_chat_completion(
-            messages=[{"role": "user", "content": "Test"}]
-        )
+        service.generate_chat_completion(messages=[{"role": "user", "content": "Test"}])
 
     assert exc_info.value.status_code == 503
     assert "OPENAI_CONNECTION_ERROR" in str(exc_info.value.detail)
@@ -191,9 +175,7 @@ def test_generate_chat_completion_connection_error(
 
 @patch("app.services.openai_service.decrypt_api_key")
 @patch("app.services.openai_service.OpenAI")
-def test_generate_chat_completion_invalid_key(
-    mock_openai, mock_decrypt, mock_user
-):
+def test_generate_chat_completion_invalid_key(mock_openai, mock_decrypt, mock_user):
     """Test invalid API key error."""
     mock_decrypt.return_value = "sk-invalid-key"
 
@@ -212,20 +194,15 @@ def test_generate_chat_completion_invalid_key(
     service = OpenAIService(mock_user)
 
     with pytest.raises(HTTPException) as exc_info:
-        service.generate_chat_completion(
-            messages=[{"role": "user", "content": "Test"}]
-        )
+        service.generate_chat_completion(messages=[{"role": "user", "content": "Test"}])
 
     assert exc_info.value.status_code == 400
     assert "INVALID_API_KEY" in str(exc_info.value.detail)
 
 
 @patch("app.services.openai_service.decrypt_api_key")
-@patch("app.services.openai_service.decrypt_api_key")
 @patch("app.services.openai_service.OpenAI")
-def test_generate_chat_completion_api_error(
-    mock_openai, mock_decrypt, mock_user
-):
+def test_generate_chat_completion_api_error(mock_openai, mock_decrypt, mock_user):
     """Test general API error handling."""
     mock_decrypt.return_value = "sk-test-key"
 
@@ -242,9 +219,7 @@ def test_generate_chat_completion_api_error(
     service = OpenAIService(mock_user)
 
     with pytest.raises(HTTPException) as exc_info:
-        service.generate_chat_completion(
-            messages=[{"role": "user", "content": "Test"}]
-        )
+        service.generate_chat_completion(messages=[{"role": "user", "content": "Test"}])
 
     assert exc_info.value.status_code == 500
     assert "OPENAI_API_ERROR" in str(exc_info.value.detail)
@@ -259,17 +234,13 @@ def test_generate_chat_completion_unexpected_error(
     mock_decrypt.return_value = "sk-test-key"
 
     mock_client = MagicMock()
-    mock_client.chat.completions.create.side_effect = ValueError(
-        "Unexpected"
-    )
+    mock_client.chat.completions.create.side_effect = ValueError("Unexpected")
     mock_openai.return_value = mock_client
 
     service = OpenAIService(mock_user)
 
     with pytest.raises(HTTPException) as exc_info:
-        service.generate_chat_completion(
-            messages=[{"role": "user", "content": "Test"}]
-        )
+        service.generate_chat_completion(messages=[{"role": "user", "content": "Test"}])
 
     assert exc_info.value.status_code == 500
     assert "UNEXPECTED_ERROR" in str(exc_info.value.detail)
