@@ -187,3 +187,49 @@ async def submit_answer(
     await db.refresh(message)
 
     return message
+
+
+async def get_session_messages(
+    db: AsyncSession, session_id: UUID, current_user: User
+) -> List[SessionMessage]:
+    """
+    Get all messages for a session in chronological order.
+
+    Args:
+        db: Database session
+        session_id: UUID of the session
+        current_user: Authenticated user
+
+    Returns:
+        List of SessionMessage objects ordered by created_at ASC
+
+    Raises:
+        HTTPException: If session not found or unauthorized
+    """
+    # Validate session ownership
+    result = await db.execute(
+        select(InterviewSession).where(
+            InterviewSession.id == session_id,
+            InterviewSession.user_id == current_user.id,
+        )
+    )
+    session = result.scalar_one_or_none()
+
+    if not session:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={
+                "code": "SESSION_NOT_FOUND",
+                "message": "Session not found or you don't have permission to access it",
+            },
+        )
+
+    # Get messages in chronological order
+    result = await db.execute(
+        select(SessionMessage)
+        .where(SessionMessage.session_id == session_id)
+        .order_by(SessionMessage.created_at.asc())
+    )
+    messages = result.scalars().all()
+
+    return list(messages)

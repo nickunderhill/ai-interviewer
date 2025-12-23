@@ -110,18 +110,51 @@ async def async_client(override_get_db) -> AsyncGenerator[AsyncClient, None]:
         yield test_client
 
 
+class _HybridClient:
+    """
+    Hybrid client that supports:
+    - Sync usage for .get() (used by some tests)
+    - Async usage for .post() and .get() via awaiting
+    This avoids event loop mismatches with TestClient when using AsyncSession.
+    """
+
+    def __init__(self, app, base_url: str = "http://test"):
+        self._app = app
+        self._base_url = base_url
+
+    def get(self, *args, **kwargs):
+        # Synchronous GET for tests that don't use asyncio
+        import anyio
+        from httpx import AsyncClient
+
+        async def _call():
+            async with AsyncClient(app=self._app, base_url=self._base_url) as ac:
+                return await ac.get(*args, **kwargs)
+
+        return anyio.run(_call)
+
+    async def post(self, *args, **kwargs):
+        from httpx import AsyncClient
+
+        async with AsyncClient(app=self._app, base_url=self._base_url) as ac:
+            return await ac.post(*args, **kwargs)
+
+    async def get_async(self, *args, **kwargs):
+        from httpx import AsyncClient
+
+        async with AsyncClient(app=self._app, base_url=self._base_url) as ac:
+            return await ac.get(*args, **kwargs)
+
+
 @pytest.fixture
 def client(override_get_db) -> Generator:
-    """Create synchronous test HTTP client with database override."""
-    from fastapi.testclient import TestClient
-
+    """Provide a hybrid test client compatible with both sync and async tests."""
     # Add test protected endpoint for auth dependency testing
     from tests.api.v1.test_auth_dependency import create_test_protected_endpoint
 
     create_test_protected_endpoint(app)
 
-    with TestClient(app) as test_client:
-        yield test_client
+    yield _HybridClient(app)
 
 
 @pytest_asyncio.fixture
@@ -289,35 +322,26 @@ async def test_session_with_resume(
 
 
 @pytest_asyncio.fixture
-async def test_session_no_resume(db_session: AsyncSession, test_job_posting):
-    """Create a test session with a user who has no resume."""
-    from app.models.user import User
+async def test_session_no_resume(db_session: AsyncSession, test_user):
+    """Create a test session for the authenticated user who has no resume."""
     from app.models.interview_session import InterviewSession
-    from app.core.security import hash_password
-
-    # Create user without resume
-    user_no_resume = User(
-        email="noresume@example.com",
-        hashed_password=hash_password("password123"),
-    )
-    db_session.add(user_no_resume)
-    await db_session.commit()
-    await db_session.refresh(user_no_resume)
-
-    # Create job posting for this user
     from app.models.job_posting import JobPosting
 
+    # Create job posting for the existing test_user (who has no resume here)
     job_posting = JobPosting(
-        user_id=user_no_resume.id,
+        user_id=test_user.id,
         title="Test Job",
+        company="Test Corp",
         description="Test description",
+        experience_level="Junior",
+        tech_stack=["Python"],
     )
     db_session.add(job_posting)
     await db_session.commit()
 
     # Create session
     session = InterviewSession(
-        user_id=user_no_resume.id,
+        user_id=test_user.id,
         job_posting_id=job_posting.id,
         status="active",
         current_question_number=0,
@@ -328,7 +352,7 @@ async def test_session_no_resume(db_session: AsyncSession, test_job_posting):
 
     return {
         "id": session.id,
-        "user_id": session.user_id,
+        "user_id": test_user.id,
         "has_resume": False,
     }
 
@@ -394,3 +418,45 @@ async def test_paused_session(db_session: AsyncSession, test_user, test_job_post
         "user_id": session.user_id,
         "status": session.status,
     }
+
+
+@pytest_asyncio.fixture
+async def test_session_with_messages(
+    db_session: AsyncSession, test_user, test_job_posting
+):
+    """Create a session populated with a question and an answer."""
+    from app.models.interview_session import InterviewSession
+    from app.models.session_message import SessionMessage
+
+    # Create session
+    session = InterviewSession(
+        user_id=test_user.id,
+        job_posting_id=test_job_posting["id"],
+        status="active",
+        current_question_number=2,
+    )
+    db_session.add(session)
+    await db_session.commit()
+    await db_session.refresh(session)
+
+    # Add a question message
+    question = SessionMessage(
+        session_id=session.id,
+        message_type="question",
+        content="What is your experience with Python?",
+        question_type="technical",
+    )
+    db_session.add(question)
+
+    # Add an answer message
+    answer = SessionMessage(
+        session_id=session.id,
+        message_type="answer",
+        content="I have 5 years of experience...",
+        question_type=None,
+    )
+    db_session.add(answer)
+
+    await db_session.commit()
+
+    return {"id": session.id}

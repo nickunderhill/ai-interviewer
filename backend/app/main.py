@@ -4,6 +4,7 @@ Configures API, middleware, and lifecycle events.
 """
 
 from contextlib import asynccontextmanager
+import os
 import logging
 from typing import Any
 
@@ -38,14 +39,24 @@ async def lifespan(app: FastAPI):
     """
     # Startup
     logger.info(f"Starting {settings.APP_NAME}")
-    await init_db()
+    skip_db_init = (
+        os.getenv("PYTEST_CURRENT_TEST") is not None
+        or os.getenv("DISABLE_STARTUP_DB_CHECK") == "1"
+    )
+    if skip_db_init:
+        logger.info("Skipping DB init during tests")
+    else:
+        await init_db()
     logger.info("Application startup complete")
 
     yield
 
     # Shutdown
     logger.info("Shutting down application")
-    await close_db()
+    if skip_db_init:
+        logger.info("Skipping DB close during tests")
+    else:
+        await close_db()
     logger.info("Application shutdown complete")
 
 

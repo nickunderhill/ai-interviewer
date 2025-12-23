@@ -87,6 +87,7 @@ class InterviewSession(Base):
         back_populates="session",
         cascade="all, delete-orphan",
         order_by="SessionMessage.created_at",
+        lazy="selectin",
     )
 
     # Composite index for efficient queries

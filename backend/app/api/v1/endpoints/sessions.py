@@ -186,6 +186,32 @@ async def generate_question(
     return OperationResponse.model_validate(operation)
 
 
+@router.get(
+    "/{session_id}/messages",
+    response_model=List[MessageResponse],
+    status_code=status.HTTP_200_OK,
+    summary="Get session messages (Q&A history)",
+)
+async def get_session_messages(
+    session_id: UUID = Path(..., description="Session UUID"),
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> List[MessageResponse]:
+    """
+    Get all messages (questions and answers) for a session.
+
+    Messages are returned in chronological order (oldest first)
+    to show the natural conversation flow.
+
+    - **session_id**: UUID of the session
+    - Returns questions and answers interleaved
+    - Returns empty array if no messages yet
+    - Returns 404 if session not found or unauthorized
+    """
+    messages = await session_service.get_session_messages(db, session_id, current_user)
+    return [MessageResponse.model_validate(msg) for msg in messages]
+
+
 @router.post(
     "/{session_id}/answers",
     response_model=MessageResponse,
