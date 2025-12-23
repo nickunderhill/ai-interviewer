@@ -90,7 +90,7 @@ development_status:
   4-8-create-question-generation-endpoint-with-async-pattern: done
   4-9-create-operation-status-polling-endpoint: done
   4-10-store-generated-question-as-session-message: done
-  4-11-create-answer-submission-endpoint: ready-for-dev
+  4-11-create-answer-submission-endpoint: done
   4-12-create-session-messages-retrieval-endpoint: ready-for-dev
   4-13-create-session-resume-capability: ready-for-dev
   4-14-create-session-completion-endpoint: ready-for-dev

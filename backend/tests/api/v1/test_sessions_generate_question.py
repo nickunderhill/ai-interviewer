@@ -54,7 +54,7 @@ async def test_background_task_completes_successfully(
     """Test background task generates question successfully."""
     # Configure mock to use the test's db_session
     mock_session_local.return_value.__aenter__.return_value = db_session
-    
+
     mock_generate.return_value = {
         "question_text": "What is your experience with Python?",
         "question_type": "technical",
@@ -90,7 +90,7 @@ async def test_background_task_handles_session_not_found(
     """Test background task handles missing session."""
     # Configure mock to use the test's db_session
     mock_session_local.return_value.__aenter__.return_value = db_session
-    
+
     from app.tasks.question_tasks import generate_question_task
 
     # Create operation

@@ -19,12 +19,16 @@ from app.models.job_posting import JobPosting
 @patch("app.tasks.question_tasks.AsyncSessionLocal")
 @patch("app.tasks.question_tasks.generate_question")
 async def test_question_task_creates_message(
-    mock_generate, mock_session_local, db_session: AsyncSession, test_user, test_job_posting
+    mock_generate,
+    mock_session_local,
+    db_session: AsyncSession,
+    test_user,
+    test_job_posting,
 ):
     """Test task creates SessionMessage after generating question."""
     # Configure mock to use the test's db_session
     mock_session_local.return_value.__aenter__.return_value = db_session
-    
+
     mock_generate.return_value = {
         "question_text": "What is your experience with Python?",
         "question_type": "technical",
@@ -75,11 +79,15 @@ async def test_question_task_creates_message(
 @patch("app.tasks.question_tasks.AsyncSessionLocal")
 @patch("app.tasks.question_tasks.generate_question")
 async def test_question_task_updates_operation(
-    mock_generate, mock_session_local, db_session: AsyncSession, test_user, test_job_posting
+    mock_generate,
+    mock_session_local,
+    db_session: AsyncSession,
+    test_user,
+    test_job_posting,
 ):
     """Test task updates operation with completed status and result."""
     mock_session_local.return_value.__aenter__.return_value = db_session
-    
+
     mock_generate.return_value = {
         "question_text": "Test question",
         "question_type": "behavioral",
@@ -113,7 +121,11 @@ async def test_question_task_updates_operation(
 @patch("app.tasks.question_tasks.AsyncSessionLocal")
 @patch("app.tasks.question_tasks.generate_question")
 async def test_question_task_handles_generation_failure(
-    mock_generate, mock_session_local, db_session: AsyncSession, test_user, test_job_posting
+    mock_generate,
+    mock_session_local,
+    db_session: AsyncSession,
+    test_user,
+    test_job_posting,
 ):
     """Test task handles generation failure gracefully."""
     mock_session_local.return_value.__aenter__.return_value = db_session
@@ -146,11 +158,15 @@ async def test_question_task_handles_generation_failure(
 @patch("app.tasks.question_tasks.AsyncSessionLocal")
 @patch("app.tasks.question_tasks.generate_question")
 async def test_multiple_questions_create_separate_messages(
-    mock_generate, mock_session_local, db_session: AsyncSession, test_user, test_job_posting
+    mock_generate,
+    mock_session_local,
+    db_session: AsyncSession,
+    test_user,
+    test_job_posting,
 ):
     """Test multiple question generations create separate message records."""
     mock_session_local.return_value.__aenter__.return_value = db_session
-    
+
     mock_generate.side_effect = [
         {"question_text": "First question", "question_type": "technical"},
         {"question_text": "Second question", "question_type": "behavioral"},
@@ -209,7 +225,7 @@ async def test_question_task_handles_nonexistent_session(
 ):
     """Test task handles non-existent session gracefully."""
     mock_session_local.return_value.__aenter__.return_value = db_session
-    
+
     fake_session_id = uuid4()
 
     operation = Operation(operation_type="question_generation", status="pending")
@@ -229,11 +245,15 @@ async def test_question_task_handles_nonexistent_session(
 @patch("app.tasks.question_tasks.AsyncSessionLocal")
 @patch("app.tasks.question_tasks.generate_question")
 async def test_question_task_all_fields_populated(
-    mock_generate, mock_session_local, db_session: AsyncSession, test_user, test_job_posting
+    mock_generate,
+    mock_session_local,
+    db_session: AsyncSession,
+    test_user,
+    test_job_posting,
 ):
     """Test that SessionMessage has all required fields populated."""
     mock_session_local.return_value.__aenter__.return_value = db_session
-    
+
     mock_generate.return_value = {
         "question_text": "Describe your leadership experience",
         "question_type": "situational",

@@ -11,8 +11,9 @@ from fastapi import HTTPException, status
 
 from app.models.interview_session import InterviewSession
 from app.models.job_posting import JobPosting
+from app.models.session_message import SessionMessage
 from app.models.user import User
-from app.schemas.session import SessionCreate
+from app.schemas.session import SessionCreate, AnswerCreate
 
 
 async def create_session(
@@ -125,3 +126,64 @@ async def get_session_by_id(
         )
 
     return session
+
+
+async def submit_answer(
+    db: AsyncSession, session_id: UUID, answer_data: AnswerCreate, current_user: User
+) -> SessionMessage:
+    """
+    Submit an answer to an interview session.
+
+    Args:
+        db: Database session
+        session_id: UUID of the session
+        answer_data: Answer content
+        current_user: Authenticated user
+
+    Returns:
+        Created SessionMessage
+
+    Raises:
+        HTTPException: If session not found, unauthorized, or not active
+    """
+    # Load and validate session
+    result = await db.execute(
+        select(InterviewSession).where(
+            InterviewSession.id == session_id,
+            InterviewSession.user_id == current_user.id,
+        )
+    )
+    session = result.scalar_one_or_none()
+
+    if not session:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={
+                "code": "SESSION_NOT_FOUND",
+                "message": "Session not found or you don't have permission to access it",
+            },
+        )
+
+    # Validate session is active
+    if session.status != "active":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={
+                "code": "SESSION_NOT_ACTIVE",
+                "message": f"Cannot submit answers to {session.status} session. Only active sessions accept answers.",
+            },
+        )
+
+    # Create answer message
+    message = SessionMessage(
+        session_id=session.id,
+        message_type="answer",
+        content=answer_data.answer_text,
+        question_type=None,  # Answers don't have question types
+    )
+
+    db.add(message)
+    await db.commit()
+    await db.refresh(message)
+
+    return message

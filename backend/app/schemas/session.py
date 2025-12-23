@@ -4,7 +4,7 @@ Pydantic schemas for interview session API.
 
 import datetime as dt
 from typing import List, Optional
-from pydantic import BaseModel, ConfigDict, UUID4
+from pydantic import BaseModel, ConfigDict, Field, UUID4
 
 
 class SessionCreate(BaseModel):
@@ -74,3 +74,22 @@ class SessionDetailResponse(BaseModel):
     updated_at: dt.datetime
     job_posting: Optional[JobPostingDetail] = None
     resume: Optional[ResumeDetail] = None
+
+
+class AnswerCreate(BaseModel):
+    """Request schema for submitting an answer."""
+
+    answer_text: str = Field(..., min_length=1, description="User's answer text")
+
+
+class MessageResponse(BaseModel):
+    """Response schema for SessionMessage."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID4
+    session_id: UUID4
+    message_type: str
+    content: str
+    question_type: Optional[str] = None
+    created_at: dt.datetime

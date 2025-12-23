@@ -23,6 +23,8 @@ from app.models.operation import Operation
 from app.models.user import User
 from app.schemas.operation import OperationResponse
 from app.schemas.session import (
+    AnswerCreate,
+    MessageResponse,
     SessionCreate,
     SessionDetailResponse,
     SessionResponse,
@@ -182,3 +184,30 @@ async def generate_question(
     background_tasks.add_task(generate_question_task, operation.id, session_id)
 
     return OperationResponse.model_validate(operation)
+
+
+@router.post(
+    "/{session_id}/answers",
+    response_model=MessageResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Submit an answer to interview question",
+)
+async def submit_answer(
+    session_id: UUID = Path(..., description="Session UUID"),
+    answer_data: AnswerCreate = ...,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> MessageResponse:
+    """
+    Submit an answer to an interview question.
+
+    - **session_id**: UUID of the active session
+    - **answer_text**: User's answer (required, non-empty)
+    - Returns 201 with message object
+    - Returns 400 if session not active
+    - Returns 404 if session not found or unauthorized
+    """
+    message = await session_service.submit_answer(
+        db, session_id, answer_data, current_user
+    )
+    return MessageResponse.model_validate(message)
