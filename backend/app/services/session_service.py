@@ -34,7 +34,9 @@ async def create_session(
             status_code=status.HTTP_404_NOT_FOUND,
             detail={
                 "code": "JOB_POSTING_NOT_FOUND",
-                "message": "Job posting not found or you don't have permission to access it",
+                "message": (
+                    "Job posting not found or you don't have " "permission to access it"
+                ),
             },
         )
 
@@ -59,12 +61,16 @@ async def get_sessions_by_user(
     """Get all sessions for a user, optionally filtered by status."""
 
     # Validate status if provided
-    if status_filter and status_filter not in ["active", "paused", "completed"]:
+    valid_statuses = ["active", "paused", "completed"]
+    if status_filter and status_filter not in valid_statuses:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail={
                 "code": "INVALID_STATUS_FILTER",
-                "message": f"Invalid status filter. Must be one of: active, paused, completed",
+                "message": (
+                    "Invalid status filter. Must be one of: "
+                    "active, paused, completed"
+                ),
             },
         )
 
@@ -112,7 +118,9 @@ async def get_session_by_id(
             status_code=status.HTTP_404_NOT_FOUND,
             detail={
                 "code": "SESSION_NOT_FOUND",
-                "message": "Session not found or you don't have permission to access it",
+                "message": (
+                    "Session not found or you don't have " "permission to access it"
+                ),
             },
         )
 

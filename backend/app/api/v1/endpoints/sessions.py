@@ -10,7 +10,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.core.dependencies import get_current_user
 from app.models.user import User
-from app.schemas.session import SessionCreate, SessionResponse, SessionDetailResponse
+from app.schemas.session import (
+    SessionCreate,
+    SessionDetailResponse,
+    SessionResponse,
+)
 from app.services import session_service
 
 router = APIRouter()
@@ -96,7 +100,9 @@ async def get_session(
         "created_at": session.created_at,
         "updated_at": session.updated_at,
         "job_posting": session.job_posting,
-        "resume": session.user.resume if session.user and session.user.resume else None,
+        "resume": (
+            session.user.resume if session.user and session.user.resume else None
+        ),
     }
 
     return SessionDetailResponse.model_validate(response_data)
