@@ -103,9 +103,7 @@ class OpenAIService:
             )
 
         except APIConnectionError as e:
-            logger.error(
-                f"OpenAI connection error for user {self.user_id}: {str(e)}"
-            )
+            logger.error(f"OpenAI connection error for user {self.user_id}: {str(e)}")
             raise HTTPException(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
                 detail={

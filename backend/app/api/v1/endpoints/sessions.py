@@ -4,18 +4,31 @@ API endpoints for interview sessions.
 
 from typing import List, Optional
 from uuid import UUID
-from fastapi import APIRouter, Depends, Path, Query, status
+from fastapi import (
+    APIRouter,
+    BackgroundTasks,
+    Depends,
+    HTTPException,
+    Path,
+    Query,
+    status,
+)
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.core.dependencies import get_current_user
+from app.models.interview_session import InterviewSession
+from app.models.operation import Operation
 from app.models.user import User
+from app.schemas.operation import OperationResponse
 from app.schemas.session import (
     SessionCreate,
     SessionDetailResponse,
     SessionResponse,
 )
 from app.services import session_service
+from app.tasks.question_tasks import generate_question_task
 
 router = APIRouter()
 
@@ -106,3 +119,66 @@ async def get_session(
     }
 
     return SessionDetailResponse.model_validate(response_data)
+
+
+@router.post(
+    "/{session_id}/generate-question",
+    response_model=OperationResponse,
+    status_code=status.HTTP_202_ACCEPTED,
+    summary="Generate next interview question",
+)
+async def generate_question(
+    session_id: UUID = Path(..., description="Session UUID"),
+    background_tasks: BackgroundTasks = BackgroundTasks(),
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> OperationResponse:
+    """
+    Generate the next interview question for a session.
+
+    Returns immediately with operation_id. Frontend should poll
+    GET /api/v1/operations/{operation_id} to check status.
+
+    - **session_id**: UUID of the active session
+    - Returns 202 Accepted with operation_id
+    - Returns 400 if session is not active
+    - Returns 404 if session not found or unauthorized
+    """
+    # Load session and validate
+    result = await db.execute(
+        select(InterviewSession).where(
+            InterviewSession.id == session_id,
+            InterviewSession.user_id == current_user.id,
+        )
+    )
+    session = result.scalar_one_or_none()
+
+    if not session:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={
+                "code": "SESSION_NOT_FOUND",
+                "message": "Session not found or you don't have permission to access it",
+            },
+        )
+
+    # Validate session is active
+    if session.status != "active":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={
+                "code": "SESSION_NOT_ACTIVE",
+                "message": f"Cannot generate questions for {session.status} session. Only active sessions can receive new questions.",
+            },
+        )
+
+    # Create operation
+    operation = Operation(operation_type="question_generation", status="pending")
+    db.add(operation)
+    await db.commit()
+    await db.refresh(operation)
+
+    # Start background task
+    background_tasks.add_task(generate_question_task, operation.id, session_id)
+
+    return OperationResponse.model_validate(operation)

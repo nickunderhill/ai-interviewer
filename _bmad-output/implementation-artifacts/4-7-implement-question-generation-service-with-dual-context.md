@@ -72,16 +72,24 @@ candidate's résumé.
 ## Dev Agent Record
 
 ### Implementation Summary
-Implemented dual-context question generation service that creates personalized interview questions by combining job posting requirements with candidate resume. All acceptance criteria met with 12 comprehensive tests covering question type rotation, prompt building, and full/partial context scenarios.
+
+Implemented dual-context question generation service that creates personalized
+interview questions by combining job posting requirements with candidate resume.
+All acceptance criteria met with 12 comprehensive tests covering question type
+rotation, prompt building, and full/partial context scenarios.
 
 ### Files Created/Modified
+
 - **Created:** `backend/app/services/question_generation_service.py` (187 lines)
-  - get_question_type_for_round() - Rotates through technical → behavioral → situational
+
+  - get_question_type_for_round() - Rotates through technical → behavioral →
+    situational
   - build_question_prompt() - Constructs dual-context prompts with job + resume
   - generate_question() - Main async function integrating with OpenAIService
   - Graceful handling of missing resume (fallback to job-only context)
 
-- **Created:** `backend/tests/services/test_question_generation_service.py` (310 lines)
+- **Created:** `backend/tests/services/test_question_generation_service.py` (310
+  lines)
   - 12 comprehensive tests covering all scenarios
   - Tests for question type rotation (including edge cases)
   - Tests for prompt construction with/without resume
@@ -89,24 +97,35 @@ Implemented dual-context question generation service that creates personalized i
   - Tests for question generation success and error handling
 
 ### Key Decisions Made
-1. **Dual-context approach:** Core innovation - questions reference both job requirements AND candidate background
-2. **Question type rotation:** Deterministic pattern (technical → behavioral → situational) for comprehensive coverage
-3. **Graceful degradation:** If no resume, generates questions based on job posting only
+
+1. **Dual-context approach:** Core innovation - questions reference both job
+   requirements AND candidate background
+2. **Question type rotation:** Deterministic pattern (technical → behavioral →
+   situational) for comprehensive coverage
+3. **Graceful degradation:** If no resume, generates questions based on job
+   posting only
 4. **Temperature 0.7:** Balances creativity (unique questions) with consistency
-5. **Max tokens 200:** Single question shouldn't exceed this, prevents runaway costs
-6. **String cleanup:** Strips quotes and whitespace from AI responses for clean output
-7. **Async function:** Matches FastAPI endpoint pattern (even though OpenAI calls are sync)
+5. **Max tokens 200:** Single question shouldn't exceed this, prevents runaway
+   costs
+6. **String cleanup:** Strips quotes and whitespace from AI responses for clean
+   output
+7. **Async function:** Matches FastAPI endpoint pattern (even though OpenAI
+   calls are sync)
 
 ### Prompt Engineering Strategy
-- **Structured sections:** Clear job context + candidate context + task instructions
+
+- **Structured sections:** Clear job context + candidate context + task
+  instructions
 - **Specific requirements:** ONE question, interview-ready, no meta-text
-- **Type-specific instructions:** 
+- **Type-specific instructions:**
   - Technical: Tests skills/knowledge, references candidate background
   - Behavioral: STAR format, past experiences, mentions resume
   - Situational: Hypothetical scenarios, relevant to experience level
-- **Relevance emphasis:** AI instructed to make questions relevant to both contexts
+- **Relevance emphasis:** AI instructed to make questions relevant to both
+  contexts
 
 ### Test Coverage
+
 - ✅ Question type rotation for rounds 1-7 and edge cases (0, 100, 101)
 - ✅ Prompt construction with full context (all fields)
 - ✅ Prompt construction without resume (fallback messaging)
@@ -120,6 +139,7 @@ Implemented dual-context question generation service that creates personalized i
 - **Result:** 12/12 tests passing
 
 ### Verification
+
 ```bash
 pytest tests/services/test_question_generation_service.py -v
 # Result: 12 passed, 1 warning in 0.20s

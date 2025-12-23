@@ -66,33 +66,49 @@ we have centralized error handling and retry logic for AI operations.
 ## Dev Agent Record
 
 ### Implementation Summary
-Implemented OpenAI service with per-user API key management, comprehensive error handling, and exponential backoff retry logic. All acceptance criteria met with 10 comprehensive tests covering success cases, error scenarios, and security requirements.
+
+Implemented OpenAI service with per-user API key management, comprehensive error
+handling, and exponential backoff retry logic. All acceptance criteria met with
+10 comprehensive tests covering success cases, error scenarios, and security
+requirements.
 
 ### Files Created/Modified
+
 - **Created:** `backend/app/services/openai_service.py` (197 lines)
-  - OpenAIService class with __init__, _make_api_call, generate_chat_completion methods
+
+  - OpenAIService class with **init**, \_make_api_call, generate_chat_completion
+    methods
   - Retry logic using tenacity decorators
   - Comprehensive error handling for all OpenAI exception types
   - Security: Never logs API keys, decrypts only in memory
 
 - **Created:** `backend/tests/services/test_openai_service.py` (271 lines)
+
   - 10 comprehensive tests covering all scenarios
   - Proper mocking of OpenAI SDK v2 exceptions
-  - Tests for initialization, success cases, rate limits, connection errors, invalid keys
+  - Tests for initialization, success cases, rate limits, connection errors,
+    invalid keys
 
 - **Modified:** `backend/requirements.txt`
   - Added openai>=1.0.0 (installed v2.14.0)
   - Added tenacity>=8.0.0 (installed v9.1.2)
 
 ### Key Decisions Made
-1. **Per-user API keys:** Service instantiated per request with user context, not singleton
-2. **Synchronous methods:** OpenAI SDK v1.0+ is primarily sync, matches their patterns
-3. **Retry only transient errors:** RateLimitError and APIConnectionError retry, client errors (400, 401) don't
+
+1. **Per-user API keys:** Service instantiated per request with user context,
+   not singleton
+2. **Synchronous methods:** OpenAI SDK v1.0+ is primarily sync, matches their
+   patterns
+3. **Retry only transient errors:** RateLimitError and APIConnectionError retry,
+   client errors (400, 401) don't
 4. **Exponential backoff:** 3 attempts with 1s, 2s, 4s, max 8s delays
-5. **Security first:** API keys never logged, error messages sanitized, decryption only in memory
-6. **Temperature 0.7:** Balanced creativity vs consistency for question generation
+5. **Security first:** API keys never logged, error messages sanitized,
+   decryption only in memory
+6. **Temperature 0.7:** Balanced creativity vs consistency for question
+   generation
 
 ### Test Coverage
+
 - ✅ Service initialization with valid/invalid API keys
 - ✅ API key decryption success and failure
 - ✅ Successful chat completion with default and custom parameters
@@ -104,6 +120,7 @@ Implemented OpenAI service with per-user API key management, comprehensive error
 - **Result:** 10/10 tests passing
 
 ### Verification
+
 ```bash
 pytest tests/services/test_openai_service.py -v
 # Result: 10 passed, 1 warning in 0.22s

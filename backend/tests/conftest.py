@@ -9,6 +9,7 @@ import uuid
 
 from httpx import AsyncClient
 import pytest
+import pytest_asyncio
 import sqlalchemy as sa
 from sqlalchemy.ext.asyncio import (
     AsyncSession,
@@ -38,7 +39,7 @@ def event_loop() -> Generator:
     loop.close()
 
 
-@pytest.fixture(scope="function")
+@pytest_asyncio.fixture(scope="function")
 async def db_session() -> AsyncGenerator[AsyncSession, None]:
     """
     Create a test database session.
@@ -64,6 +65,7 @@ async def db_session() -> AsyncGenerator[AsyncSession, None]:
     from app.models import job_posting as _job_posting  # noqa: F401
     from app.models import interview_session as _interview_session  # noqa: F401
     from app.models import session_message as _session_message  # noqa: F401
+    from app.models import operation as _operation  # noqa: F401
 
     # Create isolated schema + tables (prevents dropping dev DB objects)
     async with engine.begin() as conn:
@@ -96,7 +98,7 @@ def override_get_db(db_session: AsyncSession):
     app.dependency_overrides.clear()
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def async_client(override_get_db) -> AsyncGenerator[AsyncClient, None]:
     """Create async test HTTP client with database override."""
     # Add test protected endpoint for auth dependency testing
@@ -122,7 +124,7 @@ def client(override_get_db) -> Generator:
         yield test_client
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def test_user(db_session: AsyncSession):
     """Create a test user in the database."""
     from app.models.user import User
@@ -147,7 +149,7 @@ def auth_headers(test_user) -> dict[str, str]:
     return {"Authorization": f"Bearer {token}"}
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def test_job_posting(db_session: AsyncSession, test_user):
     """Create a test job posting for the test user."""
     from app.models.job_posting import JobPosting
@@ -172,7 +174,7 @@ async def test_job_posting(db_session: AsyncSession, test_user):
     }
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def other_user_job_posting(db_session: AsyncSession):
     """Create a job posting owned by another user."""
     from app.models.user import User
@@ -202,7 +204,7 @@ async def other_user_job_posting(db_session: AsyncSession):
     }
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def test_sessions(db_session: AsyncSession, test_user, test_job_posting):
     """Create multiple test sessions with different statuses."""
     from app.models.interview_session import InterviewSession
@@ -232,7 +234,7 @@ async def test_sessions(db_session: AsyncSession, test_user, test_job_posting):
     ]
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def other_user_session(db_session: AsyncSession, other_user_job_posting):
     """Create a session owned by another user."""
     from app.models.interview_session import InterviewSession
@@ -252,7 +254,7 @@ async def other_user_session(db_session: AsyncSession, other_user_job_posting):
     }
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def test_session_with_resume(
     db_session: AsyncSession, test_user, test_job_posting
 ):
@@ -286,7 +288,7 @@ async def test_session_with_resume(
     }
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def test_session_no_resume(db_session: AsyncSession, test_job_posting):
     """Create a test session with a user who has no resume."""
     from app.models.user import User
@@ -328,4 +330,67 @@ async def test_session_no_resume(db_session: AsyncSession, test_job_posting):
         "id": session.id,
         "user_id": session.user_id,
         "has_resume": False,
+    }
+
+
+@pytest_asyncio.fixture
+async def test_active_session(db_session: AsyncSession, test_user, test_job_posting):
+    """Create a test session with active status."""
+    from app.models.interview_session import InterviewSession
+
+    session = InterviewSession(
+        user_id=test_user.id,
+        job_posting_id=test_job_posting["id"],
+        status="active",
+        current_question_number=0,
+    )
+    db_session.add(session)
+    await db_session.commit()
+    await db_session.refresh(session)
+    return {
+        "id": session.id,
+        "user_id": session.user_id,
+        "status": session.status,
+    }
+
+
+@pytest_asyncio.fixture
+async def test_completed_session(db_session: AsyncSession, test_user, test_job_posting):
+    """Create a test session with completed status."""
+    from app.models.interview_session import InterviewSession
+
+    session = InterviewSession(
+        user_id=test_user.id,
+        job_posting_id=test_job_posting["id"],
+        status="completed",
+        current_question_number=5,
+    )
+    db_session.add(session)
+    await db_session.commit()
+    await db_session.refresh(session)
+    return {
+        "id": session.id,
+        "user_id": session.user_id,
+        "status": session.status,
+    }
+
+
+@pytest_asyncio.fixture
+async def test_paused_session(db_session: AsyncSession, test_user, test_job_posting):
+    """Create a test session with paused status."""
+    from app.models.interview_session import InterviewSession
+
+    session = InterviewSession(
+        user_id=test_user.id,
+        job_posting_id=test_job_posting["id"],
+        status="paused",
+        current_question_number=2,
+    )
+    db_session.add(session)
+    await db_session.commit()
+    await db_session.refresh(session)
+    return {
+        "id": session.id,
+        "user_id": session.user_id,
+        "status": session.status,
     }
