@@ -1,6 +1,6 @@
 # Story 4.14: Create Session Completion Endpoint
 
-Status: review
+Status: done
 
 ## Story
 
@@ -20,32 +20,32 @@ my completed sessions list.
 
 - [x] Task 1: Create session completion endpoint (AC: #1)
 
-    - [x] Add POST /api/v1/sessions/{id}/complete to sessions.py router
-    - [x] Use path parameter for session UUID
-    - [x] Use get_current_user dependency for authentication
-    - [x] Validate session exists and belongs to user
-    - [x] Validate session is 'active' or 'paused' (not already completed)
-    - [x] Update session status to 'completed'
-    - [x] Return 200 OK with SessionResponse
-    - [x] Return 400 Bad Request if session already completed
-    - [x] Return 404 Not Found if session doesn't exist or unauthorized
+  - [x] Add POST /api/v1/sessions/{id}/complete to sessions.py router
+  - [x] Use path parameter for session UUID
+  - [x] Use get_current_user dependency for authentication
+  - [x] Validate session exists and belongs to user
+  - [x] Validate session is 'active' or 'paused' (not already completed)
+  - [x] Update session status to 'completed'
+  - [x] Return 200 OK with SessionResponse
+  - [x] Return 400 Bad Request if session already completed
+  - [x] Return 404 Not Found if session doesn't exist or unauthorized
 
 - [x] Task 2: Verify completed sessions filtering (AC: #1)
 
-    - [x] Verify GET /api/v1/sessions?status=active excludes completed
-    - [x] Verify GET /api/v1/sessions?status=completed includes only completed
-    - [x] Document that completed sessions preserve all data
+  - [x] Verify GET /api/v1/sessions?status=active excludes completed
+  - [x] Verify GET /api/v1/sessions?status=completed includes only completed
+  - [x] Document that completed sessions preserve all data
 
 - [x] Task 3: Add comprehensive tests (AC: #1)
-    - [x] Add tests to `backend/tests/api/v1/test_sessions.py`
-    - [x] Test completing active session updates status
-    - [x] Test completing paused session updates status
-    - [x] Test cannot complete already completed session
-    - [x] Test completed session appears in completed list
-    - [x] Test completed session not in active list
-    - [x] Test completed session messages preserved
-    - [x] Test 404 for non-existent session
-    - [x] Test 401 for unauthenticated request
+  - [x] Add tests to `backend/tests/api/v1/test_sessions.py`
+  - [x] Test completing active session updates status
+  - [x] Test completing paused session updates status
+  - [x] Test cannot complete already completed session
+  - [x] Test completed session appears in completed list
+  - [x] Test completed session not in active list
+  - [x] Test completed session messages preserved
+  - [x] Test 404 for non-existent session
+  - [x] Test 401 for unauthenticated request
 
 ## Dev Notes
 
@@ -88,14 +88,14 @@ backend/app/
 ```python
 # backend/app/api/v1/endpoints/sessions.py
 from uuid import UUID
-from fastapi import APIRouter, Depends, HTTPException, Path, status
-from sqlalchemy import select
+from fastapi import APIRouter, Depends, Path, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.deps import get_current_user, get_db
+from app.core.database import get_db
+from app.core.dependencies import get_current_user
 from app.models.user import User
-from app.models.interview_session import InterviewSession
 from app.schemas.session import SessionResponse
+from app.services import session_service
 
 router = APIRouter()
 
@@ -124,39 +124,7 @@ async def complete_session(
     - Returns 400 if session is already completed
     - Returns 404 if session not found or unauthorized
     """
-    # Load and validate session
-    result = await db.execute(
-        select(InterviewSession).where(
-            InterviewSession.id == session_id,
-            InterviewSession.user_id == current_user.id
-        )
-    )
-    session = result.scalar_one_or_none()
-
-    if not session:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail={
-                "code": "SESSION_NOT_FOUND",
-                "message": "Session not found or you don't have permission to access it"
-            }
-        )
-
-    # Validate session is not already completed
-    if session.status == "completed":
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail={
-                "code": "SESSION_ALREADY_COMPLETED",
-                "message": "Session is already completed. Completed sessions cannot be modified."
-            }
-        )
-
-    # Update status to completed
-    session.status = "completed"
-    await db.commit()
-    await db.refresh(session)
-
+    session = await session_service.complete_session(db, session_id, current_user)
     return SessionResponse.model_validate(session)
 ```
 
@@ -503,22 +471,48 @@ NOTES:
 
 ### Debug Log
 
-- 2025-12-23: Added completion endpoint + tests; verified full backend test suite green.
+- 2025-12-23: Added completion endpoint + tests; verified full backend test
+  suite green.
+- 2025-12-24: Senior Developer Review (AI): refactored completion logic into
+    service layer; verified session tests green.
 
 ### Completion Notes
 
-- Implemented POST `/api/v1/sessions/{id}/complete` to transition `active|paused → completed`.
+- Implemented POST `/api/v1/sessions/{id}/complete` to transition
+  `active|paused → completed`.
 - Returns 404 `SESSION_NOT_FOUND` for missing or unauthorized sessions.
 - Returns 400 `SESSION_ALREADY_COMPLETED` for completed sessions (terminal).
-- Verified list filtering for `status=active` and `status=completed`; messages preserved after completion.
+- Verified list filtering for `status=active` and `status=completed`; messages
+  preserved after completion.
 
 ## File List
 
 - backend/app/api/v1/endpoints/sessions.py (modified)
 - backend/tests/api/v1/test_sessions.py (modified)
-- _bmad-output/implementation-artifacts/sprint-status.yaml (modified)
-- _bmad-output/implementation-artifacts/4-14-create-session-completion-endpoint.md (modified)
+- \_bmad-output/implementation-artifacts/sprint-status.yaml (modified)
+- \_bmad-output/implementation-artifacts/4-14-create-session-completion-endpoint.md
+  (modified)
 
 ## Change Log
 
-- 2025-12-23: Implemented session completion endpoint and integration tests; updated story + sprint tracking.
+- 2025-12-23: Implemented session completion endpoint and integration tests;
+  updated story + sprint tracking.
+- 2025-12-24: Senior Developer Review (AI): moved completion business logic to
+    service layer; updated story record.
+
+## Senior Developer Review (AI)
+
+Reviewer: Nick
+Date: 2025-12-24
+
+Outcome: Approved (after fixes)
+
+Findings:
+
+- MED: Completion logic lived in endpoint instead of service layer (fixed)
+- MED: Story example snippet diverged from actual code (fixed)
+- MED: Uncommitted story formatting changes left repo out-of-sync (resolved)
+
+Verification:
+
+- Backend tests: session test suite green

@@ -129,6 +129,72 @@ async def get_session_by_id(
     return session
 
 
+async def complete_session(
+    db: AsyncSession, session_id: UUID, current_user: User
+) -> InterviewSession:
+    """Mark an interview session as completed.
+
+    Rules:
+    - Only the owning user can complete a session
+    - Only active or paused sessions can be completed
+    - Completed is terminal
+    """
+
+    result = await db.execute(
+        select(InterviewSession)
+        .options(selectinload(InterviewSession.job_posting))
+        .where(
+            InterviewSession.id == session_id,
+            InterviewSession.user_id == current_user.id,
+        )
+    )
+    session = result.scalar_one_or_none()
+
+    if not session:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={
+                "code": "SESSION_NOT_FOUND",
+                "message": "Session not found or you don't have permission to access it",
+            },
+        )
+
+    if session.status == "completed":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={
+                "code": "SESSION_ALREADY_COMPLETED",
+                "message": "Session is already completed. Completed sessions cannot be modified.",
+            },
+        )
+
+    if session.status not in ("active", "paused"):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={
+                "code": "INVALID_SESSION_STATE",
+                "message": (
+                    f"Cannot complete {session.status} session. "
+                    "Only active or paused sessions can be completed."
+                ),
+            },
+        )
+
+    session.status = "completed"
+    await db.commit()
+
+    # Reload with relationship(s) eagerly loaded for response validation
+    result = await db.execute(
+        select(InterviewSession)
+        .options(selectinload(InterviewSession.job_posting))
+        .where(
+            InterviewSession.id == session_id,
+            InterviewSession.user_id == current_user.id,
+        )
+    )
+    return result.scalar_one()
+
+
 async def submit_answer(
     db: AsyncSession, session_id: UUID, answer_data: AnswerCreate, current_user: User
 ) -> SessionMessage:

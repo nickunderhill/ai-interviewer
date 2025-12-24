@@ -93,7 +93,7 @@ development_status:
   4-11-create-answer-submission-endpoint: done
   4-12-create-session-messages-retrieval-endpoint: done
   4-13-create-session-resume-capability: done
-  4-14-create-session-completion-endpoint: review
+  4-14-create-session-completion-endpoint: done
   epic-4-retrospective: optional
 
   epic-5: backlog
