@@ -79,7 +79,7 @@ development_status:
   3-11-create-job-posting-delete-endpoint: done
   epic-3-retrospective: optional
 
-  epic-4: in-progress
+  epic-4: done
   4-1-create-session-and-message-models: done
   4-2-create-session-creation-endpoint: done
   4-3-create-session-list-endpoint: done

@@ -474,7 +474,7 @@ NOTES:
 - 2025-12-23: Added completion endpoint + tests; verified full backend test
   suite green.
 - 2025-12-24: Senior Developer Review (AI): refactored completion logic into
-    service layer; verified session tests green.
+  service layer; verified session tests green.
 
 ### Completion Notes
 
@@ -498,12 +498,11 @@ NOTES:
 - 2025-12-23: Implemented session completion endpoint and integration tests;
   updated story + sprint tracking.
 - 2025-12-24: Senior Developer Review (AI): moved completion business logic to
-    service layer; updated story record.
+  service layer; updated story record.
 
 ## Senior Developer Review (AI)
 
-Reviewer: Nick
-Date: 2025-12-24
+Reviewer: Nick Date: 2025-12-24
 
 Outcome: Approved (after fixes)
 
