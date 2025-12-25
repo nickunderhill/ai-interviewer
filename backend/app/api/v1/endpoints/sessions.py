@@ -30,8 +30,10 @@ from app.schemas.session import (
     SessionDetailResponse,
     SessionResponse,
 )
+from app.schemas import feedback as schemas
 from app.services import session_service
 from app.tasks.question_tasks import generate_question_task
+from app.tasks.feedback_tasks import generate_feedback_task
 
 router = APIRouter()
 
@@ -379,3 +381,177 @@ async def submit_answer(
         db, session_id, answer_data, current_user
     )
     return MessageResponse.model_validate(message)
+
+
+@router.post(
+    "/{session_id}/generate-feedback",
+    response_model=OperationResponse,
+    status_code=status.HTTP_202_ACCEPTED,
+    summary="Generate AI feedback for a completed session",
+)
+async def generate_feedback(
+    session_id: UUID = Path(..., description="Session UUID"),
+    background_tasks: BackgroundTasks = BackgroundTasks(),
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> OperationResponse:
+    """
+    Generate comprehensive AI-powered feedback for a completed interview session.
+
+    Requirements:
+    - Session must belong to the current user
+    - Session status must be 'completed'
+    - User must have a resume
+    - Session must have a job posting
+    - Feedback must not already exist for this session
+
+    Returns 202 Accepted with an Operation for tracking the async feedback generation.
+    Poll the Operation endpoint to check when feedback is ready.
+
+    Errors:
+    - **400 Bad Request**: Session not completed or feedback already exists
+    - **404 Not Found**: Session not found or unauthorized
+    """
+    # Verify session exists, belongs to user, and is completed
+    stmt = (
+        select(InterviewSession)
+        .where(InterviewSession.id == session_id)
+        .where(InterviewSession.user_id == current_user.id)
+        .options(selectinload(InterviewSession.feedback))
+    )
+    result = await db.execute(stmt)
+    session = result.scalar_one_or_none()
+
+    if not session:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={"code": "SESSION_NOT_FOUND", "message": "Session not found"},
+        )
+
+    if session.status != "completed":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={
+                "code": "SESSION_NOT_COMPLETED",
+                "message": "Can only generate feedback for completed sessions",
+            },
+        )
+
+    # Check if feedback already exists
+    if session.feedback:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail={
+                "code": "FEEDBACK_ALREADY_EXISTS",
+                "message": "Feedback already generated for this session",
+            },
+        )
+
+    # Create operation to track feedback generation
+    import datetime as dt
+
+    operation = Operation(
+        operation_type="feedback_analysis",
+        status="pending",
+        created_at=dt.datetime.now(dt.timezone.utc),
+        updated_at=dt.datetime.now(dt.timezone.utc),
+    )
+    db.add(operation)
+    await db.commit()
+    await db.refresh(operation)
+
+    # Queue background task
+    background_tasks.add_task(
+        generate_feedback_task,
+        operation_id=operation.id,
+        session_id=session_id,
+        user_id=current_user.id,
+    )
+
+    return OperationResponse.model_validate(operation)
+
+
+@router.get(
+    "/{session_id}/feedback",
+    response_model=schemas.InterviewFeedbackResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Get AI feedback for a completed session",
+    responses={
+        200: {"description": "Feedback retrieved successfully"},
+        404: {
+            "description": "Session or feedback not found",
+            "content": {
+                "application/json": {
+                    "examples": {
+                        "session_not_found": {
+                            "value": {
+                                "detail": {
+                                    "code": "SESSION_NOT_FOUND",
+                                    "message": "Session not found or access denied",
+                                }
+                            }
+                        },
+                        "feedback_not_found": {
+                            "value": {
+                                "detail": {
+                                    "code": "FEEDBACK_NOT_FOUND",
+                                    "message": "Feedback has not been generated for this session yet",
+                                }
+                            }
+                        },
+                    }
+                }
+            },
+        },
+    },
+)
+async def get_session_feedback(
+    session_id: UUID = Path(..., description="Session UUID"),
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> schemas.InterviewFeedbackResponse:
+    """
+    Retrieve AI-generated feedback for a completed interview session.
+
+    Returns comprehensive feedback including:
+    - Dimension scores (technical accuracy, communication, problem solving, relevance)
+    - Overall score (average of dimensions)
+    - Detailed feedback for each dimension
+    - Knowledge gaps identified
+    - Learning recommendations
+
+    **Authorization**: Requires valid JWT token and session ownership.
+
+    **Prerequisites**:
+    - Session must exist and belong to current user
+    - Feedback must have been generated via POST /sessions/{id}/generate-feedback
+    """
+    # Verify session ownership and load feedback
+    stmt = (
+        select(InterviewSession)
+        .where(InterviewSession.id == session_id)
+        .where(InterviewSession.user_id == current_user.id)
+        .options(selectinload(InterviewSession.feedback))
+    )
+    result = await db.execute(stmt)
+    session = result.scalar_one_or_none()
+
+    if not session:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={
+                "code": "SESSION_NOT_FOUND",
+                "message": "Session not found or access denied",
+            },
+        )
+
+    if not session.feedback:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={
+                "code": "FEEDBACK_NOT_FOUND",
+                "message": "Feedback has not been generated for this session yet",
+            },
+        )
+
+    return schemas.InterviewFeedbackResponse.model_validate(session.feedback)

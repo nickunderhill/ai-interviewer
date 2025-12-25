@@ -16,6 +16,8 @@ if TYPE_CHECKING:
     from app.models.user import User
     from app.models.job_posting import JobPosting
     from app.models.session_message import SessionMessage
+    from app.models.interview_feedback import InterviewFeedback
+    from app.models.interview_feedback import InterviewFeedback
 
 
 def utcnow() -> dt.datetime:
@@ -87,6 +89,21 @@ class InterviewSession(Base):
         back_populates="session",
         cascade="all, delete-orphan",
         order_by="SessionMessage.created_at",
+        lazy="selectin",
+    )
+
+    feedback: Mapped[Optional["InterviewFeedback"]] = relationship(
+        "InterviewFeedback",
+        back_populates="session",
+        uselist=False,
+        cascade="all, delete-orphan",
+        lazy="selectin",
+    )
+
+    feedback: Mapped[Optional["InterviewFeedback"]] = relationship(
+        "InterviewFeedback",
+        back_populates="session",
+        uselist=False,
         lazy="selectin",
     )
 

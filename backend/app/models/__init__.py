@@ -8,6 +8,7 @@ from app.models.job_posting import JobPosting
 from app.models.interview_session import InterviewSession
 from app.models.session_message import SessionMessage
 from app.models.operation import Operation
+from app.models.interview_feedback import InterviewFeedback
 
 __all__ = [
     "User",
@@ -16,4 +17,5 @@ __all__ = [
     "InterviewSession",
     "SessionMessage",
     "Operation",
+    "InterviewFeedback",
 ]

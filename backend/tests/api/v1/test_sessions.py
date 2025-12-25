@@ -412,3 +412,135 @@ async def test_complete_session_unauthenticated_fails(
 
     response = await async_client.post(f"/api/v1/sessions/{session_id}/complete")
     assert response.status_code == 401
+
+
+# ===== GET /sessions/{id}/feedback Tests =====
+
+
+@pytest.mark.asyncio
+async def test_get_feedback_success(
+    async_client: AsyncClient,
+    auth_headers: dict,
+    test_completed_session_with_feedback: dict,
+):
+    """Test retrieving feedback for a session that has generated feedback."""
+    session_id = test_completed_session_with_feedback["id"]
+
+    response = await async_client.get(
+        f"/api/v1/sessions/{session_id}/feedback",
+        headers=auth_headers,
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+
+    # Verify all required fields are present
+    assert "id" in data
+    assert "session_id" in data
+    assert data["session_id"] == str(session_id)
+
+    # Verify dimension scores
+    assert "technical_accuracy_score" in data
+    assert "communication_clarity_score" in data
+    assert "problem_solving_score" in data
+    assert "relevance_score" in data
+    assert "overall_score" in data
+
+    # Verify all scores are in valid range
+    for score_field in [
+        "technical_accuracy_score",
+        "communication_clarity_score",
+        "problem_solving_score",
+        "relevance_score",
+        "overall_score",
+    ]:
+        assert 0 <= data[score_field] <= 100
+
+    # Verify feedback text fields
+    assert "technical_feedback" in data
+    assert "communication_feedback" in data
+    assert "problem_solving_feedback" in data
+    assert "relevance_feedback" in data
+    assert "overall_comments" in data
+
+    # Verify arrays
+    assert "knowledge_gaps" in data
+    assert isinstance(data["knowledge_gaps"], list)
+    assert "learning_recommendations" in data
+    assert isinstance(data["learning_recommendations"], list)
+
+    # Verify timestamps
+    assert "created_at" in data
+    assert "updated_at" in data
+
+
+@pytest.mark.asyncio
+async def test_get_feedback_not_found_no_feedback(
+    async_client: AsyncClient,
+    auth_headers: dict,
+    test_completed_session: dict,
+):
+    """Test 404 when feedback hasn't been generated yet."""
+    session_id = test_completed_session["id"]
+
+    response = await async_client.get(
+        f"/api/v1/sessions/{session_id}/feedback",
+        headers=auth_headers,
+    )
+
+    assert response.status_code == 404
+    data = response.json()
+    assert data["detail"]["code"] == "FEEDBACK_NOT_FOUND"
+    assert "not been generated" in data["detail"]["message"]
+
+
+@pytest.mark.asyncio
+async def test_get_feedback_not_found_session(
+    async_client: AsyncClient,
+    auth_headers: dict,
+):
+    """Test 404 when session doesn't exist."""
+    fake_id = uuid4()
+
+    response = await async_client.get(
+        f"/api/v1/sessions/{fake_id}/feedback",
+        headers=auth_headers,
+    )
+
+    assert response.status_code == 404
+    data = response.json()
+    assert data["detail"]["code"] == "SESSION_NOT_FOUND"
+
+
+@pytest.mark.asyncio
+async def test_get_feedback_unauthorized(
+    async_client: AsyncClient,
+    test_completed_session_with_feedback: dict,
+):
+    """Test 401 when not authenticated."""
+    session_id = test_completed_session_with_feedback["id"]
+
+    response = await async_client.get(
+        f"/api/v1/sessions/{session_id}/feedback",
+    )
+
+    assert response.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_get_feedback_wrong_user(
+    async_client: AsyncClient,
+    other_user_auth_headers: dict,
+    test_completed_session_with_feedback: dict,
+):
+    """Test 404 when trying to access another user's feedback."""
+    session_id = test_completed_session_with_feedback["id"]
+
+    response = await async_client.get(
+        f"/api/v1/sessions/{session_id}/feedback",
+        headers=other_user_auth_headers,
+    )
+
+    assert response.status_code == 404
+    data = response.json()
+    assert data["detail"]["code"] == "SESSION_NOT_FOUND"

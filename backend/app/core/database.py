@@ -4,6 +4,7 @@ Provides async engine, session factory, and dependency injection for FastAPI.
 """
 
 from collections.abc import AsyncGenerator
+from contextlib import asynccontextmanager
 import logging
 
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
@@ -56,6 +57,31 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
         - Session is properly closed after request
         - Connections are returned to the pool
         - Errors are handled gracefully
+    """
+    async with AsyncSessionLocal() as session:
+        try:
+            yield session
+        finally:
+            await session.close()
+
+
+@asynccontextmanager
+async def get_db_context() -> AsyncGenerator[AsyncSession, None]:
+    """
+    Context manager for database sessions outside of FastAPI request context.
+
+    Usage in background tasks:
+        async with get_db_context() as db:
+            # Use db here
+            ...
+
+    Yields:
+        AsyncSession: Database session
+
+    Ensures:
+        - Session is properly closed after use
+        - Transactions are rolled back on error
+        - Connections are returned to the pool
     """
     async with AsyncSessionLocal() as session:
         try:

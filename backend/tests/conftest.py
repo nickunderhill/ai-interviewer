@@ -66,6 +66,7 @@ async def db_session() -> AsyncGenerator[AsyncSession, None]:
     from app.models import interview_session as _interview_session  # noqa: F401
     from app.models import session_message as _session_message  # noqa: F401
     from app.models import operation as _operation  # noqa: F401
+    from app.models import interview_feedback as _interview_feedback  # noqa: F401
 
     # Create isolated schema + tables (prevents dropping dev DB objects)
     async with engine.begin() as conn:
@@ -474,3 +475,76 @@ async def test_session_with_messages(
     await db_session.commit()
 
     return {"id": session.id}
+
+
+@pytest_asyncio.fixture
+async def other_user_auth_headers(db_session: AsyncSession):
+    """Create authentication headers for another user."""
+    from app.models.user import User
+    from app.core.security import hash_password, create_access_token
+
+    # Create second user
+    other_user = User(
+        email="otheruser@example.com",
+        hashed_password=hash_password("password123"),
+    )
+    db_session.add(other_user)
+    await db_session.commit()
+    await db_session.refresh(other_user)
+
+    # Create token with correct format
+    token = create_access_token({"user_id": str(other_user.id)})
+    return {"Authorization": f"Bearer {token}"}
+
+
+@pytest_asyncio.fixture
+async def test_completed_session_with_feedback(
+    db_session: AsyncSession, test_user, test_job_posting
+):
+    """Create a completed session with generated feedback."""
+    from app.models.interview_session import InterviewSession
+    from app.models.interview_feedback import InterviewFeedback
+    import datetime as dt
+
+    # Create completed session
+    session = InterviewSession(
+        user_id=test_user.id,
+        job_posting_id=test_job_posting["id"],
+        status="completed",
+        current_question_number=5,
+    )
+    db_session.add(session)
+    await db_session.commit()
+    await db_session.refresh(session)
+
+    # Create feedback for the session
+    feedback = InterviewFeedback(
+        session_id=session.id,
+        technical_accuracy_score=85,
+        communication_clarity_score=78,
+        problem_solving_score=90,
+        relevance_score=82,
+        overall_score=84,
+        technical_feedback="Strong technical knowledge demonstrated.",
+        communication_feedback="Clear explanations with good structure.",
+        problem_solving_feedback="Excellent approach to problem-solving.",
+        relevance_feedback="Answers were relevant to the position.",
+        overall_comments="Overall performance was strong with minor areas for improvement.",
+        knowledge_gaps=["Advanced algorithms", "System design patterns"],
+        learning_recommendations=[
+            "Review data structures and algorithms",
+            "Practice system design interviews",
+        ],
+        created_at=dt.datetime.now(dt.timezone.utc),
+        updated_at=dt.datetime.now(dt.timezone.utc),
+    )
+    db_session.add(feedback)
+    await db_session.commit()
+    await db_session.refresh(feedback)
+
+    return {
+        "id": session.id,
+        "user_id": session.user_id,
+        "status": session.status,
+        "feedback_id": feedback.id,
+    }

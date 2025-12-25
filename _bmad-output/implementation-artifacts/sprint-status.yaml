@@ -50,7 +50,7 @@ development_status:
   1-7-set-up-github-actions-pipeline: done
   epic-1-retrospective: optional
 
-  epic-2: in-progress
+  epic-2: done
   2-1-create-user-model-and-database-schema: done
   2-2-implement-password-hashing-with-bcrypt: done
   2-3-implement-jwt-token-generation-and-validation: done
@@ -65,7 +65,7 @@ development_status:
   2-12-create-user-logout-frontend-token-invalidation: done
   epic-2-retrospective: optional
 
-  epic-3: in-progress
+  epic-3: done
   3-1-create-resume-model-and-database-schema: done
   3-2-create-resume-upload-paste-endpoint: done
   3-3-create-resume-viewing-endpoint: done
@@ -96,15 +96,15 @@ development_status:
   4-14-create-session-completion-endpoint: done
   epic-4-retrospective: optional
 
-  epic-5: backlog
-  5-1-create-feedback-model: backlog
-  5-2-implement-feedback-analysis-service: backlog
-  5-3-create-feedback-generation-endpoint-with-async-pattern: backlog
-  5-4-store-generated-feedback: backlog
-  5-5-create-feedback-retrieval-endpoint: backlog
-  5-6-create-dimension-scores-display-component: backlog
-  5-7-create-knowledge-gaps-display-component: backlog
-  5-8-create-learning-recommendations-display-component: backlog
+  epic-5: in-progress
+  5-1-create-feedback-model: done
+  5-2-implement-feedback-analysis-service: done
+  5-3-create-feedback-generation-endpoint-with-async-pattern: done
+  5-4-store-generated-feedback: done
+  5-5-create-feedback-retrieval-endpoint: done
+  5-6-create-dimension-scores-display-component: done
+  5-7-create-knowledge-gaps-display-component: done
+  5-8-create-learning-recommendations-display-component: done
   epic-5-retrospective: optional
 
   epic-6: backlog

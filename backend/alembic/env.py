@@ -24,6 +24,7 @@ try:
     import app.models.job_posting  # noqa: F401
     import app.models.interview_session  # noqa: F401
     import app.models.session_message  # noqa: F401
+    import app.models.interview_feedback  # noqa: F401
 except ImportError as e:
     raise ImportError(
         f"Failed to import required modules: {e}\n"
