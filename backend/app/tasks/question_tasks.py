@@ -27,9 +27,7 @@ async def generate_question_task(operation_id: UUID, session_id: UUID):
     async with AsyncSessionLocal() as db:
         try:
             # Load operation
-            result = await db.execute(
-                select(Operation).where(Operation.id == operation_id)
-            )
+            result = await db.execute(select(Operation).where(Operation.id == operation_id))
             operation = result.scalar_one_or_none()
 
             if not operation:
@@ -85,9 +83,7 @@ async def generate_question_task(operation_id: UUID, session_id: UUID):
                 )
 
             except Exception as db_error:
-                logger.error(
-                    f"Failed to store question in session {session_id}: {str(db_error)}"
-                )
+                logger.error(f"Failed to store question in session {session_id}: {str(db_error)}")
                 await db.rollback()
 
                 operation.status = "failed"
@@ -100,9 +96,7 @@ async def generate_question_task(operation_id: UUID, session_id: UUID):
             operation.result = question_data
             await db.commit()
 
-            logger.info(
-                f"Question generated and stored successfully for operation {operation_id}"
-            )
+            logger.info(f"Question generated and stored successfully for operation {operation_id}")
 
         except Exception as e:
             logger.error(
@@ -116,6 +110,4 @@ async def generate_question_task(operation_id: UUID, session_id: UUID):
                 operation.error_message = str(e)
                 await db.commit()
             except Exception as commit_error:
-                logger.error(
-                    f"Failed to update operation {operation_id} with error: {commit_error}"
-                )
+                logger.error(f"Failed to update operation {operation_id} with error: {commit_error}")

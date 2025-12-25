@@ -7,9 +7,7 @@ import pytest
 
 
 @pytest.mark.asyncio
-async def test_delete_job_posting_success(
-    async_client: AsyncClient, auth_headers: dict
-):
+async def test_delete_job_posting_success(async_client: AsyncClient, auth_headers: dict):
     """Test successful deletion returns 204."""
     # Create job posting
     create_response = await async_client.post(
@@ -30,9 +28,7 @@ async def test_delete_job_posting_success(
 
 
 @pytest.mark.asyncio
-async def test_get_after_delete_returns_404(
-    async_client: AsyncClient, auth_headers: dict
-):
+async def test_get_after_delete_returns_404(async_client: AsyncClient, auth_headers: dict):
     """Test getting job posting after deletion returns 404."""
     # Create job posting
     create_response = await async_client.post(
@@ -65,9 +61,7 @@ async def test_get_after_delete_returns_404(
 
 
 @pytest.mark.asyncio
-async def test_delete_job_posting_not_found_returns_404(
-    async_client: AsyncClient, auth_headers: dict
-):
+async def test_delete_job_posting_not_found_returns_404(async_client: AsyncClient, auth_headers: dict):
     """Test deleting non-existent job posting returns 404."""
     import uuid
 
@@ -81,9 +75,7 @@ async def test_delete_job_posting_not_found_returns_404(
 
 
 @pytest.mark.asyncio
-async def test_delete_job_posting_other_user_returns_404(
-    async_client: AsyncClient, auth_headers: dict, db_session
-):
+async def test_delete_job_posting_other_user_returns_404(async_client: AsyncClient, auth_headers: dict, db_session):
     """Test deleting another user's job posting returns 404."""
     from app.models.job_posting import JobPosting
     from app.models.user import User

@@ -38,9 +38,7 @@ async def test_list_job_postings_success(async_client: AsyncClient, auth_headers
 
 
 @pytest.mark.asyncio
-async def test_list_job_postings_empty_returns_empty_array(
-    async_client: AsyncClient, auth_headers: dict
-):
+async def test_list_job_postings_empty_returns_empty_array(async_client: AsyncClient, auth_headers: dict):
     """Test listing with no job postings returns empty array."""
     response = await async_client.get(
         "/api/v1/job-postings/",
@@ -53,9 +51,7 @@ async def test_list_job_postings_empty_returns_empty_array(
 
 
 @pytest.mark.asyncio
-async def test_list_job_postings_ordered_by_created_at_desc(
-    async_client: AsyncClient, auth_headers: dict
-):
+async def test_list_job_postings_ordered_by_created_at_desc(async_client: AsyncClient, auth_headers: dict):
     """Test job postings are ordered by created_at DESC (newest first)."""
     # Create job postings in sequence
     await async_client.post(
@@ -82,9 +78,7 @@ async def test_list_job_postings_ordered_by_created_at_desc(
 
 
 @pytest.mark.asyncio
-async def test_list_job_postings_user_isolation(
-    async_client: AsyncClient, auth_headers: dict, db_session
-):
+async def test_list_job_postings_user_isolation(async_client: AsyncClient, auth_headers: dict, db_session):
     """Test users can only see their own job postings."""
     from app.models.job_posting import JobPosting
     from app.models.user import User

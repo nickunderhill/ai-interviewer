@@ -39,10 +39,7 @@ async def lifespan(app: FastAPI):
     """
     # Startup
     logger.info(f"Starting {settings.APP_NAME}")
-    skip_db_init = (
-        os.getenv("PYTEST_CURRENT_TEST") is not None
-        or os.getenv("DISABLE_STARTUP_DB_CHECK") == "1"
-    )
+    skip_db_init = os.getenv("PYTEST_CURRENT_TEST") is not None or os.getenv("DISABLE_STARTUP_DB_CHECK") == "1"
     if skip_db_init:
         logger.info("Skipping DB init during tests")
     else:
@@ -73,9 +70,7 @@ app = FastAPI(
 app.include_router(auth_router)
 app.include_router(users_router)
 app.include_router(resumes_router, prefix="/api/v1/resumes", tags=["Resumes"])
-app.include_router(
-    job_postings_router, prefix="/api/v1/job-postings", tags=["Job Postings"]
-)
+app.include_router(job_postings_router, prefix="/api/v1/job-postings", tags=["Job Postings"])
 app.include_router(sessions_router, prefix="/api/v1/sessions", tags=["Sessions"])
 app.include_router(operations_router, prefix="/api/v1/operations", tags=["Operations"])
 app.include_router(metrics_router, prefix="/api/v1/metrics", tags=["Metrics"])

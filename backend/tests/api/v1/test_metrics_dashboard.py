@@ -13,9 +13,7 @@ from app.models.user import User
 
 
 @pytest.mark.asyncio
-async def test_get_dashboard_metrics_no_sessions(
-    async_client: AsyncClient, test_user: User, auth_headers: dict
-):
+async def test_get_dashboard_metrics_no_sessions(async_client: AsyncClient, test_user: User, auth_headers: dict):
     """Test dashboard metrics with no completed sessions."""
     response = await async_client.get("/api/v1/metrics/dashboard", headers=auth_headers)
     assert response.status_code == 200

@@ -2,7 +2,6 @@
 Tests for encryption service.
 """
 
-
 from cryptography.fernet import Fernet
 import pytest
 

@@ -7,9 +7,7 @@ import pytest
 
 
 @pytest.mark.asyncio
-async def test_list_sessions_success(
-    async_client: AsyncClient, auth_headers: dict, test_sessions: list
-):
+async def test_list_sessions_success(async_client: AsyncClient, auth_headers: dict, test_sessions: list):
     """Test listing all sessions returns 200."""
     response = await async_client.get(
         "/api/v1/sessions",
@@ -72,9 +70,7 @@ async def test_list_sessions_with_status_filter_completed(
 
 
 @pytest.mark.asyncio
-async def test_list_sessions_with_invalid_status_returns_400(
-    async_client: AsyncClient, auth_headers: dict
-):
+async def test_list_sessions_with_invalid_status_returns_400(async_client: AsyncClient, auth_headers: dict):
     """Test invalid status filter returns 400."""
     response = await async_client.get(
         "/api/v1/sessions?status=invalid_status",
@@ -88,9 +84,7 @@ async def test_list_sessions_with_invalid_status_returns_400(
 
 
 @pytest.mark.asyncio
-async def test_list_sessions_empty_result(
-    async_client: AsyncClient, auth_headers: dict
-):
+async def test_list_sessions_empty_result(async_client: AsyncClient, auth_headers: dict):
     """Test listing sessions when user has none returns empty array."""
     response = await async_client.get(
         "/api/v1/sessions",

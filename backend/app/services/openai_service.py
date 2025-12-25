@@ -39,10 +39,7 @@ class OpenAIService:
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail={
                     "code": "API_KEY_NOT_CONFIGURED",
-                    "message": (
-                        "Please configure your OpenAI API key "
-                        "in settings before using AI features"
-                    ),
+                    "message": ("Please configure your OpenAI API key " "in settings before using AI features"),
                 },
             )
 
@@ -60,9 +57,7 @@ class OpenAIService:
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail={
                     "code": "API_KEY_DECRYPTION_FAILED",
-                    "message": (
-                        "Failed to decrypt API key. Please " "reconfigure your API key."
-                    ),
+                    "message": ("Failed to decrypt API key. Please " "reconfigure your API key."),
                 },
             ) from e
 
@@ -94,10 +89,7 @@ class OpenAIService:
                 status_code=status.HTTP_429_TOO_MANY_REQUESTS,
                 detail={
                     "code": "OPENAI_RATE_LIMIT",
-                    "message": (
-                        "OpenAI rate limit exceeded. "
-                        "Please wait a moment and try again."
-                    ),
+                    "message": ("OpenAI rate limit exceeded. " "Please wait a moment and try again."),
                 },
             ) from None
 
@@ -107,10 +99,7 @@ class OpenAIService:
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
                 detail={
                     "code": "OPENAI_CONNECTION_ERROR",
-                    "message": (
-                        "Unable to connect to OpenAI. Please check "
-                        "your internet connection and try again."
-                    ),
+                    "message": ("Unable to connect to OpenAI. Please check " "your internet connection and try again."),
                 },
             ) from e
 
@@ -123,10 +112,7 @@ class OpenAIService:
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail={
                         "code": "INVALID_API_KEY",
-                        "message": (
-                            "Your OpenAI API key is invalid. "
-                            "Please update it in settings."
-                        ),
+                        "message": ("Your OpenAI API key is invalid. " "Please update it in settings."),
                     },
                 ) from e
 
@@ -139,9 +125,7 @@ class OpenAIService:
             ) from e
 
         except Exception as e:
-            logger.error(
-                f"Unexpected error in OpenAI call for user {self.user_id}: {str(e)}"
-            )
+            logger.error(f"Unexpected error in OpenAI call for user {self.user_id}: {str(e)}")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail={

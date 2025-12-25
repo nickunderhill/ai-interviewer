@@ -9,9 +9,7 @@ from app.models.user import User
 
 
 @pytest.mark.asyncio
-async def test_create_resume_success(
-    async_client: AsyncClient, test_user: User, auth_headers: dict
-):
+async def test_create_resume_success(async_client: AsyncClient, test_user: User, auth_headers: dict):
     """Test successful resume creation returns 201."""
     resume_data = {
         "content": "# My Resume\n\nExperience: 5 years in Python development\nSkills: Python, FastAPI, PostgreSQL"
@@ -33,9 +31,7 @@ async def test_create_resume_success(
 
 
 @pytest.mark.asyncio
-async def test_create_resume_duplicate_returns_409(
-    async_client: AsyncClient, test_user: User, auth_headers: dict
-):
+async def test_create_resume_duplicate_returns_409(async_client: AsyncClient, test_user: User, auth_headers: dict):
     """Test creating duplicate resume returns 409 Conflict."""
     resume_data = {"content": "First resume content"}
 
@@ -60,9 +56,7 @@ async def test_create_resume_duplicate_returns_409(
 
 
 @pytest.mark.asyncio
-async def test_create_resume_empty_content_returns_422(
-    async_client: AsyncClient, auth_headers: dict
-):
+async def test_create_resume_empty_content_returns_422(async_client: AsyncClient, auth_headers: dict):
     """Test empty content returns 422 Validation Error."""
     resume_data = {"content": ""}
 
@@ -77,9 +71,7 @@ async def test_create_resume_empty_content_returns_422(
 
 
 @pytest.mark.asyncio
-async def test_create_resume_content_too_long_returns_422(
-    async_client: AsyncClient, auth_headers: dict
-):
+async def test_create_resume_content_too_long_returns_422(async_client: AsyncClient, auth_headers: dict):
     """Test content exceeding max length returns 422."""
     # Create content longer than 50,000 characters
     resume_data = {"content": "x" * 50001}
@@ -108,13 +100,9 @@ async def test_create_resume_unauthenticated_returns_401(async_client: AsyncClie
 
 
 @pytest.mark.asyncio
-async def test_create_resume_with_unicode_content(
-    async_client: AsyncClient, auth_headers: dict
-):
+async def test_create_resume_with_unicode_content(async_client: AsyncClient, auth_headers: dict):
     """Test resume with unicode characters is handled correctly."""
-    resume_data = {
-        "content": "Name: José García\nSkills: Python, 日本語, العربية\n🎓 Education"
-    }
+    resume_data = {"content": "Name: José García\nSkills: Python, 日本語, العربية\n🎓 Education"}
 
     response = await async_client.post(
         "/api/v1/resumes/",
@@ -128,9 +116,7 @@ async def test_create_resume_with_unicode_content(
 
 
 @pytest.mark.asyncio
-async def test_create_resume_with_large_valid_content(
-    async_client: AsyncClient, auth_headers: dict
-):
+async def test_create_resume_with_large_valid_content(async_client: AsyncClient, auth_headers: dict):
     """Test resume with large but valid content (near max length)."""
     # Create content close to but under 50,000 characters
     large_content = "Experience:\n" + ("Detail about my work. " * 2270)  # ~49,600 chars
@@ -150,9 +136,7 @@ async def test_create_resume_with_large_valid_content(
 
 
 @pytest.mark.asyncio
-async def test_create_resume_whitespace_only_passes_validation(
-    async_client: AsyncClient, auth_headers: dict
-):
+async def test_create_resume_whitespace_only_passes_validation(async_client: AsyncClient, auth_headers: dict):
     """Test whitespace-only content passes validation (min_length counts whitespace)."""
     # Pydantic min_length=1 allows whitespace-only strings
     # This is a known behavior - length includes whitespace

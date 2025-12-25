@@ -79,9 +79,7 @@ def test_generate_chat_completion_success(mock_openai, mock_decrypt, mock_user):
     mock_openai.return_value = mock_client
 
     service = OpenAIService(mock_user)
-    result = service.generate_chat_completion(
-        messages=[{"role": "user", "content": "Test prompt"}]
-    )
+    result = service.generate_chat_completion(messages=[{"role": "user", "content": "Test prompt"}])
 
     assert result == "Generated response"
     mock_client.chat.completions.create.assert_called_once()
@@ -95,9 +93,7 @@ def test_generate_chat_completion_success(mock_openai, mock_decrypt, mock_user):
 
 @patch("app.services.openai_service.decrypt_api_key")
 @patch("app.services.openai_service.OpenAI")
-def test_generate_chat_completion_with_custom_params(
-    mock_openai, mock_decrypt, mock_user
-):
+def test_generate_chat_completion_with_custom_params(mock_openai, mock_decrypt, mock_user):
     """Test chat completion with custom parameters."""
     mock_decrypt.return_value = "sk-test-key"
 
@@ -153,9 +149,7 @@ def test_generate_chat_completion_rate_limit(mock_openai, mock_decrypt, mock_use
 
 @patch("app.services.openai_service.decrypt_api_key")
 @patch("app.services.openai_service.OpenAI")
-def test_generate_chat_completion_connection_error(
-    mock_openai, mock_decrypt, mock_user
-):
+def test_generate_chat_completion_connection_error(mock_openai, mock_decrypt, mock_user):
     """Test connection error handling."""
     mock_decrypt.return_value = "sk-test-key"
 
@@ -227,9 +221,7 @@ def test_generate_chat_completion_api_error(mock_openai, mock_decrypt, mock_user
 
 @patch("app.services.openai_service.decrypt_api_key")
 @patch("app.services.openai_service.OpenAI")
-def test_generate_chat_completion_unexpected_error(
-    mock_openai, mock_decrypt, mock_user
-):
+def test_generate_chat_completion_unexpected_error(mock_openai, mock_decrypt, mock_user):
     """Test unexpected error handling."""
     mock_decrypt.return_value = "sk-test-key"
 

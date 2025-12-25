@@ -74,9 +74,7 @@ async def test_one_to_many_relationship(db_session):
     await db_session.commit()
 
     # Query all job postings for user
-    result = await db_session.execute(
-        select(JobPosting).where(JobPosting.user_id == user.id)
-    )
+    result = await db_session.execute(select(JobPosting).where(JobPosting.user_id == user.id))
     job_postings = result.scalars().all()
 
     assert len(job_postings) == 2
@@ -254,9 +252,7 @@ async def test_cascading_delete(db_session):
     await db_session.commit()
 
     # Verify job postings are also deleted
-    result = await db_session.execute(
-        select(JobPosting).where(JobPosting.id.in_([job1_id, job2_id]))
-    )
+    result = await db_session.execute(select(JobPosting).where(JobPosting.id.in_([job1_id, job2_id])))
     deleted_jobs = result.scalars().all()
     assert len(deleted_jobs) == 0
 

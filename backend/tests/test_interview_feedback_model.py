@@ -231,9 +231,7 @@ async def test_feedback_cascade_deletes_with_session(db_session: AsyncSession):
     await db_session.commit()
 
     # Verify feedback was also deleted
-    result = await db_session.execute(
-        select(InterviewFeedback).where(InterviewFeedback.id == feedback_id)
-    )
+    result = await db_session.execute(select(InterviewFeedback).where(InterviewFeedback.id == feedback_id))
     deleted_feedback = result.scalar_one_or_none()
     assert deleted_feedback is None
 

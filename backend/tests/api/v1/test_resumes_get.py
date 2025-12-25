@@ -9,9 +9,7 @@ from app.models.user import User
 
 
 @pytest.mark.asyncio
-async def test_get_resume_success(
-    async_client: AsyncClient, test_user: User, auth_headers: dict
-):
+async def test_get_resume_success(async_client: AsyncClient, test_user: User, auth_headers: dict):
     """Test successful resume retrieval returns 200."""
     # First create a resume
     resume_data = {"content": "# My Resume\n\nExperience: Senior Developer"}
@@ -38,9 +36,7 @@ async def test_get_resume_success(
 
 
 @pytest.mark.asyncio
-async def test_get_resume_not_found_returns_404(
-    async_client: AsyncClient, auth_headers: dict
-):
+async def test_get_resume_not_found_returns_404(async_client: AsyncClient, auth_headers: dict):
     """Test 404 when user has no resume."""
     response = await async_client.get(
         "/api/v1/resumes/me",

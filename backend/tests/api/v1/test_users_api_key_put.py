@@ -67,10 +67,7 @@ async def test_update_api_key_overwrites_existing_encrypted_key(
     assert response.status_code == 200
     data = response.json()
     assert "message" in data
-    assert (
-        "successfully" in data["message"].lower()
-        or "updated" in data["message"].lower()
-    )
+    assert "successfully" in data["message"].lower() or "updated" in data["message"].lower()
 
     # Verify the encrypted key was overwritten
     await db_session.refresh(test_user)

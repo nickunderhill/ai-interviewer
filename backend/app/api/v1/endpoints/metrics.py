@@ -67,10 +67,7 @@ async def get_dashboard_metrics(
         .limit(5)
     )
     roles_result = await db.execute(roles_query)
-    most_practiced = [
-        PracticedRole(title=r.title, company=r.company, count=r.count)
-        for r in roles_result
-    ]
+    most_practiced = [PracticedRole(title=r.title, company=r.company, count=r.count) for r in roles_result]
 
     return DashboardMetrics(
         completed_interviews=completed_count or 0,

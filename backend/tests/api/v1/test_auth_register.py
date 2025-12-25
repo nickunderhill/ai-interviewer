@@ -58,9 +58,7 @@ async def test_password_is_hashed_in_database(client, override_get_db, db_sessio
     )
     assert response.status_code == 201
 
-    result = await db_session.execute(
-        select(User).where(User.email == "hashme@example.com")
-    )
+    result = await db_session.execute(select(User).where(User.email == "hashme@example.com"))
     user = result.scalar_one()
 
     assert user.hashed_password != "p@ssw0rd!!"
@@ -69,9 +67,7 @@ async def test_password_is_hashed_in_database(client, override_get_db, db_sessio
 
 
 @pytest.mark.asyncio
-async def test_email_is_normalized_and_case_insensitive_duplicate_returns_409(
-    client, override_get_db
-):
+async def test_email_is_normalized_and_case_insensitive_duplicate_returns_409(client, override_get_db):
     first = await client.post(
         "/api/v1/auth/register",
         json={"email": "User@Example.com", "password": "p@ssw0rd!!"},

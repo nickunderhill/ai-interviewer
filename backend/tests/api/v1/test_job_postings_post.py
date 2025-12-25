@@ -7,9 +7,7 @@ import pytest
 
 
 @pytest.mark.asyncio
-async def test_create_job_posting_success(
-    async_client: AsyncClient, auth_headers: dict
-):
+async def test_create_job_posting_success(async_client: AsyncClient, auth_headers: dict):
     """Test successful job posting creation returns 201."""
     job_posting_data = {
         "title": "Senior Python Developer",
@@ -39,9 +37,7 @@ async def test_create_job_posting_success(
 
 
 @pytest.mark.asyncio
-async def test_create_job_posting_only_required_fields(
-    async_client: AsyncClient, auth_headers: dict
-):
+async def test_create_job_posting_only_required_fields(async_client: AsyncClient, auth_headers: dict):
     """Test creating job posting with only required fields."""
     job_posting_data = {
         "title": "Backend Developer",
@@ -64,9 +60,7 @@ async def test_create_job_posting_only_required_fields(
 
 
 @pytest.mark.asyncio
-async def test_create_job_posting_missing_title_returns_422(
-    async_client: AsyncClient, auth_headers: dict
-):
+async def test_create_job_posting_missing_title_returns_422(async_client: AsyncClient, auth_headers: dict):
     """Test missing required title returns 422."""
     job_posting_data = {
         "description": "Description without title",
@@ -82,9 +76,7 @@ async def test_create_job_posting_missing_title_returns_422(
 
 
 @pytest.mark.asyncio
-async def test_create_job_posting_empty_title_returns_422(
-    async_client: AsyncClient, auth_headers: dict
-):
+async def test_create_job_posting_empty_title_returns_422(async_client: AsyncClient, auth_headers: dict):
     """Test empty title returns 422."""
     job_posting_data = {
         "title": "",
@@ -101,9 +93,7 @@ async def test_create_job_posting_empty_title_returns_422(
 
 
 @pytest.mark.asyncio
-async def test_create_job_posting_title_too_long_returns_422(
-    async_client: AsyncClient, auth_headers: dict
-):
+async def test_create_job_posting_title_too_long_returns_422(async_client: AsyncClient, auth_headers: dict):
     """Test title exceeding max length returns 422."""
     job_posting_data = {
         "title": "x" * 256,  # Max is 255
@@ -120,9 +110,7 @@ async def test_create_job_posting_title_too_long_returns_422(
 
 
 @pytest.mark.asyncio
-async def test_create_job_posting_description_too_long_returns_422(
-    async_client: AsyncClient, auth_headers: dict
-):
+async def test_create_job_posting_description_too_long_returns_422(async_client: AsyncClient, auth_headers: dict):
     """Test description exceeding max length returns 422."""
     job_posting_data = {
         "title": "Test Position",
@@ -157,9 +145,7 @@ async def test_create_job_posting_unauthenticated_returns_401(
 
 
 @pytest.mark.asyncio
-async def test_create_multiple_job_postings(
-    async_client: AsyncClient, auth_headers: dict
-):
+async def test_create_multiple_job_postings(async_client: AsyncClient, auth_headers: dict):
     """Test user can create multiple job postings."""
     # Create first job posting
     response1 = await async_client.post(

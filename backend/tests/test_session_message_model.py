@@ -227,9 +227,7 @@ async def test_session_message_ordering_by_created_at(db_session):
 
     # Query messages ordered by created_at
     result = await db_session.execute(
-        select(SessionMessage)
-        .where(SessionMessage.session_id == session.id)
-        .order_by(SessionMessage.created_at)
+        select(SessionMessage).where(SessionMessage.session_id == session.id).order_by(SessionMessage.created_at)
     )
     messages = result.scalars().all()
 
@@ -281,9 +279,7 @@ async def test_session_message_cascade_on_session_deletion(db_session):
     await db_session.commit()
 
     # Verify message was also deleted
-    result = await db_session.execute(
-        select(SessionMessage).where(SessionMessage.id == message_id)
-    )
+    result = await db_session.execute(select(SessionMessage).where(SessionMessage.id == message_id))
     deleted_message = result.scalar_one_or_none()
     assert deleted_message is None
 

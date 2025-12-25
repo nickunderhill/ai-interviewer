@@ -2,7 +2,6 @@
 Tests for resume service business logic.
 """
 
-
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 

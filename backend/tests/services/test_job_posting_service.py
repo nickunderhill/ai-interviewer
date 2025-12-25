@@ -81,9 +81,7 @@ async def test_get_user_job_postings_returns_list(db_session):
         description="Description 2",
     )
 
-    job_postings = await job_posting_service.get_user_job_postings(
-        db=db_session, user_id=user.id
-    )
+    job_postings = await job_posting_service.get_user_job_postings(db=db_session, user_id=user.id)
 
     assert len(job_postings) == 2
     assert job_postings[0].title in ["Job 1", "Job 2"]
@@ -97,9 +95,7 @@ async def test_get_user_job_postings_empty_list(db_session):
     await db_session.commit()
     await db_session.refresh(user)
 
-    job_postings = await job_posting_service.get_user_job_postings(
-        db=db_session, user_id=user.id
-    )
+    job_postings = await job_posting_service.get_user_job_postings(db=db_session, user_id=user.id)
 
     assert job_postings == []
 
@@ -126,9 +122,7 @@ async def test_get_user_job_postings_ordered_by_created_at_desc(db_session):
         description="Second",
     )
 
-    job_postings = await job_posting_service.get_user_job_postings(
-        db=db_session, user_id=user.id
-    )
+    job_postings = await job_posting_service.get_user_job_postings(db=db_session, user_id=user.id)
 
     # Most recent should be first
     assert job_postings[0].id == second.id
@@ -159,9 +153,7 @@ async def test_get_user_job_postings_user_isolation(db_session):
         description="Description",
     )
 
-    user1_postings = await job_posting_service.get_user_job_postings(
-        db=db_session, user_id=user1.id
-    )
+    user1_postings = await job_posting_service.get_user_job_postings(db=db_session, user_id=user1.id)
 
     assert len(user1_postings) == 1
     assert user1_postings[0].title == "User 1 Job"
@@ -210,9 +202,7 @@ async def test_get_job_posting_by_id_wrong_user_raises_exception(db_session):
 
     # Try to get with wrong user - should raise exception
     with pytest.raises(JobPostingNotFoundException) as exc_info:
-        await job_posting_service.get_job_posting_by_id(
-            db=db_session, job_posting_id=created.id, user_id=user2.id
-        )
+        await job_posting_service.get_job_posting_by_id(db=db_session, job_posting_id=created.id, user_id=user2.id)
 
     assert exc_info.value.status_code == 404
 
@@ -230,9 +220,7 @@ async def test_get_job_posting_by_id_nonexistent_raises_exception(db_session):
     fake_id = uuid.uuid4()
 
     with pytest.raises(JobPostingNotFoundException) as exc_info:
-        await job_posting_service.get_job_posting_by_id(
-            db=db_session, job_posting_id=fake_id, user_id=user.id
-        )
+        await job_posting_service.get_job_posting_by_id(db=db_session, job_posting_id=fake_id, user_id=user.id)
 
     assert exc_info.value.status_code == 404
 
@@ -319,15 +307,11 @@ async def test_delete_job_posting_deletes_successfully(db_session):
     assert retrieved is not None
 
     # Delete
-    await job_posting_service.delete_job_posting(
-        db=db_session, job_posting_id=created.id, user_id=user.id
-    )
+    await job_posting_service.delete_job_posting(db=db_session, job_posting_id=created.id, user_id=user.id)
 
     # Verify deleted - should raise exception now
     with pytest.raises(JobPostingNotFoundException):
-        await job_posting_service.get_job_posting_by_id(
-            db=db_session, job_posting_id=created.id, user_id=user.id
-        )
+        await job_posting_service.get_job_posting_by_id(db=db_session, job_posting_id=created.id, user_id=user.id)
 
 
 @pytest.mark.asyncio
@@ -343,9 +327,7 @@ async def test_delete_job_posting_not_found_raises_exception(db_session):
     fake_id = uuid.uuid4()
 
     with pytest.raises(JobPostingNotFoundException) as exc_info:
-        await job_posting_service.delete_job_posting(
-            db=db_session, job_posting_id=fake_id, user_id=user.id
-        )
+        await job_posting_service.delete_job_posting(db=db_session, job_posting_id=fake_id, user_id=user.id)
 
     assert exc_info.value.status_code == 404
     assert "not found" in str(exc_info.value.detail).lower()

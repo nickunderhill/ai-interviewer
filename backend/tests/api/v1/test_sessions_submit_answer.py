@@ -38,9 +38,7 @@ async def test_submit_answer_success(
     assert "id" in data
 
     # Verify message stored in database
-    result = await db_session.execute(
-        select(SessionMessage).where(SessionMessage.id == uuid.UUID(data["id"]))
-    )
+    result = await db_session.execute(select(SessionMessage).where(SessionMessage.id == uuid.UUID(data["id"])))
     message = result.scalar_one()
     assert message.content == answer_text
     assert message.message_type == "answer"
@@ -238,8 +236,6 @@ async def test_submit_long_answer(
     assert data["content"] == long_answer
 
     # Verify stored in database
-    result = await db_session.execute(
-        select(SessionMessage).where(SessionMessage.id == uuid.UUID(data["id"]))
-    )
+    result = await db_session.execute(select(SessionMessage).where(SessionMessage.id == uuid.UUID(data["id"])))
     message = result.scalar_one()
     assert message.content == long_answer

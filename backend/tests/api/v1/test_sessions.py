@@ -31,9 +31,7 @@ async def test_pause_session_success(
     assert data["status"] == "paused"
 
     # Verify in database
-    result = await db_session.execute(
-        select(InterviewSession).where(InterviewSession.id == UUID(str(session_id)))
-    )
+    result = await db_session.execute(select(InterviewSession).where(InterviewSession.id == UUID(str(session_id))))
     session = result.scalar_one()
     assert session.status == "paused"
 
@@ -253,9 +251,7 @@ async def test_complete_active_session_success(
     assert data["id"] == str(session_id)
     assert data["status"] == "completed"
 
-    result = await db_session.execute(
-        select(InterviewSession).where(InterviewSession.id == UUID(str(session_id)))
-    )
+    result = await db_session.execute(select(InterviewSession).where(InterviewSession.id == UUID(str(session_id))))
     session = result.scalar_one()
     assert session.status == "completed"
 

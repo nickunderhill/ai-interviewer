@@ -10,9 +10,7 @@ from app.models.operation import Operation
 
 
 @pytest.mark.asyncio
-async def test_get_operation_pending(
-    async_client: AsyncClient, db_session: AsyncSession
-):
+async def test_get_operation_pending(async_client: AsyncClient, db_session: AsyncSession):
     """Test retrieving pending operation."""
     # Create pending operation
     operation = Operation(operation_type="question_generation", status="pending")
@@ -31,9 +29,7 @@ async def test_get_operation_pending(
 
 
 @pytest.mark.asyncio
-async def test_get_operation_processing(
-    async_client: AsyncClient, db_session: AsyncSession
-):
+async def test_get_operation_processing(async_client: AsyncClient, db_session: AsyncSession):
     """Test retrieving processing operation."""
     operation = Operation(operation_type="question_generation", status="processing")
     db_session.add(operation)
@@ -49,17 +45,13 @@ async def test_get_operation_processing(
 
 
 @pytest.mark.asyncio
-async def test_get_operation_completed_with_result(
-    async_client: AsyncClient, db_session: AsyncSession
-):
+async def test_get_operation_completed_with_result(async_client: AsyncClient, db_session: AsyncSession):
     """Test retrieving completed operation with result data."""
     result_data = {
         "question_text": "What is your experience with Python?",
         "question_type": "technical",
     }
-    operation = Operation(
-        operation_type="question_generation", status="completed", result=result_data
-    )
+    operation = Operation(operation_type="question_generation", status="completed", result=result_data)
     db_session.add(operation)
     await db_session.commit()
     await db_session.refresh(operation)
@@ -74,9 +66,7 @@ async def test_get_operation_completed_with_result(
 
 
 @pytest.mark.asyncio
-async def test_get_operation_failed_with_error(
-    async_client: AsyncClient, db_session: AsyncSession
-):
+async def test_get_operation_failed_with_error(async_client: AsyncClient, db_session: AsyncSession):
     """Test retrieving failed operation with error message."""
     operation = Operation(
         operation_type="question_generation",
@@ -109,9 +99,7 @@ async def test_get_operation_not_found(async_client: AsyncClient):
 
 
 @pytest.mark.asyncio
-async def test_polling_pattern_status_updates(
-    async_client: AsyncClient, db_session: AsyncSession
-):
+async def test_polling_pattern_status_updates(async_client: AsyncClient, db_session: AsyncSession):
     """Test polling pattern - multiple requests show status changes."""
     # Create pending operation
     operation = Operation(operation_type="question_generation", status="pending")
@@ -147,9 +135,7 @@ async def test_polling_pattern_status_updates(
 
 
 @pytest.mark.asyncio
-async def test_operation_idempotent_polling(
-    async_client: AsyncClient, db_session: AsyncSession
-):
+async def test_operation_idempotent_polling(async_client: AsyncClient, db_session: AsyncSession):
     """Test that polling same operation multiple times is idempotent."""
     operation = Operation(
         operation_type="question_generation",

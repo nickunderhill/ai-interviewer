@@ -9,9 +9,7 @@ from app.models.user import User
 
 
 @pytest.mark.asyncio
-async def test_delete_resume_success(
-    async_client: AsyncClient, test_user: User, auth_headers: dict
-):
+async def test_delete_resume_success(async_client: AsyncClient, test_user: User, auth_headers: dict):
     """Test successful deletion returns 204."""
     # First create a resume
     create_response = await async_client.post(
@@ -32,9 +30,7 @@ async def test_delete_resume_success(
 
 
 @pytest.mark.asyncio
-async def test_get_after_delete_returns_404(
-    async_client: AsyncClient, auth_headers: dict
-):
+async def test_get_after_delete_returns_404(async_client: AsyncClient, auth_headers: dict):
     """Test subsequent GET after DELETE returns 404."""
     # Create resume
     await async_client.post(
@@ -66,9 +62,7 @@ async def test_get_after_delete_returns_404(
 
 
 @pytest.mark.asyncio
-async def test_delete_resume_not_found_returns_404(
-    async_client: AsyncClient, auth_headers: dict
-):
+async def test_delete_resume_not_found_returns_404(async_client: AsyncClient, auth_headers: dict):
     """Test 404 when deleting non-existent resume."""
     response = await async_client.delete(
         "/api/v1/resumes/me",

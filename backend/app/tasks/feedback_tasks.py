@@ -120,9 +120,7 @@ async def generate_feedback_task(
             )
 
         except Exception as e:
-            logger.error(
-                f"Error in feedback generation task {operation_id}: {e}", exc_info=True
-            )
+            logger.error(f"Error in feedback generation task {operation_id}: {e}", exc_info=True)
 
             # Try to update operation status to failed
             try:
@@ -133,6 +131,4 @@ async def generate_feedback_task(
                     operation.updated_at = dt.datetime.now(dt.UTC)
                     await db.commit()
             except Exception as update_error:
-                logger.error(
-                    f"Failed to update operation {operation_id} status: {update_error}"
-                )
+                logger.error(f"Failed to update operation {operation_id} status: {update_error}")
