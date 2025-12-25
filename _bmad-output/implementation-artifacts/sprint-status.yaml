@@ -107,22 +107,22 @@ development_status:
   5-8-create-learning-recommendations-display-component: done
   epic-5-retrospective: optional
 
-  epic-6: backlog
-  6-1-create-session-history-list-view: backlog
-  6-2-create-session-detail-view-with-full-q-a-history: backlog
-  6-3-create-performance-metrics-dashboard: backlog
-  6-4-implement-score-comparison-across-sessions: backlog
-  6-5-create-score-trends-visualization: backlog
-  6-6-implement-session-filtering-by-date-range: backlog
-  6-7-implement-session-filtering-by-job-posting: backlog
+  epic-6: done
+  6-1-create-session-history-list-view: done
+  6-2-create-session-detail-view-with-full-q-a-history: done
+  6-3-create-performance-metrics-dashboard: done
+  6-4-implement-score-comparison-across-sessions: done
+  6-5-create-score-trends-visualization: done
+  6-6-implement-session-filtering-by-date-range: done
+  6-7-implement-session-filtering-by-job-posting: done
   epic-6-retrospective: optional
 
-  epic-7: backlog
-  7-1-add-retake-tracking-fields-to-session-model: backlog
-  7-2-create-retake-creation-endpoint: backlog
-  7-3-display-retake-information-in-session-views: backlog
-  7-4-create-score-comparison-across-retakes: backlog
-  7-5-create-dimension-level-improvement-tracking: backlog
+  epic-7: in-progress
+  7-1-add-retake-tracking-fields-to-session-model: ready-for-dev
+  7-2-create-retake-creation-endpoint: ready-for-dev
+  7-3-display-retake-information-in-session-views: ready-for-dev
+  7-4-create-score-comparison-across-retakes: ready-for-dev
+  7-5-create-dimension-level-improvement-tracking: ready-for-dev
   epic-7-retrospective: optional
 
   epic-8: backlog

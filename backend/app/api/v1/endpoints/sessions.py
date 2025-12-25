@@ -2,6 +2,7 @@
 API endpoints for interview sessions.
 """
 
+import datetime as dt
 from typing import List, Optional
 from uuid import UUID
 from fastapi import (
@@ -20,15 +21,18 @@ from sqlalchemy.orm import selectinload
 from app.core.database import get_db
 from app.core.dependencies import get_current_user
 from app.models.interview_session import InterviewSession
+from app.models.job_posting import JobPosting
 from app.models.operation import Operation
 from app.models.user import User
 from app.schemas.operation import OperationResponse
 from app.schemas.session import (
     AnswerCreate,
+    JobPostingBasic,
     MessageResponse,
     SessionCreate,
     SessionDetailResponse,
     SessionResponse,
+    SessionWithFeedbackScore,
 )
 from app.schemas import feedback as schemas
 from app.services import session_service
@@ -72,19 +76,100 @@ async def list_sessions(
         alias="status",
         description="Filter by status: active, paused, or completed",
     ),
+    start_date: Optional[dt.date] = Query(
+        None,
+        description="Filter sessions from this date (inclusive)",
+    ),
+    end_date: Optional[dt.date] = Query(
+        None,
+        description="Filter sessions until this date (inclusive)",
+    ),
+    job_posting_id: Optional[UUID] = Query(
+        None,
+        description="Filter sessions by job posting ID",
+    ),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ) -> List[SessionResponse]:
     """
     Get all interview sessions for the authenticated user.
 
+    Filters:
     - **status**: Optional filter by session status
-    - Returns sessions ordered by created_at DESC (newest first)
-    - Returns empty array if no sessions found
+    - **start_date**: Filter sessions created on or after this date
+    - **end_date**: Filter sessions created on or before this date
+    - **job_posting_id**: Filter sessions for specific job posting
+
+    Returns sessions ordered by created_at DESC (newest first)
     """
-    sessions = await session_service.get_sessions_by_user(
-        db, current_user, status_param
+    # Validate status parameter
+    VALID_STATUSES = {"active", "paused", "completed"}
+    if status_param and status_param not in VALID_STATUSES:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={
+                "code": "INVALID_STATUS_FILTER",
+                "message": f"Status must be one of: {VALID_STATUSES}",
+            },
+        )
+
+    # Validate date range
+    if start_date and end_date and start_date > end_date:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={
+                "code": "INVALID_DATE_RANGE",
+                "message": "start_date must be <= end_date",
+            },
+        )
+
+    # Verify job posting ownership if filtering by job_posting_id
+    if job_posting_id:
+        job_result = await db.execute(
+            select(JobPosting).where(
+                JobPosting.id == job_posting_id,
+                JobPosting.user_id == current_user.id,
+            )
+        )
+        if not job_result.scalar_one_or_none():
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail={
+                    "code": "JOB_POSTING_NOT_FOUND",
+                    "message": "Job posting not found",
+                },
+            )
+
+    # Build query
+    query = (
+        select(InterviewSession)
+        .options(selectinload(InterviewSession.job_posting))
+        .where(InterviewSession.user_id == current_user.id)
     )
+
+    if status_param:
+        query = query.where(InterviewSession.status == status_param)
+
+    if start_date:
+        start_datetime = dt.datetime.combine(start_date, dt.time.min).replace(
+            tzinfo=dt.timezone.utc
+        )
+        query = query.where(InterviewSession.created_at >= start_datetime)
+
+    if end_date:
+        end_datetime = dt.datetime.combine(end_date, dt.time.max).replace(
+            tzinfo=dt.timezone.utc
+        )
+        query = query.where(InterviewSession.created_at <= end_datetime)
+
+    if job_posting_id:
+        query = query.where(InterviewSession.job_posting_id == job_posting_id)
+
+    query = query.order_by(InterviewSession.created_at.desc())
+
+    result = await db.execute(query)
+    sessions = result.scalars().all()
+
     return [SessionResponse.model_validate(session) for session in sessions]
 
 
@@ -125,6 +210,57 @@ async def get_session(
     }
 
     return SessionDetailResponse.model_validate(response_data)
+
+
+@router.get(
+    "/with-feedback",
+    response_model=List[SessionWithFeedbackScore],
+    status_code=status.HTTP_200_OK,
+    summary="Get sessions with feedback scores",
+)
+async def get_sessions_with_feedback(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> List[SessionWithFeedbackScore]:
+    """
+    Get all completed sessions with feedback scores for the authenticated user.
+
+    - Returns sessions ordered by created_at ASC (chronological order)
+    - Only includes completed sessions that have feedback
+    - Used for score comparison and trend visualization
+    """
+    from app.models.interview_feedback import InterviewFeedback
+    from app.models.job_posting import JobPosting
+
+    query = (
+        select(InterviewSession, InterviewFeedback, JobPosting)
+        .join(
+            InterviewFeedback,
+            InterviewSession.id == InterviewFeedback.session_id,
+        )
+        .join(
+            JobPosting,
+            InterviewSession.job_posting_id == JobPosting.id,
+        )
+        .where(InterviewSession.user_id == current_user.id)
+        .where(InterviewSession.status == "completed")
+        .order_by(InterviewSession.created_at.asc())
+    )
+
+    result = await db.execute(query)
+    sessions_data = []
+
+    for session, feedback, job_posting in result:
+        sessions_data.append(
+            SessionWithFeedbackScore(
+                session_id=session.id,
+                created_at=session.created_at,
+                job_posting=JobPostingBasic.model_validate(job_posting),
+                overall_score=feedback.overall_score,
+            )
+        )
+
+    return sessions_data
 
 
 @router.put(

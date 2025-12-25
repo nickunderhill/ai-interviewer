@@ -1,0 +1,58 @@
+/**
+ * API service for interview sessions.
+ */
+import apiClient from '../../../services/apiClient';
+import type {
+  Session,
+  SessionDetail,
+  SessionFilters,
+  Message,
+} from '../types/session';
+
+const BASE_URL = '/api/v1/sessions';
+
+/**
+ * Fetch all sessions for the authenticated user.
+ */
+export const fetchSessions = async (
+  filters?: SessionFilters
+): Promise<Session[]> => {
+  const params = new URLSearchParams();
+
+  if (filters?.status) {
+    params.append('status', filters.status);
+  }
+  if (filters?.startDate) {
+    params.append('start_date', filters.startDate);
+  }
+  if (filters?.endDate) {
+    params.append('end_date', filters.endDate);
+  }
+  if (filters?.jobPostingId) {
+    params.append('job_posting_id', filters.jobPostingId);
+  }
+
+  const url = params.toString() ? `${BASE_URL}?${params}` : BASE_URL;
+  const response = await apiClient.get<Session[]>(url);
+  return response.data;
+};
+
+/**
+ * Fetch detailed session by ID including job posting details.
+ */
+export const fetchSessionById = async (id: string): Promise<SessionDetail> => {
+  const response = await apiClient.get<SessionDetail>(`${BASE_URL}/${id}`);
+  return response.data;
+};
+
+/**
+ * Fetch all messages for a session.
+ */
+export const fetchSessionMessages = async (
+  sessionId: string
+): Promise<Message[]> => {
+  const response = await apiClient.get<Message[]>(
+    `${BASE_URL}/${sessionId}/messages`
+  );
+  return response.data;
+};

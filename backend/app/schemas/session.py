@@ -90,6 +90,17 @@ class SessionDetailResponse(BaseModel):
     messages: List[MessageResponse] = Field(default_factory=list)
 
 
+class SessionWithFeedbackScore(BaseModel):
+    """Session with feedback score for comparison views."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    session_id: UUID4
+    created_at: dt.datetime
+    job_posting: JobPostingBasic
+    overall_score: float
+
+
 class AnswerCreate(BaseModel):
     """Request schema for submitting an answer."""
 

@@ -4,6 +4,8 @@ import { queryClient } from './services/queryClient';
 import LoginForm from './features/auth/components/LoginForm';
 import RegisterForm from './features/auth/components/RegisterForm';
 import Dashboard from './features/auth/components/Dashboard';
+import { SessionHistory, SessionDetail } from './features/sessions';
+import Progress from './pages/Progress';
 import ProtectedRoute from './components/layout/ProtectedRoute';
 import AppLayout from './components/layout/AppLayout';
 
@@ -22,6 +24,9 @@ function App() {
             }
           >
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/history" element={<SessionHistory />} />
+            <Route path="/sessions/:id" element={<SessionDetail />} />
+            <Route path="/progress" element={<Progress />} />
           </Route>
           <Route path="/" element={<Navigate to="/login" replace />} />
         </Routes>
