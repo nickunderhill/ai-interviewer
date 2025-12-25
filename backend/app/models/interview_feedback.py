@@ -1,8 +1,8 @@
 """InterviewFeedback model for AI-generated interview analysis results."""
 
 import datetime as dt
+from typing import TYPE_CHECKING
 import uuid
-from typing import TYPE_CHECKING, Optional
 
 from sqlalchemy import DateTime, ForeignKey, Integer, Text
 from sqlalchemy.dialects.postgresql import JSONB, UUID
@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 
 
 def utcnow() -> dt.datetime:
-    return dt.datetime.now(dt.timezone.utc)
+    return dt.datetime.now(dt.UTC)
 
 
 class InterviewFeedback(Base):
@@ -47,7 +47,7 @@ class InterviewFeedback(Base):
     communication_feedback: Mapped[str] = mapped_column(Text, nullable=False)
     problem_solving_feedback: Mapped[str] = mapped_column(Text, nullable=False)
     relevance_feedback: Mapped[str] = mapped_column(Text, nullable=False)
-    overall_comments: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    overall_comments: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     knowledge_gaps: Mapped[list[str]] = mapped_column(
         JSONB,

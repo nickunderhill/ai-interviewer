@@ -3,8 +3,8 @@ Pydantic schemas for interview session API.
 """
 
 import datetime as dt
-from typing import List, Optional
-from pydantic import BaseModel, ConfigDict, Field, UUID4
+
+from pydantic import UUID4, BaseModel, ConfigDict, Field
 
 
 class SessionCreate(BaseModel):
@@ -20,7 +20,7 @@ class JobPostingBasic(BaseModel):
 
     id: UUID4
     title: str
-    company: Optional[str] = None
+    company: str | None = None
 
 
 class SessionResponse(BaseModel):
@@ -30,12 +30,12 @@ class SessionResponse(BaseModel):
 
     id: UUID4
     user_id: UUID4
-    job_posting_id: Optional[UUID4] = None
+    job_posting_id: UUID4 | None = None
     status: str
     current_question_number: int
     created_at: dt.datetime
     updated_at: dt.datetime
-    job_posting: Optional[JobPostingBasic] = None
+    job_posting: JobPostingBasic | None = None
 
 
 class JobPostingDetail(BaseModel):
@@ -45,10 +45,10 @@ class JobPostingDetail(BaseModel):
 
     id: UUID4
     title: str
-    company: Optional[str] = None
+    company: str | None = None
     description: str
-    experience_level: Optional[str] = None
-    tech_stack: List[str] = Field(default_factory=list)
+    experience_level: str | None = None
+    tech_stack: list[str] = Field(default_factory=list)
 
 
 class ResumeDetail(BaseModel):
@@ -69,7 +69,7 @@ class MessageResponse(BaseModel):
     session_id: UUID4
     message_type: str
     content: str
-    question_type: Optional[str] = None
+    question_type: str | None = None
     created_at: dt.datetime
 
 
@@ -80,14 +80,14 @@ class SessionDetailResponse(BaseModel):
 
     id: UUID4
     user_id: UUID4
-    job_posting_id: Optional[UUID4] = None
+    job_posting_id: UUID4 | None = None
     status: str
     current_question_number: int
     created_at: dt.datetime
     updated_at: dt.datetime
-    job_posting: Optional[JobPostingDetail] = None
-    resume: Optional[ResumeDetail] = None
-    messages: List[MessageResponse] = Field(default_factory=list)
+    job_posting: JobPostingDetail | None = None
+    resume: ResumeDetail | None = None
+    messages: list[MessageResponse] = Field(default_factory=list)
 
 
 class SessionWithFeedbackScore(BaseModel):

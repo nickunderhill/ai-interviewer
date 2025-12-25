@@ -2,12 +2,11 @@
 Tests for encryption service.
 """
 
-import os
 
-import pytest
 from cryptography.fernet import Fernet
+import pytest
 
-from app.services.encryption_service import encrypt_api_key, decrypt_api_key
+from app.services.encryption_service import decrypt_api_key, encrypt_api_key
 
 
 def test_encrypt_api_key_returns_string() -> None:

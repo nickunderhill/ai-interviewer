@@ -1,9 +1,9 @@
 """Tests for operations API endpoints."""
 
-import pytest
-from uuid import UUID, uuid4
+from uuid import uuid4
 
 from httpx import AsyncClient
+import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.operation import Operation

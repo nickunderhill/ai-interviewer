@@ -2,12 +2,12 @@
 Tests for API key update endpoint PUT /api/v1/users/me/api-key.
 """
 
-import pytest
 from httpx import AsyncClient
+import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.user import User
-from app.services.encryption_service import encrypt_api_key, decrypt_api_key
+from app.services.encryption_service import decrypt_api_key, encrypt_api_key
 
 
 @pytest.mark.asyncio

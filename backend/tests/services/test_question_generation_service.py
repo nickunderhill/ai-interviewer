@@ -1,14 +1,15 @@
 """Tests for question generation service."""
 
-import pytest
 from unittest.mock import Mock, patch
 
+import pytest
+
+from app.models.interview_session import InterviewSession
 from app.services.question_generation_service import (
     build_question_prompt,
     generate_question,
     get_question_type_for_round,
 )
-from app.models.interview_session import InterviewSession
 
 
 def test_question_type_rotation():

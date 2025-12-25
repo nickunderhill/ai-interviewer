@@ -2,18 +2,18 @@
 Service layer for interview session business logic.
 """
 
-from typing import List, Optional
 from uuid import UUID
+
+from fastapi import HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
-from fastapi import HTTPException, status
 
 from app.models.interview_session import InterviewSession
 from app.models.job_posting import JobPosting
 from app.models.session_message import SessionMessage
 from app.models.user import User
-from app.schemas.session import SessionCreate, AnswerCreate
+from app.schemas.session import AnswerCreate, SessionCreate
 
 
 async def create_session(
@@ -57,8 +57,8 @@ async def create_session(
 
 
 async def get_sessions_by_user(
-    db: AsyncSession, current_user: User, status_filter: Optional[str] = None
-) -> List[InterviewSession]:
+    db: AsyncSession, current_user: User, status_filter: str | None = None
+) -> list[InterviewSession]:
     """Get all sessions for a user, optionally filtered by status."""
 
     # Validate status if provided
@@ -258,7 +258,7 @@ async def submit_answer(
 
 async def get_session_messages(
     db: AsyncSession, session_id: UUID, current_user: User
-) -> List[SessionMessage]:
+) -> list[SessionMessage]:
     """
     Get all messages for a session in chronological order.
 

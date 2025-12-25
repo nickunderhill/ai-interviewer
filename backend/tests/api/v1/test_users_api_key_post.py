@@ -2,8 +2,8 @@
 Tests for API key configuration endpoint POST /api/v1/users/me/api-key.
 """
 
-import pytest
 from httpx import AsyncClient
+import pytest
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 

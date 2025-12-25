@@ -1,12 +1,9 @@
 """Tests for session messages retrieval endpoint."""
 
-import pytest
 import uuid
-from httpx import AsyncClient
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.session_message import SessionMessage
+from httpx import AsyncClient
+import pytest
 
 
 @pytest.mark.asyncio

@@ -2,14 +2,14 @@
 Tests for dashboard metrics endpoint.
 """
 
-import pytest
 from httpx import AsyncClient
+import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.user import User
-from app.models.job_posting import JobPosting
-from app.models.interview_session import InterviewSession
 from app.models.interview_feedback import InterviewFeedback
+from app.models.interview_session import InterviewSession
+from app.models.job_posting import JobPosting
+from app.models.user import User
 
 
 @pytest.mark.asyncio
@@ -122,7 +122,7 @@ async def test_get_dashboard_metrics_multiple_job_postings(
 
     # Job 0: 5 sessions, Job 1: 3 sessions, Job 2: 1 session
     session_counts = [5, 3, 1]
-    for jp, count in zip(job_postings, session_counts):
+    for jp, count in zip(job_postings, session_counts, strict=False):
         for _ in range(count):
             session = InterviewSession(
                 user_id=test_user.id,

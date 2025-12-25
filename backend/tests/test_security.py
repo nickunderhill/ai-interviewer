@@ -1,7 +1,5 @@
 import re
 
-import pytest
-
 
 def test_hash_password_produces_non_empty_hash():
     from app.core.security import hash_password

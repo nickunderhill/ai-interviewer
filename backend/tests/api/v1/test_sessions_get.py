@@ -3,8 +3,9 @@ Tests for GET /api/v1/sessions/{id} endpoint (session detail).
 """
 
 import uuid
-import pytest
+
 from httpx import AsyncClient
+import pytest
 
 
 @pytest.mark.asyncio

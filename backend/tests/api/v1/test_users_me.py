@@ -2,8 +2,8 @@
 Tests for user profile endpoint GET /api/v1/users/me.
 """
 
-import pytest
 from httpx import AsyncClient
+import pytest
 
 from app.models.user import User
 
@@ -80,8 +80,8 @@ async def test_get_profile_returns_only_authenticated_users_data(
     auth_headers: dict[str, str],
 ) -> None:
     """Test that endpoint returns only the authenticated user's data."""
-    from app.models.user import User
     from app.core.security import hash_password
+    from app.models.user import User
 
     # Create another user in the database
     other_user = User(

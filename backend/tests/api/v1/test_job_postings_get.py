@@ -2,8 +2,8 @@
 Tests for GET /api/v1/job-postings/{id} endpoint (detail).
 """
 
-import pytest
 from httpx import AsyncClient
+import pytest
 
 
 @pytest.mark.asyncio
@@ -62,8 +62,8 @@ async def test_get_job_posting_other_user_returns_404(
     async_client: AsyncClient, auth_headers: dict, db_session
 ):
     """Test getting another user's job posting returns 404."""
-    from app.models.user import User
     from app.models.job_posting import JobPosting
+    from app.models.user import User
 
     # Create another user with a job posting
     other_user = User(

@@ -60,13 +60,13 @@ async def db_session() -> AsyncGenerator[AsyncSession, None]:
     )
 
     # Import models so they're registered with Base.metadata
-    from app.models import user as _user  # noqa: F401
-    from app.models import resume as _resume  # noqa: F401
-    from app.models import job_posting as _job_posting  # noqa: F401
-    from app.models import interview_session as _interview_session  # noqa: F401
-    from app.models import session_message as _session_message  # noqa: F401
-    from app.models import operation as _operation  # noqa: F401
     from app.models import interview_feedback as _interview_feedback  # noqa: F401
+    from app.models import interview_session as _interview_session  # noqa: F401
+    from app.models import job_posting as _job_posting  # noqa: F401
+    from app.models import operation as _operation  # noqa: F401
+    from app.models import resume as _resume  # noqa: F401
+    from app.models import session_message as _session_message  # noqa: F401
+    from app.models import user as _user  # noqa: F401
 
     # Create isolated schema + tables (prevents dropping dev DB objects)
     async with engine.begin() as conn:
@@ -175,8 +175,8 @@ def client(override_get_db, event_loop) -> Generator:
 @pytest_asyncio.fixture
 async def test_user(db_session: AsyncSession):
     """Create a test user in the database."""
-    from app.models.user import User
     from app.core.security import hash_password
+    from app.models.user import User
 
     user = User(
         email="test@example.com",
@@ -225,9 +225,9 @@ async def test_job_posting(db_session: AsyncSession, test_user):
 @pytest_asyncio.fixture
 async def other_user_job_posting(db_session: AsyncSession):
     """Create a job posting owned by another user."""
-    from app.models.user import User
-    from app.models.job_posting import JobPosting
     from app.core.security import hash_password
+    from app.models.job_posting import JobPosting
+    from app.models.user import User
 
     other_user = User(
         email="otheruser@example.com",
@@ -480,8 +480,8 @@ async def test_session_with_messages(
 @pytest_asyncio.fixture
 async def other_user_auth_headers(db_session: AsyncSession):
     """Create authentication headers for another user."""
+    from app.core.security import create_access_token, hash_password
     from app.models.user import User
-    from app.core.security import hash_password, create_access_token
 
     # Create second user
     other_user = User(
@@ -502,9 +502,10 @@ async def test_completed_session_with_feedback(
     db_session: AsyncSession, test_user, test_job_posting
 ):
     """Create a completed session with generated feedback."""
-    from app.models.interview_session import InterviewSession
-    from app.models.interview_feedback import InterviewFeedback
     import datetime as dt
+
+    from app.models.interview_feedback import InterviewFeedback
+    from app.models.interview_session import InterviewSession
 
     # Create completed session
     session = InterviewSession(
@@ -535,8 +536,8 @@ async def test_completed_session_with_feedback(
             "Review data structures and algorithms",
             "Practice system design interviews",
         ],
-        created_at=dt.datetime.now(dt.timezone.utc),
-        updated_at=dt.datetime.now(dt.timezone.utc),
+        created_at=dt.datetime.now(dt.UTC),
+        updated_at=dt.datetime.now(dt.UTC),
     )
     db_session.add(feedback)
     await db_session.commit()

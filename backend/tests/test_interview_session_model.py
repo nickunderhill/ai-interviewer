@@ -4,6 +4,7 @@ Tests for InterviewSession model.
 
 import datetime as dt
 import uuid as uuid_module
+
 import pytest
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
@@ -12,9 +13,9 @@ from sqlalchemy.exc import IntegrityError
 @pytest.mark.asyncio
 async def test_interview_session_creation_with_all_relationships(db_session):
     """Test InterviewSession creation with user and job posting relationships."""
-    from app.models.user import User
-    from app.models.job_posting import JobPosting
     from app.models.interview_session import InterviewSession
+    from app.models.job_posting import JobPosting
+    from app.models.user import User
 
     # Create user
     user = User(email="session_test@example.com", hashed_password="hashed")
@@ -55,8 +56,8 @@ async def test_interview_session_creation_with_all_relationships(db_session):
 @pytest.mark.asyncio
 async def test_interview_session_status_field_accepts_valid_values(db_session):
     """Test that status field accepts valid string values."""
-    from app.models.user import User
     from app.models.interview_session import InterviewSession
+    from app.models.user import User
 
     user = User(email="status_test@example.com", hashed_password="hashed")
     db_session.add(user)
@@ -80,8 +81,8 @@ async def test_interview_session_status_field_accepts_valid_values(db_session):
 @pytest.mark.asyncio
 async def test_interview_session_current_question_number_defaults_to_zero(db_session):
     """Test that current_question_number defaults to 0."""
-    from app.models.user import User
     from app.models.interview_session import InterviewSession
+    from app.models.user import User
 
     user = User(email="default_test@example.com", hashed_password="hashed")
     db_session.add(user)
@@ -103,8 +104,8 @@ async def test_interview_session_current_question_number_defaults_to_zero(db_ses
 @pytest.mark.asyncio
 async def test_interview_session_cascade_behavior_on_user_deletion(db_session):
     """Test that deleting user cascades to delete sessions."""
-    from app.models.user import User
     from app.models.interview_session import InterviewSession
+    from app.models.user import User
 
     user = User(email="cascade_user@example.com", hashed_password="hashed")
     db_session.add(user)
@@ -138,9 +139,9 @@ async def test_interview_session_cascade_behavior_on_user_deletion(db_session):
 @pytest.mark.asyncio
 async def test_interview_session_set_null_on_job_posting_deletion(db_session):
     """Test that deleting job posting sets job_posting_id to NULL."""
-    from app.models.user import User
-    from app.models.job_posting import JobPosting
     from app.models.interview_session import InterviewSession
+    from app.models.job_posting import JobPosting
+    from app.models.user import User
 
     user = User(email="set_null_test@example.com", hashed_password="hashed")
     db_session.add(user)
@@ -184,8 +185,8 @@ async def test_interview_session_set_null_on_job_posting_deletion(db_session):
 @pytest.mark.asyncio
 async def test_interview_session_timestamps_are_utc_aware(db_session):
     """Test that timestamps are UTC-aware."""
-    from app.models.user import User
     from app.models.interview_session import InterviewSession
+    from app.models.user import User
 
     user = User(email="timestamp_test@example.com", hashed_password="hashed")
     db_session.add(user)
@@ -233,8 +234,8 @@ async def test_interview_session_user_id_required(db_session):
 @pytest.mark.asyncio
 async def test_interview_session_job_posting_id_nullable(db_session):
     """Test that job_posting_id can be NULL."""
-    from app.models.user import User
     from app.models.interview_session import InterviewSession
+    from app.models.user import User
 
     user = User(email="nullable_job@example.com", hashed_password="hashed")
     db_session.add(user)
@@ -257,8 +258,8 @@ async def test_interview_session_job_posting_id_nullable(db_session):
 @pytest.mark.asyncio
 async def test_interview_session_relationship_with_user(db_session):
     """Test that session has working relationship with user."""
-    from app.models.user import User
     from app.models.interview_session import InterviewSession
+    from app.models.user import User
 
     user = User(email="relationship_test@example.com", hashed_password="hashed")
     db_session.add(user)

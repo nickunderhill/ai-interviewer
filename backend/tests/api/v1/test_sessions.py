@@ -1,9 +1,9 @@
 """Tests for session pause/resume and session detail resume context."""
 
-import pytest
 from uuid import UUID, uuid4
 
 from httpx import AsyncClient
+import pytest
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 

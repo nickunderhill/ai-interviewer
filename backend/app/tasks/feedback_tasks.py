@@ -6,14 +6,10 @@ import datetime as dt
 import logging
 from uuid import UUID
 
-from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload
 
 from app.core.database import get_db_context
 from app.models.interview_feedback import InterviewFeedback
-from app.models.interview_session import InterviewSession
 from app.models.operation import Operation
 from app.models.user import User
 from app.services import feedback_analysis_service
@@ -48,7 +44,7 @@ async def generate_feedback_task(
 
             # Update status to processing
             operation.status = "processing"
-            operation.updated_at = dt.datetime.now(dt.timezone.utc)
+            operation.updated_at = dt.datetime.now(dt.UTC)
             await db.commit()
 
             # Load user
@@ -57,7 +53,7 @@ async def generate_feedback_task(
                 logger.error(f"User {user_id} not found for operation {operation_id}")
                 operation.status = "failed"
                 operation.error_message = "User not found"
-                operation.updated_at = dt.datetime.now(dt.timezone.utc)
+                operation.updated_at = dt.datetime.now(dt.UTC)
                 await db.commit()
                 return
 
@@ -104,7 +100,7 @@ async def generate_feedback_task(
                 logger.warning(f"Feedback already exists for session {session_id}")
                 operation.status = "failed"
                 operation.error_message = "Feedback already exists for this session"
-                operation.updated_at = dt.datetime.now(dt.timezone.utc)
+                operation.updated_at = dt.datetime.now(dt.UTC)
                 await db.commit()
                 return
 
@@ -115,7 +111,7 @@ async def generate_feedback_task(
             # Mark operation as completed
             operation.status = "completed"
             operation.result = result_dict
-            operation.updated_at = dt.datetime.now(dt.timezone.utc)
+            operation.updated_at = dt.datetime.now(dt.UTC)
             await db.commit()
 
             logger.info(
@@ -134,7 +130,7 @@ async def generate_feedback_task(
                 if operation:
                     operation.status = "failed"
                     operation.error_message = f"Feedback generation failed: {str(e)}"
-                    operation.updated_at = dt.datetime.now(dt.timezone.utc)
+                    operation.updated_at = dt.datetime.now(dt.UTC)
                     await db.commit()
             except Exception as update_error:
                 logger.error(

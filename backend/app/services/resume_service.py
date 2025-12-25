@@ -4,7 +4,6 @@ Resume service - business logic for resume operations.
 
 import datetime as dt
 import uuid
-from typing import Optional
 
 from fastapi import HTTPException, status
 from sqlalchemy import select
@@ -74,7 +73,7 @@ async def create_resume(
 async def get_user_resume(
     db: AsyncSession,
     user_id: uuid.UUID,
-) -> Optional[Resume]:
+) -> Resume | None:
     """
     Retrieve a user's resume.
 
@@ -116,7 +115,7 @@ async def update_user_resume(
 
     # Update content and timestamp
     resume.content = content
-    resume.updated_at = dt.datetime.now(dt.timezone.utc)
+    resume.updated_at = dt.datetime.now(dt.UTC)
     await db.commit()
     await db.refresh(resume)
 

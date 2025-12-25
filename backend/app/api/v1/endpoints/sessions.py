@@ -3,8 +3,8 @@ API endpoints for interview sessions.
 """
 
 import datetime as dt
-from typing import List, Optional
 from uuid import UUID
+
 from fastapi import (
     APIRouter,
     BackgroundTasks,
@@ -24,6 +24,7 @@ from app.models.interview_session import InterviewSession
 from app.models.job_posting import JobPosting
 from app.models.operation import Operation
 from app.models.user import User
+from app.schemas import feedback as schemas
 from app.schemas.operation import OperationResponse
 from app.schemas.session import (
     AnswerCreate,
@@ -34,10 +35,9 @@ from app.schemas.session import (
     SessionResponse,
     SessionWithFeedbackScore,
 )
-from app.schemas import feedback as schemas
 from app.services import session_service
-from app.tasks.question_tasks import generate_question_task
 from app.tasks.feedback_tasks import generate_feedback_task
+from app.tasks.question_tasks import generate_question_task
 
 router = APIRouter()
 
@@ -66,31 +66,31 @@ async def create_session(
 
 @router.get(
     "",
-    response_model=List[SessionResponse],
+    response_model=list[SessionResponse],
     status_code=status.HTTP_200_OK,
     summary="List user's interview sessions",
 )
 async def list_sessions(
-    status_param: Optional[str] = Query(
+    status_param: str | None = Query(
         None,
         alias="status",
         description="Filter by status: active, paused, or completed",
     ),
-    start_date: Optional[dt.date] = Query(
+    start_date: dt.date | None = Query(
         None,
         description="Filter sessions from this date (inclusive)",
     ),
-    end_date: Optional[dt.date] = Query(
+    end_date: dt.date | None = Query(
         None,
         description="Filter sessions until this date (inclusive)",
     ),
-    job_posting_id: Optional[UUID] = Query(
+    job_posting_id: UUID | None = Query(
         None,
         description="Filter sessions by job posting ID",
     ),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
-) -> List[SessionResponse]:
+) -> list[SessionResponse]:
     """
     Get all interview sessions for the authenticated user.
 
@@ -103,13 +103,13 @@ async def list_sessions(
     Returns sessions ordered by created_at DESC (newest first)
     """
     # Validate status parameter
-    VALID_STATUSES = {"active", "paused", "completed"}
-    if status_param and status_param not in VALID_STATUSES:
+    valid_statuses = {"active", "paused", "completed"}
+    if status_param and status_param not in valid_statuses:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail={
                 "code": "INVALID_STATUS_FILTER",
-                "message": f"Status must be one of: {VALID_STATUSES}",
+                "message": f"Status must be one of: {valid_statuses}",
             },
         )
 
@@ -152,14 +152,12 @@ async def list_sessions(
 
     if start_date:
         start_datetime = dt.datetime.combine(start_date, dt.time.min).replace(
-            tzinfo=dt.timezone.utc
+            tzinfo=dt.UTC
         )
         query = query.where(InterviewSession.created_at >= start_datetime)
 
     if end_date:
-        end_datetime = dt.datetime.combine(end_date, dt.time.max).replace(
-            tzinfo=dt.timezone.utc
-        )
+        end_datetime = dt.datetime.combine(end_date, dt.time.max).replace(tzinfo=dt.UTC)
         query = query.where(InterviewSession.created_at <= end_datetime)
 
     if job_posting_id:
@@ -214,14 +212,14 @@ async def get_session(
 
 @router.get(
     "/with-feedback",
-    response_model=List[SessionWithFeedbackScore],
+    response_model=list[SessionWithFeedbackScore],
     status_code=status.HTTP_200_OK,
     summary="Get sessions with feedback scores",
 )
 async def get_sessions_with_feedback(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
-) -> List[SessionWithFeedbackScore]:
+) -> list[SessionWithFeedbackScore]:
     """
     Get all completed sessions with feedback scores for the authenticated user.
 
@@ -468,7 +466,7 @@ async def generate_question(
 
 @router.get(
     "/{session_id}/messages",
-    response_model=List[MessageResponse],
+    response_model=list[MessageResponse],
     status_code=status.HTTP_200_OK,
     summary="Get session messages (Q&A history)",
 )
@@ -476,7 +474,7 @@ async def get_session_messages(
     session_id: UUID = Path(..., description="Session UUID"),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
-) -> List[MessageResponse]:
+) -> list[MessageResponse]:
     """
     Get all messages (questions and answers) for a session.
 
@@ -589,8 +587,8 @@ async def generate_feedback(
     operation = Operation(
         operation_type="feedback_analysis",
         status="pending",
-        created_at=dt.datetime.now(dt.timezone.utc),
-        updated_at=dt.datetime.now(dt.timezone.utc),
+        created_at=dt.datetime.now(dt.UTC),
+        updated_at=dt.datetime.now(dt.UTC),
     )
     db.add(operation)
     await db.commit()

@@ -4,7 +4,6 @@ Pydantic schemas for Job Posting API requests and responses.
 
 import datetime as dt
 import uuid
-from typing import List, Optional
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
@@ -18,7 +17,7 @@ class JobPostingCreate(BaseModel):
         max_length=255,
         description="Job title",
     )
-    company: Optional[str] = Field(
+    company: str | None = Field(
         None,
         max_length=255,
         description="Company name",
@@ -29,12 +28,12 @@ class JobPostingCreate(BaseModel):
         max_length=10000,
         description="Job description",
     )
-    experience_level: Optional[str] = Field(
+    experience_level: str | None = Field(
         None,
         max_length=50,
         description="Experience level (e.g., Junior, Mid-level, Senior)",
     )
-    tech_stack: Optional[List[str]] = Field(
+    tech_stack: list[str] | None = Field(
         default_factory=list,
         description="Technologies required (e.g., ['Python', 'React'])",
     )
@@ -44,14 +43,14 @@ class JobPostingUpdate(BaseModel):
     """Schema for updating an existing job posting."""
 
     title: str = Field(..., min_length=1, max_length=255)
-    company: Optional[str] = Field(None, max_length=255)
+    company: str | None = Field(None, max_length=255)
     description: str = Field(..., min_length=1, max_length=10000)
-    experience_level: Optional[str] = Field(None, max_length=50)
-    tech_stack: Optional[List[str]] = Field(default_factory=list)
+    experience_level: str | None = Field(None, max_length=50)
+    tech_stack: list[str] | None = Field(default_factory=list)
 
     @field_validator("tech_stack")
     @classmethod
-    def validate_tech_stack_elements(cls, v: Optional[List[str]]):
+    def validate_tech_stack_elements(cls, v: list[str] | None):
         """Validate tech_stack elements are non-empty and reasonable length."""
         if v is not None:
             for tech in v:
@@ -68,10 +67,10 @@ class JobPostingResponse(BaseModel):
     id: uuid.UUID
     user_id: uuid.UUID
     title: str
-    company: Optional[str]
+    company: str | None
     description: str
-    experience_level: Optional[str]
-    tech_stack: Optional[List[str]]
+    experience_level: str | None
+    tech_stack: list[str] | None
     created_at: dt.datetime
     updated_at: dt.datetime
 
@@ -86,9 +85,9 @@ class JobPostingListItem(BaseModel):
 
     id: uuid.UUID
     title: str
-    company: Optional[str]
-    experience_level: Optional[str]
-    tech_stack: Optional[List[str]]
+    company: str | None
+    experience_level: str | None
+    tech_stack: list[str] | None
     created_at: dt.datetime
 
     model_config = ConfigDict(from_attributes=True)

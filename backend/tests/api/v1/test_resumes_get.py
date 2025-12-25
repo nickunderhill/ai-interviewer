@@ -2,8 +2,8 @@
 Tests for GET /api/v1/resumes/me endpoint.
 """
 
-import pytest
 from httpx import AsyncClient
+import pytest
 
 from app.models.user import User
 
@@ -67,8 +67,8 @@ async def test_user_cannot_access_other_users_resume(
     db_session,
 ):
     """Test user isolation - users can only see their own resume."""
-    from app.models.user import User
     from app.models.resume import Resume
+    from app.models.user import User
 
     # Create another user with a resume
     other_user = User(

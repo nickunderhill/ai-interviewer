@@ -19,24 +19,18 @@ sys.path.insert(0, str(backend_dir))
 try:
     from app.core.config import settings
     from app.core.database import Base
-    import app.models.user  # noqa: F401
-    import app.models.resume  # noqa: F401
-    import app.models.job_posting  # noqa: F401
-    import app.models.interview_session  # noqa: F401
-    import app.models.session_message  # noqa: F401
     import app.models.interview_feedback  # noqa: F401
+    import app.models.interview_session  # noqa: F401
+    import app.models.job_posting  # noqa: F401
+    import app.models.resume  # noqa: F401
+    import app.models.session_message  # noqa: F401
+    import app.models.user  # noqa: F401
 except ImportError as e:
     raise ImportError(
         f"Failed to import required modules: {e}\n"
         "Make sure you're running from the backend directory and "
         "the virtual environment is activated."
     ) from e
-
-# Import all models here to ensure they're registered with Base.metadata
-# This is CRITICAL for autogenerate to work correctly
-from app.models.job_posting import JobPosting  # noqa: F401
-from app.models.interview_session import InterviewSession  # noqa: F401
-from app.models.session_message import SessionMessage  # noqa: F401
 
 # Alembic Config object
 config = context.config

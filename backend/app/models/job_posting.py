@@ -3,8 +3,8 @@ Job Posting model for storing job descriptions users want to practice for.
 """
 
 import datetime as dt
+from typing import TYPE_CHECKING
 import uuid
-from typing import TYPE_CHECKING, List, Optional
 
 from sqlalchemy import DateTime, ForeignKey, Index, String, Text
 from sqlalchemy.dialects.postgresql import JSONB, UUID
@@ -13,12 +13,12 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.core.database import Base
 
 if TYPE_CHECKING:
-    from app.models.user import User
     from app.models.interview_session import InterviewSession
+    from app.models.user import User
 
 
 def utcnow() -> dt.datetime:
-    return dt.datetime.now(dt.timezone.utc)
+    return dt.datetime.now(dt.UTC)
 
 
 class JobPosting(Base):
@@ -44,7 +44,7 @@ class JobPosting(Base):
         nullable=False,
     )
 
-    company: Mapped[Optional[str]] = mapped_column(
+    company: Mapped[str | None] = mapped_column(
         String(255),
         nullable=True,
     )
@@ -54,12 +54,12 @@ class JobPosting(Base):
         nullable=False,
     )
 
-    experience_level: Mapped[Optional[str]] = mapped_column(
+    experience_level: Mapped[str | None] = mapped_column(
         String(50),
         nullable=True,
     )
 
-    tech_stack: Mapped[Optional[List[str]]] = mapped_column(
+    tech_stack: Mapped[list[str] | None] = mapped_column(
         JSONB,
         nullable=True,
     )
@@ -84,7 +84,7 @@ class JobPosting(Base):
     )
 
     # Relationship to InterviewSessions (one-to-many)
-    interview_sessions: Mapped[List["InterviewSession"]] = relationship(
+    interview_sessions: Mapped[list["InterviewSession"]] = relationship(
         "InterviewSession",
         back_populates="job_posting",
     )

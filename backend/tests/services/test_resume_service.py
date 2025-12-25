@@ -2,12 +2,11 @@
 Tests for resume service business logic.
 """
 
+
 import pytest
-import uuid
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.user import User
-from app.models.resume import Resume
 from app.services.resume_service import ResumeConflictException, create_resume
 
 

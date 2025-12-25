@@ -1,18 +1,16 @@
 """Tests for question generation background tasks."""
 
-import pytest
-from unittest.mock import patch, AsyncMock, MagicMock
+from unittest.mock import patch
 from uuid import uuid4
 
+import pytest
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.tasks.question_tasks import generate_question_task
-from app.models.operation import Operation
 from app.models.interview_session import InterviewSession
+from app.models.operation import Operation
 from app.models.session_message import SessionMessage
-from app.models.user import User
-from app.models.job_posting import JobPosting
+from app.tasks.question_tasks import generate_question_task
 
 
 @pytest.mark.asyncio

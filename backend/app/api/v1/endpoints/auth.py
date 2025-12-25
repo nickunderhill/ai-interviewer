@@ -4,8 +4,8 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.security import create_access_token
 from app.core.database import get_db
+from app.core.security import create_access_token
 from app.schemas.auth import (
     LoginRequest,
     RegisterRequest,

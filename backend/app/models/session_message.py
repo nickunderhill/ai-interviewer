@@ -3,8 +3,8 @@ SessionMessage model for storing Q&A messages in interview sessions.
 """
 
 import datetime as dt
+from typing import TYPE_CHECKING
 import uuid
-from typing import TYPE_CHECKING, Optional
 
 from sqlalchemy import DateTime, ForeignKey, Index, String, Text
 from sqlalchemy.dialects.postgresql import UUID
@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 
 
 def utcnow() -> dt.datetime:
-    return dt.datetime.now(dt.timezone.utc)
+    return dt.datetime.now(dt.UTC)
 
 
 class SessionMessage(Base):
@@ -48,7 +48,7 @@ class SessionMessage(Base):
         nullable=False,
     )
 
-    question_type: Mapped[Optional[str]] = mapped_column(
+    question_type: Mapped[str | None] = mapped_column(
         String(50),
         nullable=True,  # Only applicable for message_type='question'
     )

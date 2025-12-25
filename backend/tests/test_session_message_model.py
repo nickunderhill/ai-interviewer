@@ -4,6 +4,7 @@ Tests for SessionMessage model.
 
 import datetime as dt
 import uuid as uuid_module
+
 import pytest
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
@@ -12,9 +13,9 @@ from sqlalchemy.exc import IntegrityError
 @pytest.mark.asyncio
 async def test_session_message_creation_with_session_relationship(db_session):
     """Test SessionMessage creation with session relationship."""
-    from app.models.user import User
     from app.models.interview_session import InterviewSession
     from app.models.session_message import SessionMessage
+    from app.models.user import User
 
     # Create user and session
     user = User(email="message_test@example.com", hashed_password="hashed")
@@ -54,9 +55,9 @@ async def test_session_message_creation_with_session_relationship(db_session):
 @pytest.mark.asyncio
 async def test_session_message_type_field_validation(db_session):
     """Test message_type field accepts both question and answer."""
-    from app.models.user import User
     from app.models.interview_session import InterviewSession
     from app.models.session_message import SessionMessage
+    from app.models.user import User
 
     user = User(email="type_test@example.com", hashed_password="hashed")
     db_session.add(user)
@@ -101,9 +102,9 @@ async def test_session_message_type_field_validation(db_session):
 @pytest.mark.asyncio
 async def test_session_message_content_accepts_large_text(db_session):
     """Test that content field accepts large text (answers can be long)."""
-    from app.models.user import User
     from app.models.interview_session import InterviewSession
     from app.models.session_message import SessionMessage
+    from app.models.user import User
 
     user = User(email="large_text@example.com", hashed_password="hashed")
     db_session.add(user)
@@ -139,9 +140,9 @@ async def test_session_message_content_accepts_large_text(db_session):
 @pytest.mark.asyncio
 async def test_session_message_question_type_is_nullable(db_session):
     """Test that question_type can be NULL (for answer messages)."""
-    from app.models.user import User
     from app.models.interview_session import InterviewSession
     from app.models.session_message import SessionMessage
+    from app.models.user import User
 
     user = User(email="nullable_type@example.com", hashed_password="hashed")
     db_session.add(user)
@@ -174,9 +175,9 @@ async def test_session_message_question_type_is_nullable(db_session):
 @pytest.mark.asyncio
 async def test_session_message_ordering_by_created_at(db_session):
     """Test that messages can be ordered by created_at."""
-    from app.models.user import User
     from app.models.interview_session import InterviewSession
     from app.models.session_message import SessionMessage
+    from app.models.user import User
 
     user = User(email="ordering_test@example.com", hashed_password="hashed")
     db_session.add(user)
@@ -244,9 +245,9 @@ async def test_session_message_ordering_by_created_at(db_session):
 @pytest.mark.asyncio
 async def test_session_message_cascade_on_session_deletion(db_session):
     """Test that deleting session cascades to delete messages."""
-    from app.models.user import User
     from app.models.interview_session import InterviewSession
     from app.models.session_message import SessionMessage
+    from app.models.user import User
 
     user = User(email="cascade_msg@example.com", hashed_password="hashed")
     db_session.add(user)
@@ -290,9 +291,9 @@ async def test_session_message_cascade_on_session_deletion(db_session):
 @pytest.mark.asyncio
 async def test_session_message_timestamps_are_utc_aware(db_session):
     """Test that created_at timestamp is UTC-aware."""
-    from app.models.user import User
     from app.models.interview_session import InterviewSession
     from app.models.session_message import SessionMessage
+    from app.models.user import User
 
     user = User(email="ts_msg@example.com", hashed_password="hashed")
     db_session.add(user)
@@ -346,9 +347,9 @@ async def test_session_message_session_id_required(db_session):
 @pytest.mark.asyncio
 async def test_session_message_relationship_with_session(db_session):
     """Test that message has working relationship with session."""
-    from app.models.user import User
     from app.models.interview_session import InterviewSession
     from app.models.session_message import SessionMessage
+    from app.models.user import User
 
     user = User(email="rel_msg@example.com", hashed_password="hashed")
     db_session.add(user)

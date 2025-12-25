@@ -3,8 +3,8 @@ InterviewSession model for tracking AI-powered interview sessions.
 """
 
 import datetime as dt
+from typing import TYPE_CHECKING, Optional
 import uuid
-from typing import TYPE_CHECKING, List, Optional
 
 from sqlalchemy import DateTime, ForeignKey, Index, Integer, String
 from sqlalchemy.dialects.postgresql import UUID
@@ -13,15 +13,14 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.core.database import Base
 
 if TYPE_CHECKING:
-    from app.models.user import User
+    from app.models.interview_feedback import InterviewFeedback
     from app.models.job_posting import JobPosting
     from app.models.session_message import SessionMessage
-    from app.models.interview_feedback import InterviewFeedback
-    from app.models.interview_feedback import InterviewFeedback
+    from app.models.user import User
 
 
 def utcnow() -> dt.datetime:
-    return dt.datetime.now(dt.timezone.utc)
+    return dt.datetime.now(dt.UTC)
 
 
 class InterviewSession(Base):
@@ -42,7 +41,7 @@ class InterviewSession(Base):
         index=True,
     )
 
-    job_posting_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+    job_posting_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("job_postings.id", ondelete="SET NULL"),
         nullable=True,  # Nullable to preserve session if job posting deleted
@@ -84,7 +83,7 @@ class InterviewSession(Base):
         back_populates="interview_sessions",
     )
 
-    messages: Mapped[List["SessionMessage"]] = relationship(
+    messages: Mapped[list["SessionMessage"]] = relationship(
         "SessionMessage",
         back_populates="session",
         cascade="all, delete-orphan",

@@ -4,24 +4,23 @@ Configures API, middleware, and lifecycle events.
 """
 
 from contextlib import asynccontextmanager
-import os
 import logging
+import os
 from typing import Any
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 
+from app.api.v1.endpoints.auth import router as auth_router
+from app.api.v1.endpoints.job_postings import router as job_postings_router
+from app.api.v1.endpoints.metrics import router as metrics_router
+from app.api.v1.endpoints.operations import router as operations_router
+from app.api.v1.endpoints.resumes import router as resumes_router
+from app.api.v1.endpoints.sessions import router as sessions_router
+from app.api.v1.endpoints.users import router as users_router
 from app.core.config import settings
 from app.core.database import AsyncSessionLocal, close_db, init_db
-
-from app.api.v1.endpoints.auth import router as auth_router
-from app.api.v1.endpoints.users import router as users_router
-from app.api.v1.endpoints.resumes import router as resumes_router
-from app.api.v1.endpoints.job_postings import router as job_postings_router
-from app.api.v1.endpoints.sessions import router as sessions_router
-from app.api.v1.endpoints.operations import router as operations_router
-from app.api.v1.endpoints.metrics import router as metrics_router
 
 # Configure logging only if not already configured
 if not logging.getLogger().handlers:

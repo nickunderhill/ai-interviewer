@@ -3,10 +3,10 @@ Tests for job_posting_service module.
 """
 
 import pytest
+
+from app.models.user import User
 from app.services import job_posting_service
 from app.services.job_posting_service import JobPostingNotFoundException
-from app.models.user import User
-from app.models.job_posting import JobPosting
 
 
 @pytest.mark.asyncio

@@ -3,7 +3,6 @@ Tests for User model encrypted_api_key field.
 """
 
 import pytest
-from sqlalchemy import inspect
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.user import User

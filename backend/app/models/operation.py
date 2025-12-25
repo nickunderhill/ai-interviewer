@@ -2,7 +2,6 @@
 
 import datetime as dt
 import uuid
-from typing import Optional
 
 from sqlalchemy import DateTime, Index, String, Text
 from sqlalchemy.dialects.postgresql import JSONB, UUID
@@ -13,7 +12,7 @@ from app.core.database import Base
 
 def utcnow() -> dt.datetime:
     """Return current UTC datetime."""
-    return dt.datetime.now(dt.timezone.utc)
+    return dt.datetime.now(dt.UTC)
 
 
 class Operation(Base):
@@ -54,12 +53,12 @@ class Operation(Base):
         index=True,
     )
 
-    result: Mapped[Optional[dict]] = mapped_column(
+    result: Mapped[dict | None] = mapped_column(
         JSONB,
         nullable=True,
     )
 
-    error_message: Mapped[Optional[str]] = mapped_column(
+    error_message: Mapped[str | None] = mapped_column(
         Text,
         nullable=True,
     )

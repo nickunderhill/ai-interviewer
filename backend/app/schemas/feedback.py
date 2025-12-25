@@ -3,8 +3,8 @@ Pydantic schemas for interview feedback API.
 """
 
 import datetime as dt
-from typing import List
-from pydantic import BaseModel, ConfigDict, UUID4, field_validator
+
+from pydantic import UUID4, BaseModel, ConfigDict, field_validator
 
 
 class FeedbackAnalysisResult(BaseModel):
@@ -19,8 +19,8 @@ class FeedbackAnalysisResult(BaseModel):
     problem_solving_feedback: str
     relevance_feedback: str
     overall_comments: str | None = None
-    knowledge_gaps: List[str]
-    learning_recommendations: List[str]
+    knowledge_gaps: list[str]
+    learning_recommendations: list[str]
 
     @field_validator(
         "technical_accuracy_score",
@@ -51,7 +51,7 @@ class InterviewFeedbackResponse(BaseModel):
     problem_solving_feedback: str
     relevance_feedback: str
     overall_comments: str | None
-    knowledge_gaps: List[str]
-    learning_recommendations: List[str]
+    knowledge_gaps: list[str]
+    learning_recommendations: list[str]
     created_at: dt.datetime
     updated_at: dt.datetime

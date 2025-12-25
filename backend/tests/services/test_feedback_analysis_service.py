@@ -6,14 +6,13 @@ import json
 from unittest.mock import MagicMock, patch
 from uuid import uuid4
 
-import pytest
 from fastapi import HTTPException
+import pytest
 
 from app.models.interview_session import InterviewSession
 from app.models.job_posting import JobPosting
 from app.models.resume import Resume
 from app.models.session_message import SessionMessage
-from app.models.user import User
 from app.services import feedback_analysis_service
 
 
@@ -111,10 +110,10 @@ async def test_analyze_session_success(
     db_session, test_user, complete_interview_session, mock_openai_response
 ):
     """Test successful feedback analysis with valid OpenAI response."""
-    with patch("app.services.feedback_analysis_service.OpenAIService") as MockOpenAI:
+    with patch("app.services.feedback_analysis_service.OpenAIService") as mock_openai:
         mock_service = MagicMock()
         mock_service.generate_chat_completion.return_value = mock_openai_response
-        MockOpenAI.return_value = mock_service
+        mock_openai.return_value = mock_service
 
         result = await feedback_analysis_service.analyze_session(
             db=db_session,
@@ -156,6 +155,7 @@ async def test_analyze_session_missing_resume(
     """Test error when user has no resume."""
     # Delete resume using SQLAlchemy delete
     from sqlalchemy import delete
+
     from app.models.resume import Resume
 
     stmt = delete(Resume).where(Resume.user_id == test_user.id)
@@ -246,10 +246,10 @@ async def test_analyze_session_malformed_json(
     db_session, test_user, complete_interview_session
 ):
     """Test error when OpenAI returns malformed JSON."""
-    with patch("app.services.feedback_analysis_service.OpenAIService") as MockOpenAI:
+    with patch("app.services.feedback_analysis_service.OpenAIService") as mock_openai:
         mock_service = MagicMock()
         mock_service.generate_chat_completion.return_value = "This is not JSON"
-        MockOpenAI.return_value = mock_service
+        mock_openai.return_value = mock_service
 
         with pytest.raises(HTTPException) as exc_info:
             await feedback_analysis_service.analyze_session(
@@ -274,10 +274,10 @@ async def test_analyze_session_invalid_schema(
         }
     )
 
-    with patch("app.services.feedback_analysis_service.OpenAIService") as MockOpenAI:
+    with patch("app.services.feedback_analysis_service.OpenAIService") as mock_openai:
         mock_service = MagicMock()
         mock_service.generate_chat_completion.return_value = invalid_response
-        MockOpenAI.return_value = mock_service
+        mock_openai.return_value = mock_service
 
         with pytest.raises(HTTPException) as exc_info:
             await feedback_analysis_service.analyze_session(
@@ -311,12 +311,12 @@ async def test_analyze_session_score_clamping(
         }
     )
 
-    with patch("app.services.feedback_analysis_service.OpenAIService") as MockOpenAI:
+    with patch("app.services.feedback_analysis_service.OpenAIService") as mock_openai:
         mock_service = MagicMock()
         mock_service.generate_chat_completion.return_value = (
             response_with_invalid_scores
         )
-        MockOpenAI.return_value = mock_service
+        mock_openai.return_value = mock_service
 
         result = await feedback_analysis_service.analyze_session(
             db=db_session,
@@ -336,7 +336,7 @@ async def test_build_analysis_prompt_format(
     db_session, test_user, complete_interview_session
 ):
     """Test that the prompt includes all required information."""
-    with patch("app.services.feedback_analysis_service.OpenAIService") as MockOpenAI:
+    with patch("app.services.feedback_analysis_service.OpenAIService") as mock_openai:
         mock_service = MagicMock()
         mock_service.generate_chat_completion.return_value = json.dumps(
             {
@@ -353,7 +353,7 @@ async def test_build_analysis_prompt_format(
                 "learning_recommendations": [],
             }
         )
-        MockOpenAI.return_value = mock_service
+        mock_openai.return_value = mock_service
 
         await feedback_analysis_service.analyze_session(
             db=db_session,

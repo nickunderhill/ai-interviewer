@@ -20,8 +20,8 @@ async def test_one_to_one_constraint_prevents_duplicate_feedback(
     db_session: AsyncSession,
 ):
     """Test that unique constraint on session_id prevents multiple feedback records for same session."""
-    from app.models.user import User
     from app.models.interview_session import InterviewSession
+    from app.models.user import User
 
     # Create user and session
     user = User(email="test@example.com", hashed_password="hashed")
@@ -84,8 +84,8 @@ async def test_one_to_one_constraint_prevents_duplicate_feedback(
 @pytest.mark.asyncio
 async def test_json_array_fields_round_trip(db_session: AsyncSession):
     """Test that knowledge_gaps and learning_recommendations store and retrieve lists correctly."""
-    from app.models.user import User
     from app.models.interview_session import InterviewSession
+    from app.models.user import User
 
     user = User(email="json_test@example.com", hashed_password="hashed")
     db_session.add(user)
@@ -143,8 +143,8 @@ async def test_json_array_fields_round_trip(db_session: AsyncSession):
 @pytest.mark.asyncio
 async def test_timestamps_are_utc_aware(db_session: AsyncSession):
     """Test that created_at and updated_at are UTC-aware."""
-    from app.models.user import User
     from app.models.interview_session import InterviewSession
+    from app.models.user import User
 
     user = User(email="timestamp_test@example.com", hashed_password="hashed")
     db_session.add(user)
@@ -189,8 +189,8 @@ async def test_timestamps_are_utc_aware(db_session: AsyncSession):
 @pytest.mark.asyncio
 async def test_feedback_cascade_deletes_with_session(db_session: AsyncSession):
     """Test that deleting session cascades to delete feedback."""
-    from app.models.user import User
     from app.models.interview_session import InterviewSession
+    from app.models.user import User
 
     user = User(email="cascade_test@example.com", hashed_password="hashed")
     db_session.add(user)
@@ -241,8 +241,8 @@ async def test_feedback_cascade_deletes_with_session(db_session: AsyncSession):
 @pytest.mark.asyncio
 async def test_feedback_empty_json_arrays(db_session: AsyncSession):
     """Test that empty arrays work correctly for JSON fields."""
-    from app.models.user import User
     from app.models.interview_session import InterviewSession
+    from app.models.user import User
 
     user = User(email="empty_json@example.com", hashed_password="hashed")
     db_session.add(user)
@@ -285,8 +285,8 @@ async def test_feedback_empty_json_arrays(db_session: AsyncSession):
 @pytest.mark.asyncio
 async def test_feedback_relationship_accessible_from_session(db_session: AsyncSession):
     """Test that feedback can be accessed via session.feedback relationship."""
-    from app.models.user import User
     from app.models.interview_session import InterviewSession
+    from app.models.user import User
 
     user = User(email="relationship@example.com", hashed_password="hashed")
     db_session.add(user)

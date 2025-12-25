@@ -1,6 +1,5 @@
 """Question generation service with dual-context approach."""
 
-from typing import Dict, Optional
 import logging
 
 from app.models.interview_session import InterviewSession
@@ -29,11 +28,11 @@ def get_question_type_for_round(question_number: int) -> str:
 
 def build_question_prompt(
     job_title: str,
-    job_company: Optional[str],
+    job_company: str | None,
     job_description: str,
-    tech_stack: Optional[str],
-    experience_level: Optional[str],
-    resume_content: Optional[str],
+    tech_stack: str | None,
+    experience_level: str | None,
+    resume_content: str | None,
     question_type: str,
 ) -> str:
     """
@@ -101,7 +100,7 @@ Generate the question now:"""
     return prompt
 
 
-async def generate_question(session: InterviewSession) -> Dict[str, str]:
+async def generate_question(session: InterviewSession) -> dict[str, str]:
     """
     Generate an interview question using dual-context approach.
 

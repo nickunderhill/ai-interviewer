@@ -2,8 +2,8 @@
 Tests for GET /api/v1/sessions endpoint (list sessions).
 """
 
-import pytest
 from httpx import AsyncClient
+import pytest
 
 
 @pytest.mark.asyncio

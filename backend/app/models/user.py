@@ -1,6 +1,6 @@
 import datetime as dt
+from typing import TYPE_CHECKING, Optional
 import uuid
-from typing import TYPE_CHECKING, List, Optional
 
 from sqlalchemy import DateTime, String
 from sqlalchemy.dialects.postgresql import UUID
@@ -9,13 +9,13 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.core.database import Base
 
 if TYPE_CHECKING:
-    from app.models.resume import Resume
-    from app.models.job_posting import JobPosting
     from app.models.interview_session import InterviewSession
+    from app.models.job_posting import JobPosting
+    from app.models.resume import Resume
 
 
 def utcnow() -> dt.datetime:
-    return dt.datetime.now(dt.timezone.utc)
+    return dt.datetime.now(dt.UTC)
 
 
 class User(Base):
@@ -66,14 +66,14 @@ class User(Base):
     )
 
     # Relationship to JobPostings (one-to-many)
-    job_postings: Mapped[List["JobPosting"]] = relationship(
+    job_postings: Mapped[list["JobPosting"]] = relationship(
         "JobPosting",
         back_populates="user",
         cascade="all, delete-orphan",
     )
 
     # Relationship to InterviewSessions (one-to-many)
-    interview_sessions: Mapped[List["InterviewSession"]] = relationship(
+    interview_sessions: Mapped[list["InterviewSession"]] = relationship(
         "InterviewSession",
         back_populates="user",
         cascade="all, delete-orphan",

@@ -3,8 +3,9 @@ Tests for POST /api/v1/sessions endpoint.
 """
 
 import uuid
-import pytest
+
 from httpx import AsyncClient
+import pytest
 
 
 @pytest.mark.asyncio
@@ -133,8 +134,9 @@ async def test_create_session_persists_to_database(
     async_client: AsyncClient, auth_headers: dict, test_job_posting: dict, db_session
 ):
     """Test that created session is persisted to database."""
-    from app.models.interview_session import InterviewSession
     from sqlalchemy import select
+
+    from app.models.interview_session import InterviewSession
 
     session_data = {
         "job_posting_id": str(test_job_posting["id"]),

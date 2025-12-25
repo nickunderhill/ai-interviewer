@@ -1,7 +1,6 @@
 """OpenAI service for making AI API calls with user API keys."""
 
 import logging
-from typing import Dict, List, Optional
 
 from fastapi import HTTPException, status
 from openai import APIConnectionError, APIError, OpenAI, RateLimitError
@@ -65,7 +64,7 @@ class OpenAIService:
                         "Failed to decrypt API key. Please " "reconfigure your API key."
                     ),
                 },
-            )
+            ) from e
 
     @retry(
         stop=stop_after_attempt(3),
@@ -89,7 +88,7 @@ class OpenAIService:
         try:
             return api_func(**kwargs)
 
-        except RateLimitError as e:
+        except RateLimitError:
             logger.warning(f"Rate limit hit for user {self.user_id}")
             raise HTTPException(
                 status_code=status.HTTP_429_TOO_MANY_REQUESTS,
@@ -100,7 +99,7 @@ class OpenAIService:
                         "Please wait a moment and try again."
                     ),
                 },
-            )
+            ) from None
 
         except APIConnectionError as e:
             logger.error(f"OpenAI connection error for user {self.user_id}: {str(e)}")
@@ -113,7 +112,7 @@ class OpenAIService:
                         "your internet connection and try again."
                     ),
                 },
-            )
+            ) from e
 
         except APIError as e:
             logger.error(f"OpenAI API error for user {self.user_id}: {str(e)}")
@@ -129,7 +128,7 @@ class OpenAIService:
                             "Please update it in settings."
                         ),
                     },
-                )
+                ) from e
 
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -137,7 +136,7 @@ class OpenAIService:
                     "code": "OPENAI_API_ERROR",
                     "message": f"OpenAI API error: {str(e)}",
                 },
-            )
+            ) from e
 
         except Exception as e:
             logger.error(
@@ -149,14 +148,14 @@ class OpenAIService:
                     "code": "UNEXPECTED_ERROR",
                     "message": ("An unexpected error occurred. " "Please try again."),
                 },
-            )
+            ) from e
 
     def generate_chat_completion(
         self,
-        messages: List[Dict[str, str]],
+        messages: list[dict[str, str]],
         model: str = "gpt-3.5-turbo",
         temperature: float = 0.7,
-        max_tokens: Optional[int] = None,
+        max_tokens: int | None = None,
     ) -> str:
         """Generate a chat completion using OpenAI.
 

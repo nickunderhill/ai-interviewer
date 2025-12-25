@@ -2,8 +2,8 @@
 Tests for POST /api/v1/job-postings endpoint.
 """
 
-import pytest
 from httpx import AsyncClient
+import pytest
 
 
 @pytest.mark.asyncio

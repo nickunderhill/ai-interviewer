@@ -2,8 +2,8 @@
 Tests for GET /api/v1/job-postings endpoint (list).
 """
 
-import pytest
 from httpx import AsyncClient
+import pytest
 
 
 @pytest.mark.asyncio
@@ -58,12 +58,12 @@ async def test_list_job_postings_ordered_by_created_at_desc(
 ):
     """Test job postings are ordered by created_at DESC (newest first)."""
     # Create job postings in sequence
-    response1 = await async_client.post(
+    await async_client.post(
         "/api/v1/job-postings/",
         json={"title": "First Post", "description": "Description"},
         headers=auth_headers,
     )
-    response2 = await async_client.post(
+    await async_client.post(
         "/api/v1/job-postings/",
         json={"title": "Second Post", "description": "Description"},
         headers=auth_headers,
@@ -86,8 +86,8 @@ async def test_list_job_postings_user_isolation(
     async_client: AsyncClient, auth_headers: dict, db_session
 ):
     """Test users can only see their own job postings."""
-    from app.models.user import User
     from app.models.job_posting import JobPosting
+    from app.models.user import User
 
     # Create another user with a job posting
     other_user = User(

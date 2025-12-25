@@ -2,9 +2,8 @@
 Tests for Resume model schema.
 """
 
-import uuid
 import pytest
-from sqlalchemy import select, text
+from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 
 from app.models.resume import Resume

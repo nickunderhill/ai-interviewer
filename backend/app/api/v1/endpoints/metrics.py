@@ -3,15 +3,15 @@ Dashboard metrics endpoints.
 """
 
 from fastapi import APIRouter, Depends
-from sqlalchemy import select, func
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.dependencies import get_current_user
 from app.core.database import get_db
-from app.models.user import User
-from app.models.interview_session import InterviewSession
+from app.core.dependencies import get_current_user
 from app.models.interview_feedback import InterviewFeedback
+from app.models.interview_session import InterviewSession
 from app.models.job_posting import JobPosting
+from app.models.user import User
 from app.schemas.metrics import DashboardMetrics, PracticedRole
 
 router = APIRouter()

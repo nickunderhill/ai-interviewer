@@ -1,8 +1,9 @@
 """Tests for answer submission endpoint."""
 
-import pytest
 import uuid
+
 from httpx import AsyncClient
+import pytest
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 

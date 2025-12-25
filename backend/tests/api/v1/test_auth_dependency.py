@@ -2,12 +2,13 @@
 Tests for authentication dependency and protected routes.
 """
 
+from datetime import UTC
 import uuid
 
-import pytest
-from fastapi import FastAPI, Depends
+from fastapi import Depends, FastAPI
 from fastapi.testclient import TestClient
 from httpx import AsyncClient
+import pytest
 
 from app.core.dependencies import get_current_user
 from app.core.security import create_access_token
@@ -36,14 +37,16 @@ def test_invalid_token_returns_401(client: TestClient) -> None:
 
 def test_expired_token_returns_401(client: TestClient) -> None:
     """Test that expired tokens return 401."""
-    from datetime import datetime, timedelta, timezone
+    from datetime import datetime, timedelta
+
     from jose import jwt
+
     from app.core.config import settings
 
     # Create an expired token
     payload = {
         "user_id": str(uuid.uuid4()),
-        "exp": datetime.now(timezone.utc) - timedelta(hours=1),  # Expired 1 hour ago
+        "exp": datetime.now(UTC) - timedelta(hours=1),  # Expired 1 hour ago
     }
     expired_token = jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
 
@@ -59,13 +62,15 @@ def test_expired_token_returns_401(client: TestClient) -> None:
 
 def test_token_without_user_id_returns_401(client: TestClient) -> None:
     """Test that token missing user_id returns 401."""
+    from datetime import datetime, timedelta
+
     from jose import jwt
+
     from app.core.config import settings
-    from datetime import datetime, timedelta, timezone
 
     # Create token without user_id
     payload = {
-        "exp": datetime.now(timezone.utc) + timedelta(hours=1),
+        "exp": datetime.now(UTC) + timedelta(hours=1),
         "some_other_field": "value",
     }
     token = jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")

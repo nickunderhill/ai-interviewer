@@ -11,10 +11,9 @@ Provides CRUD operations for job postings:
 All endpoints require authentication via JWT token.
 """
 
-from typing import List
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi import APIRouter, Depends, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
@@ -70,7 +69,7 @@ async def create_job_posting(
 
 @router.get(
     "/",
-    response_model=List[JobPostingListItem],
+    response_model=list[JobPostingListItem],
     summary="List Job Postings",
     description="Get list of all job postings for authenticated user",
 )
@@ -79,7 +78,7 @@ async def list_job_postings(
     offset: int = 0,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
-) -> List[JobPostingListItem]:
+) -> list[JobPostingListItem]:
     """
     Get list of user's job postings (ordered by created_at DESC).
 

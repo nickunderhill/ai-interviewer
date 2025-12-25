@@ -1,7 +1,6 @@
 """Operation schemas for API responses."""
 
 import datetime as dt
-from typing import Optional
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict
@@ -15,7 +14,7 @@ class OperationResponse(BaseModel):
     id: UUID
     operation_type: str
     status: str
-    result: Optional[dict] = None
-    error_message: Optional[str] = None
+    result: dict | None = None
+    error_message: str | None = None
     created_at: dt.datetime
     updated_at: dt.datetime

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from jose import JWTError, jwt
@@ -34,7 +34,7 @@ def create_access_token(data: dict[str, Any]) -> str:
     if "user_id" not in to_encode:
         raise ValueError("Token data must include user_id")
 
-    expire = datetime.now(timezone.utc) + timedelta(hours=24)
+    expire = datetime.now(UTC) + timedelta(hours=24)
     to_encode["exp"] = expire
 
     return jwt.encode(to_encode, settings.SECRET_KEY, algorithm="HS256")

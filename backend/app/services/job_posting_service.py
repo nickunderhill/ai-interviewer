@@ -4,7 +4,6 @@ Job Posting service - business logic for job posting operations.
 
 import datetime as dt
 import uuid
-from typing import List, Optional
 
 from fastapi import HTTPException, status
 from sqlalchemy import select
@@ -28,9 +27,9 @@ async def create_job_posting(
     user_id: uuid.UUID,
     title: str,
     description: str,
-    company: Optional[str] = None,
-    experience_level: Optional[str] = None,
-    tech_stack: Optional[List[str]] = None,
+    company: str | None = None,
+    experience_level: str | None = None,
+    tech_stack: list[str] | None = None,
 ) -> JobPosting:
     """
     Create a new job posting for a user.
@@ -67,7 +66,7 @@ async def get_user_job_postings(
     user_id: uuid.UUID,
     limit: int = 100,
     offset: int = 0,
-) -> List[JobPosting]:
+) -> list[JobPosting]:
     """
     Retrieve job postings for a user (ordered by created_at DESC).
 
@@ -129,9 +128,9 @@ async def update_job_posting(
     user_id: uuid.UUID,
     title: str,
     description: str,
-    company: Optional[str] = None,
-    experience_level: Optional[str] = None,
-    tech_stack: Optional[List[str]] = None,
+    company: str | None = None,
+    experience_level: str | None = None,
+    tech_stack: list[str] | None = None,
 ) -> JobPosting:
     """
     Update a job posting.
@@ -169,7 +168,7 @@ async def update_job_posting(
     job_posting.description = description
     job_posting.experience_level = experience_level
     job_posting.tech_stack = tech_stack
-    job_posting.updated_at = dt.datetime.now(dt.timezone.utc)
+    job_posting.updated_at = dt.datetime.now(dt.UTC)
 
     await db.commit()
     await db.refresh(job_posting)

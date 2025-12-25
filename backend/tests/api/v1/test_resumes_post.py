@@ -2,8 +2,8 @@
 Tests for POST /api/v1/resumes endpoint.
 """
 
-import pytest
 from httpx import AsyncClient
+import pytest
 
 from app.models.user import User
 

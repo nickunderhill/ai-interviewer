@@ -5,8 +5,8 @@ Provides dependency injection for current user authentication.
 
 from __future__ import annotations
 
-import uuid
 from typing import Any
+import uuid
 
 from fastapi import Depends, HTTPException
 from sqlalchemy import select

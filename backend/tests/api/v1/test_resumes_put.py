@@ -2,8 +2,8 @@
 Tests for PUT /api/v1/resumes/me endpoint.
 """
 
-import pytest
 from httpx import AsyncClient
+import pytest
 
 from app.models.user import User
 

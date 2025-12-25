@@ -3,8 +3,8 @@ Resume model for storing user résumé content.
 """
 
 import datetime as dt
-import uuid
 from typing import TYPE_CHECKING
+import uuid
 
 from sqlalchemy import DateTime, ForeignKey, Text
 from sqlalchemy.dialects.postgresql import UUID
@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 
 
 def utcnow() -> dt.datetime:
-    return dt.datetime.now(dt.timezone.utc)
+    return dt.datetime.now(dt.UTC)
 
 
 class Resume(Base):

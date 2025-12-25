@@ -1,6 +1,6 @@
-import pytest
 from fastapi import Depends, FastAPI
 from httpx import AsyncClient
+import pytest
 
 from app.api.deps import get_token_payload
 

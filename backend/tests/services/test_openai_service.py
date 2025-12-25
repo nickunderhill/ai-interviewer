@@ -1,10 +1,10 @@
 """Tests for OpenAI service."""
 
-import pytest
 from unittest.mock import MagicMock, Mock, patch
 
 from fastapi import HTTPException
 from openai import APIConnectionError, APIError, RateLimitError
+import pytest
 
 from app.models.user import User
 from app.services.openai_service import OpenAIService
