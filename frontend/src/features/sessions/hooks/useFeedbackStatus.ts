@@ -12,9 +12,12 @@ async function checkFeedbackExists(sessionId: string): Promise<boolean> {
   try {
     await apiClient.get(`/api/v1/sessions/${sessionId}/feedback`);
     return true;
-  } catch (error: any) {
-    if (error.response?.status === 404) {
-      return false;
+  } catch (error: unknown) {
+    if (error && typeof error === 'object' && 'response' in error) {
+      const axiosError = error as { response?: { status?: number } };
+      if (axiosError.response?.status === 404) {
+        return false;
+      }
     }
     throw error;
   }

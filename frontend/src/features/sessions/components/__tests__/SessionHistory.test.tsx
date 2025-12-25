@@ -63,7 +63,7 @@ describe('SessionHistory', () => {
       isLoading: true,
       isError: false,
       error: null,
-    } as any);
+    } as ReturnType<typeof useSessions.useSessions>);
 
     const { container } = renderWithProviders(<SessionHistory />);
     // Check for skeleton loading state (animate-pulse instead of animate-spin)
@@ -78,7 +78,7 @@ describe('SessionHistory', () => {
       isLoading: false,
       isError: true,
       error: new Error(errorMessage),
-    } as any);
+    } as ReturnType<typeof useSessions.useSessions>);
 
     renderWithProviders(<SessionHistory />);
     expect(screen.getByText('Error loading sessions')).toBeInTheDocument();
@@ -91,7 +91,7 @@ describe('SessionHistory', () => {
       isLoading: false,
       isError: false,
       error: null,
-    } as any);
+    } as ReturnType<typeof useSessions.useSessions>);
 
     renderWithProviders(<SessionHistory />);
     expect(screen.getByText('No completed interviews yet')).toBeInTheDocument();
@@ -106,7 +106,7 @@ describe('SessionHistory', () => {
       isLoading: false,
       isError: false,
       error: null,
-    } as any);
+    } as ReturnType<typeof useSessions.useSessions>);
 
     renderWithProviders(<SessionHistory />);
 
@@ -123,7 +123,7 @@ describe('SessionHistory', () => {
       isLoading: false,
       isError: false,
       error: null,
-    } as any);
+    } as ReturnType<typeof useSessions.useSessions>);
 
     const { container } = renderWithProviders(<SessionHistory />);
 
@@ -138,7 +138,7 @@ describe('SessionHistory', () => {
       isLoading: false,
       isError: false,
       error: null,
-    } as any);
+    } as ReturnType<typeof useSessions.useSessions>);
 
     renderWithProviders(<SessionHistory />);
 
