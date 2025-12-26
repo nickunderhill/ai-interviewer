@@ -20,7 +20,9 @@ vi.mock('react-router-dom', async () => {
     ...actual,
     useParams: () => ({ id: 'test-session-id' }),
     useNavigate: () => vi.fn(),
-    Link: ({ children, to }: { children: React.ReactNode; to: string }) => <a href={to}>{children}</a>,
+    Link: ({ children, to }: { children: React.ReactNode; to: string }) => (
+      <a href={to}>{children}</a>
+    ),
   };
 });
 
