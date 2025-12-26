@@ -1,6 +1,6 @@
 # Story 7.1: Add Retake Tracking Fields to Session Model
 
-Status: ready-for-dev
+Status: review
 
 ## Story
 
@@ -21,42 +21,42 @@ so that we can link retakes and track attempt numbers.
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Update InterviewSession model with retake tracking fields (AC: #1)
+- [x] Task 1: Update InterviewSession model with retake tracking fields (AC: #1)
 
-  - [ ] Add `retake_number` field: `Mapped[int]` with default=1
-  - [ ] Add `original_session_id` field: `Mapped[Optional[uuid.UUID]]` nullable,
+  - [x] Add `retake_number` field: `Mapped[int]` with default=1
+  - [x] Add `original_session_id` field: `Mapped[Optional[uuid.UUID]]` nullable,
         FK to interview_sessions.id
-  - [ ] Add self-referential relationship for tracking retakes
-  - [ ] Ensure snake_case naming conventions
-  - [ ] Follow SQLAlchemy 2.0+ async patterns
+  - [x] Add self-referential relationship for tracking retakes
+  - [x] Ensure snake_case naming conventions
+  - [x] Follow SQLAlchemy 2.0+ async patterns
 
-- [ ] Task 2: Create Alembic migration for new fields (AC: #1)
+- [x] Task 2: Create Alembic migration for new fields (AC: #1)
 
-  - [ ] Generate migration:
+  - [x] Generate migration:
         `alembic revision --autogenerate -m "Add retake tracking to interview_sessions"`
-  - [ ] Add `retake_number` column: Integer, default=1, not null
-  - [ ] Add `original_session_id` column: UUID, nullable, FK to
+  - [x] Add `retake_number` column: Integer, default=1, not null
+  - [x] Add `original_session_id` column: UUID, nullable, FK to
         interview_sessions(id)
-  - [ ] Set default values for existing sessions (retake_number=1,
+  - [x] Set default values for existing sessions (retake_number=1,
         original_session_id=NULL)
-  - [ ] Add index on original_session_id for query performance
-  - [ ] Test migration: up and down operations
+  - [x] Add index on original_session_id for query performance
+  - [x] Test migration: up and down operations
 
-- [ ] Task 3: Update InterviewSession Pydantic schemas (AC: #1)
+- [x] Task 3: Update InterviewSession Pydantic schemas (AC: #1)
 
-  - [ ] Update SessionResponse schema: include retake_number and
+  - [x] Update SessionResponse schema: include retake_number and
         original_session_id
-  - [ ] Update SessionCreate/SessionUpdate if needed
-  - [ ] Ensure proper typing: retake_number (int), original_session_id
+  - [x] Update SessionCreate/SessionUpdate if needed
+  - [x] Ensure proper typing: retake_number (int), original_session_id
         (Optional[UUID])
-  - [ ] Add field descriptions for documentation
+  - [x] Add field descriptions for documentation
 
-- [ ] Task 4: Test retake fields in session creation (AC: #1)
-  - [ ] Test creating new session: retake_number=1, original_session_id=None by
+- [x] Task 4: Test retake fields in session creation (AC: #1)
+  - [x] Test creating new session: retake_number=1, original_session_id=None by
         default
-  - [ ] Verify schema validation for retake fields
-  - [ ] Test querying sessions with retake relationships
-  - [ ] Test backward compatibility with existing sessions
+  - [x] Verify schema validation for retake fields
+  - [x] Test querying sessions with retake relationships
+  - [x] Test backward compatibility with existing sessions
 
 ## Dev Notes
 
@@ -237,16 +237,71 @@ class SessionResponse(BaseModel):
 
 ### Agent Model Used
 
-_To be filled by dev agent_
+Claude Sonnet 4.5
 
 ### Debug Log References
 
-_To be filled by dev agent_
+- Migration applied successfully: revision e856d687d853
+- All model tests pass (14/14)
+- All API tests pass (91/91 session-related tests)
+- No regressions introduced
 
 ### Completion Notes List
 
-_To be filled by dev agent_
+**Implementation Summary:**
+
+1. **Model Changes** ([backend/app/models/interview_session.py](backend/app/models/interview_session.py)):
+   - Added `retake_number` field: `Mapped[int]` with default=1
+   - Added `original_session_id` field: `Mapped[Optional[uuid.UUID]]` with FK to interview_sessions.id
+   - Added self-referential relationships: `original_session` and `retakes`
+   - Used `lazy="selectin"` for async-compatible eager loading
+   - Fixed duplicate `feedback` relationship definition
+
+2. **Schema Updates** ([backend/app/schemas/session.py](backend/app/schemas/session.py)):
+   - Updated `SessionResponse` with retake_number and original_session_id fields
+   - Updated `SessionDetailResponse` with the same fields
+   - Added field descriptions for API documentation
+
+3. **Database Migration** ([backend/alembic/versions/20251226_0522_e856d687d853_add_retake_tracking_to_interview_sessions.py](backend/alembic/versions/20251226_0522_e856d687d853_add_retake_tracking_to_interview_sessions.py)):
+   - Created migration revision e856d687d853
+   - Added retake_number column with server_default='1'
+   - Added original_session_id column (nullable)
+   - Added FK constraint with SET NULL on delete
+   - Added index on original_session_id for performance
+   - Implemented complete downgrade path
+
+4. **Tests Added**:
+   - Model tests (6 new tests):
+     - `test_interview_session_retake_number_defaults_to_one`
+     - `test_interview_session_original_session_id_nullable`
+     - `test_interview_session_retake_tracking_with_original_session`
+     - `test_interview_session_self_referential_relationship`
+     - `test_interview_session_set_null_on_original_session_deletion`
+   - API tests (2 new tests):
+     - `test_create_session_includes_retake_fields_in_response`
+     - `test_get_session_detail_includes_retake_fields`
+
+**Technical Decisions:**
+
+- Used `lazy="selectin"` for relationships to avoid async greenlet issues
+- Applied `server_default='1'` in migration to handle existing rows
+- Self-referential FK with SET NULL ensures orphaned retakes remain accessible
+- Index on original_session_id optimizes retake chain queries
+
+**Test Results:**
+- All 14 model tests pass ✅
+- All 91 session API tests pass ✅
+- No regressions in existing functionality ✅
+- Migration applies and rolls back cleanly ✅
 
 ### File List
 
-_To be filled by dev agent_
+**Modified:**
+- backend/app/models/interview_session.py
+- backend/app/schemas/session.py
+- backend/tests/test_interview_session_model.py
+- backend/tests/api/v1/test_sessions_post.py
+- backend/tests/api/v1/test_sessions_get.py
+
+**Created:**
+- backend/alembic/versions/20251226_0522_e856d687d853_add_retake_tracking_to_interview_sessions.py

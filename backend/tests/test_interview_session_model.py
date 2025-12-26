@@ -129,7 +129,9 @@ async def test_interview_session_cascade_behavior_on_user_deletion(db_session):
     await db_session.commit()
 
     # Verify session was also deleted
-    result = await db_session.execute(select(InterviewSession).where(InterviewSession.id == session_id))
+    result = await db_session.execute(
+        select(InterviewSession).where(InterviewSession.id == session_id)
+    )
     deleted_session = result.scalar_one_or_none()
     assert deleted_session is None
 
@@ -172,7 +174,9 @@ async def test_interview_session_set_null_on_job_posting_deletion(db_session):
     await db_session.commit()
 
     # Verify session still exists but job_posting_id is NULL
-    result = await db_session.execute(select(InterviewSession).where(InterviewSession.id == session_id))
+    result = await db_session.execute(
+        select(InterviewSession).where(InterviewSession.id == session_id)
+    )
     updated_session = result.scalar_one_or_none()
     assert updated_session is not None
     assert updated_session.job_posting_id is None
@@ -280,3 +284,195 @@ async def test_interview_session_relationship_with_user(db_session):
     await db_session.refresh(user)
     assert len(user.interview_sessions) == 1
     assert user.interview_sessions[0].id == session.id
+
+
+@pytest.mark.asyncio
+async def test_interview_session_retake_number_defaults_to_one(db_session):
+    """Test that retake_number defaults to 1 for new sessions."""
+    from app.models.interview_session import InterviewSession
+    from app.models.user import User
+
+    user = User(email="retake_default@example.com", hashed_password="hashed")
+    db_session.add(user)
+    await db_session.commit()
+    await db_session.refresh(user)
+
+    session = InterviewSession(
+        user_id=user.id,
+        job_posting_id=None,
+        status="active",
+    )
+    db_session.add(session)
+    await db_session.commit()
+    await db_session.refresh(session)
+
+    assert session.retake_number == 1
+
+
+@pytest.mark.asyncio
+async def test_interview_session_original_session_id_nullable(db_session):
+    """Test that original_session_id can be NULL for first attempts."""
+    from app.models.interview_session import InterviewSession
+    from app.models.user import User
+
+    user = User(email="original_null@example.com", hashed_password="hashed")
+    db_session.add(user)
+    await db_session.commit()
+    await db_session.refresh(user)
+
+    session = InterviewSession(
+        user_id=user.id,
+        job_posting_id=None,
+        status="active",
+    )
+    db_session.add(session)
+    await db_session.commit()
+    await db_session.refresh(session)
+
+    assert session.original_session_id is None
+
+
+@pytest.mark.asyncio
+async def test_interview_session_retake_tracking_with_original_session(db_session):
+    """Test creating a retake session linked to an original session."""
+    from app.models.interview_session import InterviewSession
+    from app.models.user import User
+
+    user = User(email="retake_tracking@example.com", hashed_password="hashed")
+    db_session.add(user)
+    await db_session.commit()
+    await db_session.refresh(user)
+
+    # Create original session
+    original_session = InterviewSession(
+        user_id=user.id,
+        job_posting_id=None,
+        status="completed",
+        retake_number=1,
+    )
+    db_session.add(original_session)
+    await db_session.commit()
+    await db_session.refresh(original_session)
+
+    # Create retake session
+    retake_session = InterviewSession(
+        user_id=user.id,
+        job_posting_id=None,
+        status="active",
+        retake_number=2,
+        original_session_id=original_session.id,
+    )
+    db_session.add(retake_session)
+    await db_session.commit()
+    await db_session.refresh(retake_session)
+
+    assert retake_session.retake_number == 2
+    assert retake_session.original_session_id == original_session.id
+
+
+@pytest.mark.asyncio
+async def test_interview_session_self_referential_relationship(db_session):
+    """Test self-referential relationship for retakes."""
+    from app.models.interview_session import InterviewSession
+    from app.models.user import User
+
+    user = User(email="self_ref@example.com", hashed_password="hashed")
+    db_session.add(user)
+    await db_session.commit()
+    await db_session.refresh(user)
+
+    # Create original session
+    original_session = InterviewSession(
+        user_id=user.id,
+        job_posting_id=None,
+        status="completed",
+        retake_number=1,
+    )
+    db_session.add(original_session)
+    await db_session.commit()
+    await db_session.refresh(original_session)
+
+    # Create first retake
+    retake1 = InterviewSession(
+        user_id=user.id,
+        job_posting_id=None,
+        status="completed",
+        retake_number=2,
+        original_session_id=original_session.id,
+    )
+    db_session.add(retake1)
+    await db_session.commit()
+
+    # Create second retake
+    retake2 = InterviewSession(
+        user_id=user.id,
+        job_posting_id=None,
+        status="active",
+        retake_number=3,
+        original_session_id=original_session.id,
+    )
+    db_session.add(retake2)
+    await db_session.commit()
+
+    # Refresh to load relationships
+    await db_session.refresh(original_session)
+    await db_session.refresh(retake1)
+    await db_session.refresh(retake2)
+
+    # Test forward relationship (retake -> original)
+    assert retake1.original_session is not None
+    assert retake1.original_session.id == original_session.id
+    assert retake2.original_session is not None
+    assert retake2.original_session.id == original_session.id
+
+    # Test back-populate relationship (original -> retakes)
+    assert len(original_session.retakes) == 2
+    retake_ids = {r.id for r in original_session.retakes}
+    assert retake1.id in retake_ids
+    assert retake2.id in retake_ids
+
+
+@pytest.mark.asyncio
+async def test_interview_session_set_null_on_original_session_deletion(db_session):
+    """Test that deleting original session sets original_session_id to NULL in retakes."""
+    from app.models.interview_session import InterviewSession
+    from app.models.user import User
+
+    user = User(email="cascade_original@example.com", hashed_password="hashed")
+    db_session.add(user)
+    await db_session.commit()
+    await db_session.refresh(user)
+
+    # Create original session
+    original_session = InterviewSession(
+        user_id=user.id,
+        job_posting_id=None,
+        status="completed",
+    )
+    db_session.add(original_session)
+    await db_session.commit()
+    await db_session.refresh(original_session)
+
+    # Create retake session
+    retake_session = InterviewSession(
+        user_id=user.id,
+        job_posting_id=None,
+        status="active",
+        retake_number=2,
+        original_session_id=original_session.id,
+    )
+    db_session.add(retake_session)
+    await db_session.commit()
+    await db_session.refresh(retake_session)
+
+    retake_id = retake_session.id
+
+    # Delete original session
+    await db_session.delete(original_session)
+    await db_session.commit()
+
+    # Refresh to see the updated foreign key value
+    await db_session.refresh(retake_session)
+
+    # Verify retake still exists but original_session_id is NULL
+    assert retake_session.original_session_id is None

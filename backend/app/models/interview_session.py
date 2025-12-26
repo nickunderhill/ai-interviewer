@@ -59,6 +59,19 @@ class InterviewSession(Base):
         default=0,
     )
 
+    retake_number: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+        default=1,
+    )
+
+    original_session_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("interview_sessions.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
+
     created_at: Mapped[dt.datetime] = mapped_column(
         DateTime(timezone=True),
         default=utcnow,
@@ -99,10 +112,19 @@ class InterviewSession(Base):
         lazy="selectin",
     )
 
-    feedback: Mapped[Optional["InterviewFeedback"]] = relationship(
-        "InterviewFeedback",
-        back_populates="session",
-        uselist=False,
+    # Self-referential relationship for retake tracking
+    original_session: Mapped[Optional["InterviewSession"]] = relationship(
+        "InterviewSession",
+        remote_side=[id],
+        back_populates="retakes",
+        foreign_keys=[original_session_id],
+        lazy="selectin",
+    )
+
+    retakes: Mapped[list["InterviewSession"]] = relationship(
+        "InterviewSession",
+        back_populates="original_session",
+        foreign_keys=[original_session_id],
         lazy="selectin",
     )
 

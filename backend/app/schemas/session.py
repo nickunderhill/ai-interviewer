@@ -33,6 +33,14 @@ class SessionResponse(BaseModel):
     job_posting_id: UUID4 | None = None
     status: str
     current_question_number: int
+    retake_number: int = Field(
+        default=1,
+        description="Attempt number (1 = first attempt, 2 = first retake, etc.)",
+    )
+    original_session_id: UUID4 | None = Field(
+        default=None,
+        description="ID of the original session for this job posting (null for first attempts)",
+    )
     created_at: dt.datetime
     updated_at: dt.datetime
     job_posting: JobPostingBasic | None = None
@@ -83,6 +91,14 @@ class SessionDetailResponse(BaseModel):
     job_posting_id: UUID4 | None = None
     status: str
     current_question_number: int
+    retake_number: int = Field(
+        default=1,
+        description="Attempt number (1 = first attempt, 2 = first retake, etc.)",
+    )
+    original_session_id: UUID4 | None = Field(
+        default=None,
+        description="ID of the original session for this job posting (null for first attempts)",
+    )
     created_at: dt.datetime
     updated_at: dt.datetime
     job_posting: JobPostingDetail | None = None

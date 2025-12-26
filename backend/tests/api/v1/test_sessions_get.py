@@ -80,6 +80,28 @@ async def test_get_session_detail_includes_resume(
 
 
 @pytest.mark.asyncio
+async def test_get_session_detail_includes_retake_fields(
+    async_client: AsyncClient, auth_headers: dict, test_session_with_resume: dict
+):
+    """Test that retake tracking fields are included in session detail response."""
+    session_id = test_session_with_resume["id"]
+
+    response = await async_client.get(
+        f"/api/v1/sessions/{session_id}",
+        headers=auth_headers,
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+
+    # Verify retake fields are present
+    assert "retake_number" in data
+    assert "original_session_id" in data
+    assert isinstance(data["retake_number"], int)
+    assert data["retake_number"] >= 1
+
+
+@pytest.mark.asyncio
 async def test_get_session_detail_handles_missing_resume(
     async_client: AsyncClient, auth_headers: dict, test_session_no_resume: dict
 ):
@@ -97,7 +119,9 @@ async def test_get_session_detail_handles_missing_resume(
 
 
 @pytest.mark.asyncio
-async def test_get_session_detail_not_found_returns_404(async_client: AsyncClient, auth_headers: dict):
+async def test_get_session_detail_not_found_returns_404(
+    async_client: AsyncClient, auth_headers: dict
+):
     """Test retrieving non-existent session returns 404."""
     fake_id = uuid.uuid4()
 
@@ -131,7 +155,9 @@ async def test_get_session_detail_other_user_returns_404(
 
 
 @pytest.mark.asyncio
-async def test_get_session_detail_invalid_uuid_returns_422(async_client: AsyncClient, auth_headers: dict):
+async def test_get_session_detail_invalid_uuid_returns_422(
+    async_client: AsyncClient, auth_headers: dict
+):
     """Test invalid UUID format returns 422."""
     response = await async_client.get(
         "/api/v1/sessions/not-a-valid-uuid",
