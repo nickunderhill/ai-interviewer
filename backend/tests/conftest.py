@@ -119,9 +119,7 @@ class _HybridClient:
     This avoids event loop mismatches with TestClient when using AsyncSession.
     """
 
-    def __init__(
-        self, app, loop: asyncio.AbstractEventLoop, base_url: str = "http://test"
-    ):
+    def __init__(self, app, loop: asyncio.AbstractEventLoop, base_url: str = "http://test"):
         self._app = app
         self._loop = loop
         self._base_url = base_url
@@ -142,8 +140,7 @@ class _HybridClient:
             raise RuntimeError("Test event loop is closed; cannot run sync HTTP call")
         if self._loop.is_running():
             raise RuntimeError(
-                "client.get() cannot run while the loop is running; "
-                "use the 'async_client' fixture instead"
+                "client.get() cannot run while the loop is running; " "use the 'async_client' fixture instead"
             )
 
         return self._loop.run_until_complete(_call())
@@ -297,9 +294,7 @@ async def other_user_session(db_session: AsyncSession, other_user_job_posting):
 
 
 @pytest_asyncio.fixture
-async def test_session_with_resume(
-    db_session: AsyncSession, test_user, test_job_posting
-):
+async def test_session_with_resume(db_session: AsyncSession, test_user, test_job_posting):
     """Create a test session with user having a resume."""
     from app.models.interview_session import InterviewSession
     from app.models.resume import Resume
@@ -430,9 +425,7 @@ async def test_paused_session(db_session: AsyncSession, test_user, test_job_post
 
 
 @pytest_asyncio.fixture
-async def test_session_with_messages(
-    db_session: AsyncSession, test_user, test_job_posting
-):
+async def test_session_with_messages(db_session: AsyncSession, test_user, test_job_posting):
     """Create a session populated with a question and an answer."""
     from app.models.interview_session import InterviewSession
     from app.models.session_message import SessionMessage
@@ -492,9 +485,7 @@ async def other_user_auth_headers(db_session: AsyncSession):
 
 
 @pytest_asyncio.fixture
-async def test_completed_session_with_feedback(
-    db_session: AsyncSession, test_user, test_job_posting
-):
+async def test_completed_session_with_feedback(db_session: AsyncSession, test_user, test_job_posting):
     """Create a completed session with generated feedback."""
     import datetime as dt
 

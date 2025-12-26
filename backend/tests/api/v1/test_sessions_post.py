@@ -9,9 +9,7 @@ import pytest
 
 
 @pytest.mark.asyncio
-async def test_create_session_success(
-    async_client: AsyncClient, auth_headers: dict, test_job_posting
-):
+async def test_create_session_success(async_client: AsyncClient, auth_headers: dict, test_job_posting):
     """Test successful session creation returns 201."""
     session_data = {
         "job_posting_id": str(test_job_posting.id),
@@ -38,9 +36,7 @@ async def test_create_session_success(
 
 
 @pytest.mark.asyncio
-async def test_create_session_nonexistent_job_posting_returns_404(
-    async_client: AsyncClient, auth_headers: dict
-):
+async def test_create_session_nonexistent_job_posting_returns_404(async_client: AsyncClient, auth_headers: dict):
     """Test session creation with non-existent job posting returns 404."""
     fake_id = str(uuid.uuid4())
     session_data = {
@@ -81,9 +77,7 @@ async def test_create_session_other_users_job_posting_returns_404(
 
 
 @pytest.mark.asyncio
-async def test_create_session_missing_job_posting_id_returns_422(
-    async_client: AsyncClient, auth_headers: dict
-):
+async def test_create_session_missing_job_posting_id_returns_422(async_client: AsyncClient, auth_headers: dict):
     """Test missing job_posting_id returns 422."""
     session_data = {}
 
@@ -97,9 +91,7 @@ async def test_create_session_missing_job_posting_id_returns_422(
 
 
 @pytest.mark.asyncio
-async def test_create_session_invalid_uuid_returns_422(
-    async_client: AsyncClient, auth_headers: dict
-):
+async def test_create_session_invalid_uuid_returns_422(async_client: AsyncClient, auth_headers: dict):
     """Test invalid UUID format returns 422."""
     session_data = {
         "job_posting_id": "not-a-valid-uuid",
@@ -153,9 +145,7 @@ async def test_create_session_persists_to_database(
     session_id = data["id"]
 
     # Verify in database
-    result = await db_session.execute(
-        select(InterviewSession).where(InterviewSession.id == session_id)
-    )
+    result = await db_session.execute(select(InterviewSession).where(InterviewSession.id == session_id))
     db_session_obj = result.scalar_one_or_none()
 
     assert db_session_obj is not None
