@@ -31,6 +31,9 @@ export const fetchSessions = async (
   if (filters?.jobPostingId) {
     params.append('job_posting_id', filters.jobPostingId);
   }
+  if (filters?.originalSessionId) {
+    params.append('original_session_id', filters.originalSessionId);
+  }
 
   const url = params.toString() ? `${BASE_URL}?${params}` : BASE_URL;
   const response = await apiClient.get<Session[]>(url);
@@ -53,6 +56,16 @@ export const fetchSessionMessages = async (
 ): Promise<Message[]> => {
   const response = await apiClient.get<Message[]>(
     `${BASE_URL}/${sessionId}/messages`
+  );
+  return response.data;
+};
+
+/**
+ * Create a retake (new session) from an existing completed session.
+ */
+export const retakeInterview = async (sessionId: string): Promise<Session> => {
+  const response = await apiClient.post<Session>(
+    `${BASE_URL}/${sessionId}/retake`
   );
   return response.data;
 };

@@ -19,6 +19,8 @@ export interface Session {
   job_posting: JobPosting;
   status: 'active' | 'paused' | 'completed';
   current_question_number: number;
+  retake_number: number;
+  original_session_id: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -40,4 +42,5 @@ export interface SessionFilters {
   startDate?: string;
   endDate?: string;
   jobPostingId?: string;
+  originalSessionId?: string;
 }

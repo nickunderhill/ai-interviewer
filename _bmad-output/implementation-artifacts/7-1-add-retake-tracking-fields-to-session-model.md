@@ -314,13 +314,18 @@ Claude Sonnet 4.5
 
 #### Fixed Issues:
 
-1. **[HIGH]** Added composite index for retake chain queries (user_id, job_posting_id, original_session_id)
-2. **[HIGH]** Added documentation explaining CASCADE vs SET NULL behavior design decision
-3. **[MEDIUM]** Added retake fields to SessionWithFeedbackScore schema for comparison views
-4. **[MEDIUM]** Added 3 new tests for circular reference prevention and data integrity
+1. **[HIGH]** Added composite index for retake chain queries (user_id,
+   job_posting_id, original_session_id)
+2. **[HIGH]** Added documentation explaining CASCADE vs SET NULL behavior design
+   decision
+3. **[MEDIUM]** Added retake fields to SessionWithFeedbackScore schema for
+   comparison views
+4. **[MEDIUM]** Added 3 new tests for circular reference prevention and data
+   integrity
 5. **[MEDIUM]** Updated File List to include sprint-status.yaml changes
 
 **Code Review Fixes Applied:**
+
 - New migration: 17ed08204751 - Added composite index for query performance
 - Enhanced model documentation with inline comments on relationship semantics
 - Extended test coverage from 14 to 17 tests
@@ -335,7 +340,7 @@ Claude Sonnet 4.5
 - backend/tests/test_interview_session_model.py
 - backend/tests/api/v1/test_sessions_post.py
 - backend/tests/api/v1/test_sessions_get.py
-- _bmad-output/implementation-artifacts/sprint-status.yaml
+- \_bmad-output/implementation-artifacts/sprint-status.yaml
 
 **Created:**
 

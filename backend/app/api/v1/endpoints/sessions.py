@@ -14,7 +14,7 @@ from fastapi import (
     Query,
     status,
 )
-from sqlalchemy import select
+from sqlalchemy import or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -33,6 +33,7 @@ from app.schemas.session import (
     SessionCreate,
     SessionDetailResponse,
     SessionResponse,
+    SessionWithFeedbackResponse,
     SessionWithFeedbackScore,
 )
 from app.services import session_service
@@ -151,7 +152,9 @@ async def list_sessions(
         query = query.where(InterviewSession.status == status_param)
 
     if start_date:
-        start_datetime = dt.datetime.combine(start_date, dt.time.min).replace(tzinfo=dt.UTC)
+        start_datetime = dt.datetime.combine(start_date, dt.time.min).replace(
+            tzinfo=dt.UTC
+        )
         query = query.where(InterviewSession.created_at >= start_datetime)
 
     if end_date:
@@ -199,7 +202,9 @@ async def get_session(
         "created_at": session.created_at,
         "updated_at": session.updated_at,
         "job_posting": session.job_posting,
-        "resume": (session.user.resume if session.user and session.user.resume else None),
+        "resume": (
+            session.user.resume if session.user and session.user.resume else None
+        ),
         "messages": session.messages,
     }
 
@@ -507,7 +512,9 @@ async def submit_answer(
     - Returns 400 if session not active
     - Returns 404 if session not found or unauthorized
     """
-    message = await session_service.submit_answer(db, session_id, answer_data, current_user)
+    message = await session_service.submit_answer(
+        db, session_id, answer_data, current_user
+    )
     return MessageResponse.model_validate(message)
 
 
@@ -683,3 +690,236 @@ async def get_session_feedback(
         )
 
     return schemas.InterviewFeedbackResponse.model_validate(session.feedback)
+
+
+@router.post(
+    "/{session_id}/retake",
+    response_model=SessionResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Create retake session",
+    responses={
+        201: {"description": "Retake session created successfully"},
+        400: {
+            "description": "Bad Request - Session not completed or missing job posting",
+            "content": {
+                "application/json": {
+                    "examples": {
+                        "not_completed": {
+                            "value": {
+                                "detail": {
+                                    "code": "SESSION_NOT_COMPLETED",
+                                    "message": "Session must be completed before retaking",
+                                }
+                            }
+                        },
+                        "missing_job": {
+                            "value": {
+                                "detail": {
+                                    "code": "MISSING_JOB_POSTING",
+                                    "message": "Cannot retake session without associated job posting",
+                                }
+                            }
+                        },
+                    }
+                }
+            },
+        },
+        403: {
+            "description": "Forbidden - User doesn't own the session",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "detail": {
+                            "code": "UNAUTHORIZED",
+                            "message": "You don't have access to this session",
+                        }
+                    }
+                }
+            },
+        },
+        404: {
+            "description": "Session not found",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "detail": {
+                            "code": "SESSION_NOT_FOUND",
+                            "message": "Session not found",
+                        }
+                    }
+                }
+            },
+        },
+    },
+)
+async def create_retake_session(
+    session_id: UUID = Path(..., description="Original session UUID to retake"),
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> SessionResponse:
+    """
+    Create a retake session from an existing completed session.
+
+    Creates a new session for the same job posting with:
+    - Incremented retake_number
+    - Link to original session
+    - Fresh active status
+    - Reset question counter
+
+    **Authorization**: Requires valid JWT token and session ownership.
+
+    **Prerequisites**:
+    - Session must exist and belong to current user
+    - Session must have status='completed'
+    - Session must have an associated job posting
+    """
+    # Fetch original session
+    stmt = select(InterviewSession).where(InterviewSession.id == session_id)
+    result = await db.execute(stmt)
+    original_session = result.scalar_one_or_none()
+
+    if not original_session:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={
+                "code": "SESSION_NOT_FOUND",
+                "message": "Session not found",
+            },
+        )
+
+    if original_session.user_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail={
+                "code": "UNAUTHORIZED",
+                "message": "You don't have access to this session",
+            },
+        )
+
+    if original_session.status != "completed":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={
+                "code": "SESSION_NOT_COMPLETED",
+                "message": "Session must be completed before retaking",
+            },
+        )
+
+    if not original_session.job_posting_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={
+                "code": "MISSING_JOB_POSTING",
+                "message": "Cannot retake session without associated job posting",
+            },
+        )
+
+    # Calculate retake fields
+    new_retake_number = original_session.retake_number + 1
+    new_original_session_id = (
+        original_session.original_session_id
+        if original_session.original_session_id
+        else original_session.id
+    )
+
+    # Create new retake session
+    new_session = InterviewSession(
+        user_id=current_user.id,
+        job_posting_id=original_session.job_posting_id,
+        status="active",
+        current_question_number=0,
+        retake_number=new_retake_number,
+        original_session_id=new_original_session_id,
+    )
+
+    db.add(new_session)
+    await db.commit()
+    await db.refresh(new_session)
+
+    return SessionResponse.model_validate(new_session)
+
+
+@router.get(
+    "/{session_id}/retake-chain",
+    response_model=list[SessionWithFeedbackResponse],
+    summary="Get retake chain for comparison",
+    responses={
+        200: {"description": "List of all sessions in retake chain with feedback data"},
+        404: {"description": "Session not found"},
+        403: {"description": "User doesn't own the session"},
+    },
+)
+async def get_retake_chain(
+    session_id: UUID = Path(..., description="Session ID to get retake chain for"),
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> list[SessionWithFeedbackResponse]:
+    """
+    Get all sessions in a retake chain (original + all retakes).
+
+    Returns sessions ordered by retake_number for score comparison.
+    Includes feedback data when available.
+    """
+    # Get the provided session
+    stmt = select(InterviewSession).where(InterviewSession.id == session_id)
+    result = await db.execute(stmt)
+    session = result.scalar_one_or_none()
+
+    if not session:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={"code": "SESSION_NOT_FOUND", "message": "Session not found"},
+        )
+
+    if session.user_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail={
+                "code": "UNAUTHORIZED",
+                "message": "You don't have access to this session",
+            },
+        )
+
+    # Determine the original session ID
+    original_id = (
+        session.original_session_id if session.original_session_id else session.id
+    )
+
+    # Query all sessions in the chain with eager-loaded feedback
+    query = (
+        select(InterviewSession)
+        .options(selectinload(InterviewSession.feedback))
+        .where(
+            or_(
+                InterviewSession.id == original_id,
+                InterviewSession.original_session_id == original_id,
+            )
+        )
+        .order_by(InterviewSession.retake_number.asc())
+    )
+
+    result = await db.execute(query)
+    sessions = result.scalars().all()
+
+    # Manually serialize to handle feedback relationship
+    response_data = []
+    for session in sessions:
+        session_dict = {
+            "id": session.id,
+            "user_id": session.user_id,
+            "job_posting_id": session.job_posting_id,
+            "status": session.status,
+            "current_question_number": session.current_question_number,
+            "retake_number": session.retake_number,
+            "original_session_id": session.original_session_id,
+            "created_at": session.created_at,
+            "updated_at": session.updated_at,
+            "feedback": (
+                schemas.InterviewFeedbackResponse.model_validate(session.feedback)
+                if session.feedback
+                else None
+            ),
+        }
+        response_data.append(SessionWithFeedbackResponse(**session_dict))
+
+    return response_data

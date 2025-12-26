@@ -5,11 +5,23 @@
 import { render, screen } from '@testing-library/react';
 import { describe, it, expect } from 'vitest';
 import { BrowserRouter } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { SessionHistoryItem } from '../SessionHistoryItem';
 import type { Session } from '../../types/session';
 
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: { retry: false },
+    mutations: { retry: false },
+  },
+});
+
 const renderWithRouter = (component: React.ReactElement) => {
-  return render(<BrowserRouter>{component}</BrowserRouter>);
+  return render(
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter>{component}</BrowserRouter>
+    </QueryClientProvider>
+  );
 };
 
 describe('SessionHistoryItem', () => {
@@ -22,6 +34,8 @@ describe('SessionHistoryItem', () => {
     },
     status: 'completed',
     current_question_number: 8,
+    retake_number: 1,
+    original_session_id: null,
     created_at: '2025-12-20T10:00:00Z',
     updated_at: '2025-12-20T11:30:00Z',
   };

@@ -21,6 +21,7 @@ export const SessionHistory = () => {
   const [jobPostingId, setJobPostingId] = useState(
     searchParams.get('job_posting_id') || ''
   );
+  const originalSessionId = searchParams.get('original') || '';
 
   // Sync filters to URL params
   useEffect(() => {
@@ -28,8 +29,9 @@ export const SessionHistory = () => {
     if (startDate) params.set('start_date', startDate);
     if (endDate) params.set('end_date', endDate);
     if (jobPostingId) params.set('job_posting_id', jobPostingId);
+    if (originalSessionId) params.set('original', originalSessionId);
     setSearchParams(params, { replace: true });
-  }, [startDate, endDate, jobPostingId, setSearchParams]);
+  }, [startDate, endDate, jobPostingId, originalSessionId, setSearchParams]);
 
   const {
     data: sessions,
@@ -41,6 +43,7 @@ export const SessionHistory = () => {
     startDate: startDate || undefined,
     endDate: endDate || undefined,
     jobPostingId: jobPostingId || undefined,
+    originalSessionId: originalSessionId || undefined,
   });
 
   const handlePresetSelect = (days: number) => {
@@ -130,14 +133,25 @@ export const SessionHistory = () => {
       </div>
 
       {/* Results count indicator */}
-      {(startDate || endDate || jobPostingId) && sessions && (
-        <div className="mb-4 text-sm text-gray-600">
-          Showing <span className="font-semibold">{sessions.length}</span>{' '}
-          {sessions.length === 1 ? 'session' : 'sessions'}
-          {(startDate || endDate) && ' in date range'}
-          {jobPostingId && ' for selected job posting'}
-        </div>
-      )}
+      {(startDate || endDate || jobPostingId || originalSessionId) &&
+        sessions && (
+          <div className="mb-4 text-sm text-gray-600">
+            {originalSessionId ? (
+              <>
+                Showing all attempts for this job posting (
+                <span className="font-semibold">{sessions.length}</span>{' '}
+                {sessions.length === 1 ? 'attempt' : 'attempts'})
+              </>
+            ) : (
+              <>
+                Showing <span className="font-semibold">{sessions.length}</span>{' '}
+                {sessions.length === 1 ? 'session' : 'sessions'}
+                {(startDate || endDate) && ' in date range'}
+                {jobPostingId && ' for selected job posting'}
+              </>
+            )}
+          </div>
+        )}
 
       {!sessions || sessions.length === 0 ? (
         <EmptyState />

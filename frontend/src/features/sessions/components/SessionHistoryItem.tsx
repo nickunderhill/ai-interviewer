@@ -4,6 +4,8 @@
  */
 import { Link } from 'react-router-dom';
 import type { Session } from '../types/session';
+import { RetakeBadge } from './RetakeBadge';
+import { RetakeButton } from './RetakeButton';
 
 interface SessionHistoryItemProps {
   session: Session;
@@ -34,9 +36,12 @@ export const SessionHistoryItem = ({ session }: SessionHistoryItemProps) => {
           </h3>
           <p className="text-sm text-gray-600">{session.job_posting.company}</p>
         </div>
-        <span className="px-3 py-1 bg-green-100 text-green-800 text-sm font-medium rounded-full">
-          Completed
-        </span>
+        <div className="flex flex-col gap-2 items-end">
+          <RetakeBadge retakeNumber={session.retake_number} />
+          <span className="px-3 py-1 bg-green-100 text-green-800 text-sm font-medium rounded-full">
+            Completed
+          </span>
+        </div>
       </div>
 
       <div className="flex gap-6 text-sm text-gray-600 mb-4">
@@ -50,25 +55,47 @@ export const SessionHistoryItem = ({ session }: SessionHistoryItemProps) => {
         </div>
       </div>
 
-      <Link
-        to={`/sessions/${session.id}`}
-        className="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium"
-      >
-        View Details
-        <svg
-          className="ml-2 w-4 h-4"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
+      <div className="flex gap-4 items-center flex-wrap">
+        <Link
+          to={`/sessions/${session.id}`}
+          className="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium"
         >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M9 5l7 7-7 7"
-          />
-        </svg>
-      </Link>
+          View Details
+          <svg
+            className="ml-2 w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M9 5l7 7-7 7"
+            />
+          </svg>
+        </Link>
+
+        {session.original_session_id && session.retake_number > 1 && (
+          <Link
+            to={`/history?original=${session.original_session_id}`}
+            className="text-sm text-purple-600 hover:text-purple-700 font-medium"
+          >
+            View all attempts
+          </Link>
+        )}
+
+        {session.retake_number === 1 && (
+          <Link
+            to={`/history?original=${session.id}`}
+            className="text-sm text-purple-600 hover:text-purple-700 font-medium"
+          >
+            View all attempts
+          </Link>
+        )}
+
+        <RetakeButton sessionId={session.id} className="ml-auto" />
+      </div>
     </div>
   );
 };

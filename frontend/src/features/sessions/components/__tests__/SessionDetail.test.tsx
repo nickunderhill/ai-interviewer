@@ -55,6 +55,8 @@ const mockSessionDetail: SessionDetailType = {
   },
   status: 'completed',
   current_question_number: 5,
+  retake_number: 1,
+  original_session_id: null,
   created_at: '2025-12-20T10:30:00Z',
   updated_at: '2025-12-20T11:00:00Z',
 };

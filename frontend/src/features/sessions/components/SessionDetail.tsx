@@ -7,6 +7,8 @@ import { useMessages } from '../hooks/useMessages';
 import JobPostingContext from './JobPostingContext';
 import MessageList from './MessageList';
 import FeedbackLink from './FeedbackLink';
+import { RetakeBadge } from './RetakeBadge';
+import { RetakeButton } from './RetakeButton';
 
 export default function SessionDetail() {
   const { id } = useParams<{ id: string }>();
@@ -87,6 +89,38 @@ export default function SessionDetail() {
         ← Back to Session History
       </Link>
 
+      {/* Retake Badge and Session Context */}
+      <div className="mb-4">
+        <RetakeBadge retakeNumber={session.retake_number} />
+        {session.retake_number > 1 && (
+          <p className="text-sm text-gray-600 mt-2">
+            This is your{' '}
+            {session.retake_number === 2
+              ? '2nd'
+              : session.retake_number === 3
+              ? '3rd'
+              : `${session.retake_number}th`}{' '}
+            attempt at this role
+          </p>
+        )}
+        {session.original_session_id && (
+          <Link
+            to={`/history?original=${session.original_session_id}`}
+            className="inline-flex items-center text-sm text-purple-600 hover:text-purple-700 font-medium mt-2"
+          >
+            View all attempts →
+          </Link>
+        )}
+        {!session.original_session_id && session.retake_number === 1 && (
+          <Link
+            to={`/history?original=${session.id}`}
+            className="inline-flex items-center text-sm text-purple-600 hover:text-purple-700 font-medium mt-2"
+          >
+            View all attempts →
+          </Link>
+        )}
+      </div>
+
       {/* Job Posting Context */}
       <JobPostingContext jobPosting={session.job_posting} />
 
@@ -104,9 +138,14 @@ export default function SessionDetail() {
         )}
       </div>
 
-      {/* Feedback Link */}
+      {/* Feedback Link and Retake Button */}
       {session.status === 'completed' && (
-        <FeedbackLink sessionId={session.id} />
+        <div className="mt-6 space-y-4">
+          <FeedbackLink sessionId={session.id} />
+          <div className="flex justify-center">
+            <RetakeButton sessionId={session.id} />
+          </div>
+        </div>
       )}
     </div>
   );

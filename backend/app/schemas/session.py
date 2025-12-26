@@ -3,6 +3,7 @@ Pydantic schemas for interview session API.
 """
 
 import datetime as dt
+from typing import Any
 
 from pydantic import UUID4, BaseModel, ConfigDict, Field
 
@@ -123,6 +124,29 @@ class SessionWithFeedbackScore(BaseModel):
         default=None,
         description="ID of the original session for this job posting (null for first attempts)",
     )
+
+
+class SessionWithFeedbackResponse(BaseModel):
+    """Session with full feedback data for retake chain comparison."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID4
+    user_id: UUID4
+    job_posting_id: UUID4 | None = None
+    status: str
+    current_question_number: int
+    retake_number: int = Field(
+        default=1,
+        description="Attempt number (1 = first attempt, 2 = first retake, etc.)",
+    )
+    original_session_id: UUID4 | None = Field(
+        default=None,
+        description="ID of the original session for this job posting (null for first attempts)",
+    )
+    created_at: dt.datetime
+    updated_at: dt.datetime
+    feedback: Any = None  # InterviewFeedbackResponse | None
 
 
 class AnswerCreate(BaseModel):
