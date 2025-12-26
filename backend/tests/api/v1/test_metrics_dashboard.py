@@ -67,7 +67,7 @@ async def test_get_dashboard_metrics_with_feedback(
 ):
     """Test dashboard metrics with sessions and feedback."""
     # Create 3 sessions with feedback
-    scores = [75.0, 80.0, 85.0]
+    scores = [75, 80, 85]
     for score in scores:
         session = InterviewSession(
             user_id=test_user.id,
@@ -80,8 +80,15 @@ async def test_get_dashboard_metrics_with_feedback(
 
         feedback = InterviewFeedback(
             session_id=session.id,
+            technical_accuracy_score=score,
+            communication_clarity_score=score,
+            problem_solving_score=score,
+            relevance_score=score,
             overall_score=score,
-            dimension_scores={"technical": score},
+            technical_feedback="Test feedback",
+            communication_feedback="Test feedback",
+            problem_solving_feedback="Test feedback",
+            relevance_feedback="Test feedback",
             knowledge_gaps=["test"],
             learning_recommendations=["test"],
         )
@@ -92,7 +99,7 @@ async def test_get_dashboard_metrics_with_feedback(
     assert response.status_code == 200
     data = response.json()
     assert data["completed_interviews"] == 3
-    assert data["average_score"] == 80.0  # (75+80+85)/3
+    assert data["average_score"] == 80  # (75+80+85)/3
     assert data["total_questions_answered"] == 24  # 8*3
     assert len(data["most_practiced_roles"]) == 1
 
@@ -194,7 +201,6 @@ async def test_get_dashboard_metrics_only_shows_current_user_data(
     other_user = User(
         email="other@example.com",
         hashed_password="hashed",
-        full_name="Other User",
     )
     db_session.add(other_user)
     await db_session.flush()

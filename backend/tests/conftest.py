@@ -210,13 +210,7 @@ async def test_job_posting(db_session: AsyncSession, test_user):
     db_session.add(job_posting)
     await db_session.commit()
     await db_session.refresh(job_posting)
-    return {
-        "id": job_posting.id,
-        "title": job_posting.title,
-        "company": job_posting.company,
-        "description": job_posting.description,
-        "user_id": job_posting.user_id,
-    }
+    return job_posting
 
 
 @pytest_asyncio.fixture
