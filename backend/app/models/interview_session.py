@@ -113,9 +113,11 @@ class InterviewSession(Base):
     )
 
     # Self-referential relationship for retake tracking
+    # Note: ondelete="SET NULL" preserves retake sessions when original is deleted
+    # This allows retakes to persist as standalone sessions while losing the link
     original_session: Mapped[Optional["InterviewSession"]] = relationship(
         "InterviewSession",
-        remote_side=[id],
+        remote_side=[id],  # Specifies which side is the "parent" in self-reference
         back_populates="retakes",
         foreign_keys=[original_session_id],
         lazy="selectin",
@@ -124,15 +126,24 @@ class InterviewSession(Base):
     retakes: Mapped[list["InterviewSession"]] = relationship(
         "InterviewSession",
         back_populates="original_session",
-        foreign_keys=[original_session_id],
+        foreign_keys=[
+            original_session_id
+        ],  # Explicit FK for bidirectional self-reference
         lazy="selectin",
     )
 
-    # Composite index for efficient queries
+    # Composite indexes for efficient queries
     __table_args__ = (
         Index(
             "ix_interview_sessions_user_id_created_at",
             "user_id",
             "created_at",
+        ),
+        # Index for retake chain queries: "all attempts at this job by this user"
+        Index(
+            "ix_interview_sessions_user_job_original",
+            "user_id",
+            "job_posting_id",
+            "original_session_id",
         ),
     )

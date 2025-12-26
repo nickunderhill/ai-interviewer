@@ -118,7 +118,7 @@ development_status:
   epic-6-retrospective: optional
 
   epic-7: in-progress
-  7-1-add-retake-tracking-fields-to-session-model: review
+  7-1-add-retake-tracking-fields-to-session-model: done
   7-2-create-retake-creation-endpoint: ready-for-dev
   7-3-display-retake-information-in-session-views: ready-for-dev
   7-4-create-score-comparison-across-retakes: ready-for-dev
