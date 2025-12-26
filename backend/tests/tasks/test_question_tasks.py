@@ -35,7 +35,7 @@ async def test_question_task_creates_message(
     # Create session with job posting and user
     session = InterviewSession(
         user_id=test_user.id,
-        job_posting_id=test_job_posting["id"],
+        job_posting_id=test_job_posting.id,
         status="active",
         current_question_number=0,
     )
@@ -93,7 +93,7 @@ async def test_question_task_updates_operation(
 
     session = InterviewSession(
         user_id=test_user.id,
-        job_posting_id=test_job_posting["id"],
+        job_posting_id=test_job_posting.id,
         status="active",
         current_question_number=0,
     )
@@ -131,7 +131,7 @@ async def test_question_task_handles_generation_failure(
 
     session = InterviewSession(
         user_id=test_user.id,
-        job_posting_id=test_job_posting["id"],
+        job_posting_id=test_job_posting.id,
         status="active",
         current_question_number=0,
     )
@@ -172,7 +172,7 @@ async def test_multiple_questions_create_separate_messages(
 
     session = InterviewSession(
         user_id=test_user.id,
-        job_posting_id=test_job_posting["id"],
+        job_posting_id=test_job_posting.id,
         status="active",
         current_question_number=0,
     )
@@ -218,7 +218,9 @@ async def test_multiple_questions_create_separate_messages(
 
 @pytest.mark.asyncio
 @patch("app.tasks.question_tasks.AsyncSessionLocal")
-async def test_question_task_handles_nonexistent_session(mock_session_local, db_session: AsyncSession):
+async def test_question_task_handles_nonexistent_session(
+    mock_session_local, db_session: AsyncSession
+):
     """Test task handles non-existent session gracefully."""
     mock_session_local.return_value.__aenter__.return_value = db_session
 
@@ -257,7 +259,7 @@ async def test_question_task_all_fields_populated(
 
     session = InterviewSession(
         user_id=test_user.id,
-        job_posting_id=test_job_posting["id"],
+        job_posting_id=test_job_posting.id,
         status="active",
         current_question_number=0,
     )
@@ -273,7 +275,9 @@ async def test_question_task_all_fields_populated(
     await generate_question_task(operation.id, session.id)
 
     # Get the created message
-    result = await db_session.execute(select(SessionMessage).where(SessionMessage.session_id == session.id))
+    result = await db_session.execute(
+        select(SessionMessage).where(SessionMessage.session_id == session.id)
+    )
     message = result.scalar_one()
 
     # Verify all fields

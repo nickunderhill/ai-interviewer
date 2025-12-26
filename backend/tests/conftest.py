@@ -119,7 +119,9 @@ class _HybridClient:
     This avoids event loop mismatches with TestClient when using AsyncSession.
     """
 
-    def __init__(self, app, loop: asyncio.AbstractEventLoop, base_url: str = "http://test"):
+    def __init__(
+        self, app, loop: asyncio.AbstractEventLoop, base_url: str = "http://test"
+    ):
         self._app = app
         self._loop = loop
         self._base_url = base_url
@@ -140,7 +142,8 @@ class _HybridClient:
             raise RuntimeError("Test event loop is closed; cannot run sync HTTP call")
         if self._loop.is_running():
             raise RuntimeError(
-                "client.get() cannot run while the loop is running; " "use the 'async_client' fixture instead"
+                "client.get() cannot run while the loop is running; "
+                "use the 'async_client' fixture instead"
             )
 
         return self._loop.run_until_complete(_call())
@@ -252,7 +255,7 @@ async def test_sessions(db_session: AsyncSession, test_user, test_job_posting):
     for status in ["active", "paused", "completed"]:
         session = InterviewSession(
             user_id=test_user.id,
-            job_posting_id=test_job_posting["id"],
+            job_posting_id=test_job_posting.id,
             status=status,
             current_question_number=0,
         )
@@ -294,7 +297,9 @@ async def other_user_session(db_session: AsyncSession, other_user_job_posting):
 
 
 @pytest_asyncio.fixture
-async def test_session_with_resume(db_session: AsyncSession, test_user, test_job_posting):
+async def test_session_with_resume(
+    db_session: AsyncSession, test_user, test_job_posting
+):
     """Create a test session with user having a resume."""
     from app.models.interview_session import InterviewSession
     from app.models.resume import Resume
@@ -310,7 +315,7 @@ async def test_session_with_resume(db_session: AsyncSession, test_user, test_job
     # Create session
     session = InterviewSession(
         user_id=test_user.id,
-        job_posting_id=test_job_posting["id"],
+        job_posting_id=test_job_posting.id,
         status="active",
         current_question_number=0,
     )
@@ -368,7 +373,7 @@ async def test_active_session(db_session: AsyncSession, test_user, test_job_post
 
     session = InterviewSession(
         user_id=test_user.id,
-        job_posting_id=test_job_posting["id"],
+        job_posting_id=test_job_posting.id,
         status="active",
         current_question_number=0,
     )
@@ -389,7 +394,7 @@ async def test_completed_session(db_session: AsyncSession, test_user, test_job_p
 
     session = InterviewSession(
         user_id=test_user.id,
-        job_posting_id=test_job_posting["id"],
+        job_posting_id=test_job_posting.id,
         status="completed",
         current_question_number=5,
     )
@@ -410,7 +415,7 @@ async def test_paused_session(db_session: AsyncSession, test_user, test_job_post
 
     session = InterviewSession(
         user_id=test_user.id,
-        job_posting_id=test_job_posting["id"],
+        job_posting_id=test_job_posting.id,
         status="paused",
         current_question_number=2,
     )
@@ -425,7 +430,9 @@ async def test_paused_session(db_session: AsyncSession, test_user, test_job_post
 
 
 @pytest_asyncio.fixture
-async def test_session_with_messages(db_session: AsyncSession, test_user, test_job_posting):
+async def test_session_with_messages(
+    db_session: AsyncSession, test_user, test_job_posting
+):
     """Create a session populated with a question and an answer."""
     from app.models.interview_session import InterviewSession
     from app.models.session_message import SessionMessage
@@ -433,7 +440,7 @@ async def test_session_with_messages(db_session: AsyncSession, test_user, test_j
     # Create session
     session = InterviewSession(
         user_id=test_user.id,
-        job_posting_id=test_job_posting["id"],
+        job_posting_id=test_job_posting.id,
         status="active",
         current_question_number=2,
     )
@@ -485,7 +492,9 @@ async def other_user_auth_headers(db_session: AsyncSession):
 
 
 @pytest_asyncio.fixture
-async def test_completed_session_with_feedback(db_session: AsyncSession, test_user, test_job_posting):
+async def test_completed_session_with_feedback(
+    db_session: AsyncSession, test_user, test_job_posting
+):
     """Create a completed session with generated feedback."""
     import datetime as dt
 
@@ -495,7 +504,7 @@ async def test_completed_session_with_feedback(db_session: AsyncSession, test_us
     # Create completed session
     session = InterviewSession(
         user_id=test_user.id,
-        job_posting_id=test_job_posting["id"],
+        job_posting_id=test_job_posting.id,
         status="completed",
         current_question_number=5,
     )
