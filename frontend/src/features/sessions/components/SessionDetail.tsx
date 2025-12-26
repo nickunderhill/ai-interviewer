@@ -1,7 +1,9 @@
 /**
  * SessionDetail page component - displays full session details with Q&A history.
  */
+import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { useSession } from '../hooks/useSession';
 import { useMessages } from '../hooks/useMessages';
 import JobPostingContext from './JobPostingContext';
@@ -9,22 +11,69 @@ import MessageList from './MessageList';
 import FeedbackLink from './FeedbackLink';
 import { RetakeBadge } from './RetakeBadge';
 import { RetakeButton } from './RetakeButton';
+import { ErrorDisplay } from '../../../components/common/ErrorDisplay';
+import { generateQuestion } from '../../../services/sessionAiApi';
+import {
+  fetchOperation,
+  type OperationResponse,
+} from '../../../services/operationsApi';
 
 export default function SessionDetail() {
   const { id } = useParams<{ id: string }>();
+
+  const [questionOperationId, setQuestionOperationId] = useState<string | null>(
+    null
+  );
+
   const {
     data: session,
     isLoading: sessionLoading,
     isError: sessionError,
+    refetch: refetchSession,
   } = useSession(id);
   const {
     data: messages,
     isLoading: messagesLoading,
     isError: messagesError,
+    refetch: refetchMessages,
   } = useMessages(id);
 
   const isLoading = sessionLoading || messagesLoading;
   const isError = sessionError || messagesError;
+
+  const generateQuestionMutation = useMutation({
+    mutationFn: () => generateQuestion(id!),
+    onSuccess: operation => {
+      setQuestionOperationId(operation.id);
+    },
+  });
+
+  const questionOperationQuery = useQuery({
+    queryKey: ['operations', questionOperationId],
+    queryFn: () => fetchOperation(questionOperationId!),
+    enabled: !!questionOperationId,
+    retry: false,
+    refetchInterval: query => {
+      const data = query.state.data as OperationResponse | undefined;
+      if (!data) return 1000;
+      if (data.status === 'pending' || data.status === 'processing')
+        return 1000;
+      return false;
+    },
+  });
+
+  useEffect(() => {
+    if (questionOperationQuery.data?.status === 'completed') {
+      void refetchMessages();
+      void refetchSession();
+    }
+  }, [questionOperationQuery.data?.status, refetchMessages, refetchSession]);
+
+  const questionOperationFailed =
+    questionOperationQuery.data?.status === 'failed';
+  const questionOperationErrorMessage =
+    questionOperationQuery.data?.error_message ||
+    'Unable to generate question.\n\nWhat to do: Try again.';
 
   if (isLoading) {
     return (
@@ -46,20 +95,20 @@ export default function SessionDetail() {
   }
 
   if (isError) {
+    const handleRetry = () => {
+      void refetchSession();
+      void refetchMessages();
+    };
+
     return (
       <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
-        <div
-          className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded"
-          role="alert"
-        >
-          <p className="text-sm sm:text-base font-semibold">
-            Failed to load session
-          </p>
-          <p className="text-xs sm:text-sm">
-            The session could not be found or you don't have permission to view
-            it.
-          </p>
-        </div>
+        <ErrorDisplay
+          message={
+            'Failed to load session.\n\nWhat to do: Try again. If the problem persists, return to your session history and try again.'
+          }
+          onRetry={handleRetry}
+          severity="error"
+        />
         <Link
           to="/history"
           className="mt-4 inline-block text-sm sm:text-base text-blue-600 hover:text-blue-800"
@@ -129,6 +178,40 @@ export default function SessionDetail() {
         <h2 className="text-xl sm:text-2xl font-bold mb-4">
           Interview Questions & Answers
         </h2>
+
+        {session.status === 'active' && (
+          <div className="mb-4 space-y-3">
+            {questionOperationFailed && (
+              <ErrorDisplay
+                message={questionOperationErrorMessage}
+                onRetry={() => {
+                  setQuestionOperationId(null);
+                  generateQuestionMutation.mutate();
+                }}
+                severity="error"
+              />
+            )}
+
+            <button
+              type="button"
+              className="inline-flex items-center justify-center bg-blue-600 text-white px-4 sm:px-6 py-2 rounded-lg hover:bg-blue-700 font-medium text-sm sm:text-base disabled:opacity-50"
+              onClick={() => {
+                setQuestionOperationId(null);
+                generateQuestionMutation.mutate();
+              }}
+              disabled={
+                generateQuestionMutation.isPending ||
+                questionOperationQuery.isFetching
+              }
+            >
+              {generateQuestionMutation.isPending ||
+              questionOperationQuery.isFetching
+                ? 'Generating...'
+                : 'Generate Next Question'}
+            </button>
+          </div>
+        )}
+
         {messages && messages.length > 0 ? (
           <MessageList messages={messages} />
         ) : (

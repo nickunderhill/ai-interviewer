@@ -1,6 +1,6 @@
 # Story 8.2: Create User-Friendly Error Messages for AI Failures
 
-Status: ready-for-dev
+Status: review
 
 ## Story
 
@@ -21,48 +21,48 @@ fail, so that I understand what went wrong and what to do next.
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Create error message mapping system (AC: #1)
+- [x] Task 1: Create error message mapping system (AC: #1)
 
-  - [ ] Define error_code to user-friendly message mappings
-  - [ ] Create `backend/app/utils/error_messages.py` with mapping dictionary
-  - [ ] Include actionable next steps for each error type
-  - [ ] Support dynamic variables (e.g., operation type, retry count)
+  - [x] Define error_code to user-friendly message mappings
+  - [x] Create `backend/app/utils/error_messages.py` with mapping dictionary
+  - [x] Include actionable next steps for each error type
+  - [x] Support dynamic variables (e.g., operation type, retry count)
 
-- [ ] Task 2: Update Operation model to store user-friendly messages (AC: #1)
+- [x] Task 2: Update Operation model to store user-friendly messages (AC: #1)
 
-  - [ ] Verify Operation model has error_message field (should exist from 4-5)
-  - [ ] Ensure error_message is nullable and stored as Text/String
-  - [ ] Update operation creation to include user-friendly messages
-  - [ ] Add index on operation status for efficient querying
+  - [x] Verify Operation model has error_message field (should exist from 4-5)
+  - [x] Ensure error_message is nullable and stored as Text/String
+  - [x] Update operation creation to include user-friendly messages
+  - [x] Add index on operation status for efficient querying
 
-- [ ] Task 3: Implement error message generation service (AC: #1)
+- [x] Task 3: Implement error message generation service (AC: #1)
 
-  - [ ] Create `generate_user_friendly_message(error_code, context)` function
-  - [ ] Map technical error codes to user messages
-  - [ ] Include dynamic context (e.g., operation type, session info)
-  - [ ] Ensure no sensitive data (API keys, internal errors) in messages
+  - [x] Create `generate_user_friendly_message(error_code, context)` function
+  - [x] Map technical error codes to user messages
+  - [x] Include dynamic context (e.g., operation type, session info)
+  - [x] Ensure no sensitive data (API keys, internal errors) in messages
 
-- [ ] Task 4: Update background tasks to set user-friendly error messages (AC:
+- [x] Task 4: Update background tasks to set user-friendly error messages (AC:
       #1)
 
-  - [ ] Update question generation task error handling
-  - [ ] Update feedback analysis task error handling
-  - [ ] Set Operation.error_message with user-friendly text on failure
-  - [ ] Log technical error details separately for debugging
+  - [x] Update question generation task error handling
+  - [x] Update feedback analysis task error handling
+  - [x] Set Operation.error_message with user-friendly text on failure
+  - [x] Log technical error details separately for debugging
 
-- [ ] Task 5: Create frontend error display component (AC: #1)
+- [x] Task 5: Create frontend error display component (AC: #1)
 
-  - [ ] Create `ErrorDisplay.tsx` component in `frontend/src/components/common/`
-  - [ ] Display error message prominently with error icon
-  - [ ] Show actionable next steps as bullet points or buttons
-  - [ ] Include retry button for retriable operations
-  - [ ] Use Tailwind CSS for styling (red/orange theme)
+  - [x] Create `ErrorDisplay.tsx` component in `frontend/src/components/common/`
+  - [x] Display error message prominently with error icon
+  - [x] Show actionable next steps as bullet points or buttons
+  - [x] Include retry button for retriable operations
+  - [x] Use Tailwind CSS for styling (red/orange theme)
 
-- [ ] Task 6: Integrate error display in session and feedback views (AC: #1)
-  - [ ] Update SessionDetail view to show operation errors
-  - [ ] Update FeedbackView to display analysis errors
-  - [ ] Show error messages inline near failed operations
-  - [ ] Provide retry functionality where applicable
+- [x] Task 6: Integrate error display in session and feedback views (AC: #1)
+  - [x] Update SessionDetail view to show operation errors
+  - [x] Update FeedbackView to display analysis errors
+  - [x] Show error messages inline near failed operations
+  - [x] Provide retry functionality where applicable
 
 ## Dev Notes
 
@@ -369,8 +369,60 @@ GPT-5.2
 
 ### Completion Notes List
 
-- Story created with comprehensive error message system
-- User-friendly messages for all error types
-- Actionable next steps included
-- Frontend component for error display
-- Ready for dev implementation
+- Implemented comprehensive backend error message mapping system
+- User-friendly messages include actionable next steps and avoid sensitive data
+- Background tasks persist user-friendly `Operation.error_message` on failures
+- Full backend test suite passing
+- Added reusable frontend `ErrorDisplay` component with tests
+- Added operation polling + retry error display in SessionDetail and
+  FeedbackView
+- Frontend test suite passing
+
+### Implementation Notes
+
+- Implemented `backend/app/utils/error_messages.py` with
+  `ERROR_MESSAGE_TEMPLATES` and `render_template()`.
+- Added backend unit tests validating required codes and dynamic rendering.
+- Verified Operation model already supports `error_message` persistence and
+  status indexing; added regression test coverage.
+- Added `generate_user_friendly_message()` backed by templates, with secret
+  masking and safe context normalization.
+- Updated background tasks to set `Operation.error_message` to user-friendly
+  messages (instead of raw exception text), including session-not-found, DB
+  failures, and AI failures.
+- Updated API and task tests to assert the user-friendly messages and avoid
+  leaking raw exception details.
+
+## File List
+
+- backend/app/utils/error_messages.py
+- backend/app/tasks/question_tasks.py
+- backend/app/tasks/feedback_tasks.py
+- backend/tests/utils/test_error_messages.py
+- backend/tests/test_operation_model.py
+- backend/tests/tasks/test_question_tasks.py
+- backend/tests/tasks/test_feedback_tasks.py
+- backend/tests/api/v1/test_sessions_generate_question.py
+- frontend/src/components/common/ErrorDisplay.tsx
+- frontend/src/components/common/**tests**/ErrorDisplay.test.tsx
+- frontend/src/services/operationsApi.ts
+- frontend/src/services/sessionAiApi.ts
+- frontend/src/features/sessions/components/SessionDetail.tsx
+- frontend/src/features/sessions/components/**tests**/SessionDetail.test.tsx
+- frontend/src/App.tsx
+- frontend/src/features/feedback/api/feedbackApi.ts
+- frontend/src/features/feedback/components/FeedbackView.tsx
+- frontend/src/features/feedback/components/**tests**/FeedbackView.test.tsx
+
+## Change Log
+
+- 2025-12-26: Completed Task 1 (backend error message template mapping + tests)
+- 2025-12-26: Completed Task 2 (verified Operation.error_message schema +
+  indexing; added regression test)
+- 2025-12-26: Completed Task 3 (user-friendly error message generation + tests)
+- 2025-12-26: Completed Task 4 (background tasks now persist user-friendly
+  Operation.error_message; updated tests; full backend regression passing)
+- 2025-12-26: Completed Task 5 (frontend ErrorDisplay component + unit tests)
+- 2025-12-26: Completed Task 6 (SessionDetail and FeedbackView display operation
+  failures via ErrorDisplay with retry; added operation polling services and
+  feedback route; frontend tests passing)

@@ -8,10 +8,20 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import SessionDetail from '../SessionDetail';
 import * as useSessionHook from '../../hooks/useSession';
 import * as useMessagesHook from '../../hooks/useMessages';
+import { generateQuestion } from '../../../../services/sessionAiApi';
+import { fetchOperation } from '../../../../services/operationsApi';
 import type {
   SessionDetail as SessionDetailType,
   Message,
 } from '../../types/session';
+
+vi.mock('../../../../services/sessionAiApi', () => ({
+  generateQuestion: vi.fn(),
+}));
+
+vi.mock('../../../../services/operationsApi', () => ({
+  fetchOperation: vi.fn(),
+}));
 
 // Mock useParams
 vi.mock('react-router-dom', async () => {
@@ -213,6 +223,59 @@ describe('SessionDetail', () => {
 
     await waitFor(() => {
       expect(screen.getByText(/no messages/i)).toBeInTheDocument();
+    });
+  });
+
+  it('shows AI operation error message when question generation fails', async () => {
+    vi.spyOn(useSessionHook, 'useSession').mockReturnValue({
+      data: { ...mockSessionDetail, status: 'active' },
+      isLoading: false,
+      isError: false,
+      error: null,
+      refetch: vi.fn(),
+    } as any);
+
+    vi.spyOn(useMessagesHook, 'useMessages').mockReturnValue({
+      data: mockMessages,
+      isLoading: false,
+      isError: false,
+      error: null,
+      refetch: vi.fn(),
+    } as any);
+
+    vi.mocked(generateQuestion).mockResolvedValue({
+      id: 'op-1',
+      operation_type: 'question_generation',
+      status: 'pending',
+      result: null,
+      error_message: null,
+      created_at: '2025-12-20T10:30:00Z',
+      updated_at: '2025-12-20T10:30:00Z',
+    });
+
+    vi.mocked(fetchOperation).mockResolvedValue({
+      id: 'op-1',
+      operation_type: 'question_generation',
+      status: 'failed',
+      result: null,
+      error_message:
+        'Unable to generate question.\n\nWhat to do: Check your API key and try again.',
+      created_at: '2025-12-20T10:30:00Z',
+      updated_at: '2025-12-20T10:30:10Z',
+    });
+
+    renderWithProviders(<SessionDetail />);
+
+    const button = await screen.findByRole('button', {
+      name: /generate next question/i,
+    });
+    button.click();
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(/unable to generate question/i)
+      ).toBeInTheDocument();
+      expect(screen.getByText(/what to do:/i)).toBeInTheDocument();
     });
   });
 });

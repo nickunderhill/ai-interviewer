@@ -32,7 +32,9 @@ async def test_generate_question_returns_operation(
 
     # Verify operation was created in database
     operation_id = UUID(data["id"])
-    result = await db_session.execute(select(Operation).where(Operation.id == operation_id))
+    result = await db_session.execute(
+        select(Operation).where(Operation.id == operation_id)
+    )
     operation = result.scalar_one_or_none()
     assert operation is not None
     assert operation.operation_type == "question_generation"
@@ -104,7 +106,9 @@ async def test_background_task_handles_session_not_found(
     # Verify operation was marked as failed
     await db_session.refresh(operation)
     assert operation.status == "failed"
-    assert "Session not found" in operation.error_message
+    assert operation.error_message is not None
+    assert "what to do:" in operation.error_message.lower()
+    assert "session could not be found" in operation.error_message.lower()
 
 
 @pytest.mark.asyncio
@@ -137,7 +141,11 @@ async def test_background_task_handles_generation_error(
     # Verify operation was marked as failed
     await db_session.refresh(operation)
     assert operation.status == "failed"
-    assert "OpenAI API error" in operation.error_message
+    assert operation.error_message is not None
+    assert "what to do:" in operation.error_message.lower()
+    assert "ai service" in operation.error_message.lower()
+    # Should not leak raw exception text to the user
+    assert "OpenAI API error" not in operation.error_message
 
 
 @pytest.mark.asyncio
@@ -176,7 +184,9 @@ async def test_generate_question_paused_session(
 
 
 @pytest.mark.asyncio
-async def test_generate_question_not_found(async_client: AsyncClient, auth_headers: dict):
+async def test_generate_question_not_found(
+    async_client: AsyncClient, auth_headers: dict
+):
     """Test generating question for non-existent session."""
     fake_id = uuid4()
 
@@ -280,7 +290,9 @@ async def test_generate_question_multiple_operations_allowed(
 
     # Verify both operations exist in database
     result = await db_session.execute(
-        select(Operation).where(Operation.id.in_([UUID(operation_id_1), UUID(operation_id_2)]))
+        select(Operation).where(
+            Operation.id.in_([UUID(operation_id_1), UUID(operation_id_2)])
+        )
     )
     operations = result.scalars().all()
     assert len(operations) == 2

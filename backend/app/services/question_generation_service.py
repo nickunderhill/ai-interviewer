@@ -149,11 +149,15 @@ async def generate_question(session: InterviewSession) -> dict[str, str]:
     openai_service = OpenAIService(session.user)
 
     try:
-        question_text = openai_service.generate_chat_completion(
+        question_text = await openai_service.generate_chat_completion(
             messages=[{"role": "user", "content": prompt}],
             model="gpt-3.5-turbo",
             temperature=0.7,
             max_tokens=200,  # Single question shouldn't need more
+            context={
+                "operation_type": "question_generation",
+                "session_id": str(session.id),
+            },
         )
 
         # Clean up response (remove quotes or extra whitespace)

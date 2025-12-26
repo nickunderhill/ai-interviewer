@@ -1,6 +1,6 @@
 """Tests for OpenAI service."""
 
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
 from fastapi import HTTPException
 from openai import APIConnectionError, APIError, RateLimitError
@@ -29,7 +29,7 @@ def mock_user_no_key():
 
 
 @patch("app.services.openai_service.decrypt_api_key")
-@patch("app.services.openai_service.OpenAI")
+@patch("app.services.openai_service.AsyncOpenAI")
 def test_openai_service_initialization(mock_openai, mock_decrypt, mock_user):
     """Test successful service initialization."""
     mock_decrypt.return_value = "sk-test-key"
@@ -51,7 +51,7 @@ def test_openai_service_no_api_key(mock_user_no_key):
 
 
 @patch("app.services.openai_service.decrypt_api_key")
-@patch("app.services.openai_service.OpenAI")
+@patch("app.services.openai_service.AsyncOpenAI")
 def test_openai_service_decryption_failure(mock_openai, mock_decrypt, mock_user):
     """Test initialization fails when decryption fails."""
     mock_decrypt.side_effect = Exception("Decryption failed")
@@ -63,9 +63,10 @@ def test_openai_service_decryption_failure(mock_openai, mock_decrypt, mock_user)
     assert "API_KEY_DECRYPTION_FAILED" in str(exc_info.value.detail)
 
 
+@pytest.mark.asyncio
 @patch("app.services.openai_service.decrypt_api_key")
-@patch("app.services.openai_service.OpenAI")
-def test_generate_chat_completion_success(mock_openai, mock_decrypt, mock_user):
+@patch("app.services.openai_service.AsyncOpenAI")
+async def test_generate_chat_completion_success(mock_openai, mock_decrypt, mock_user):
     """Test successful chat completion."""
     mock_decrypt.return_value = "sk-test-key"
 
@@ -75,14 +76,16 @@ def test_generate_chat_completion_success(mock_openai, mock_decrypt, mock_user):
     mock_response.choices[0].message.content = "Generated response"
 
     mock_client = MagicMock()
-    mock_client.chat.completions.create.return_value = mock_response
+    mock_client.chat.completions.create = AsyncMock(return_value=mock_response)
     mock_openai.return_value = mock_client
 
     service = OpenAIService(mock_user)
-    result = service.generate_chat_completion(messages=[{"role": "user", "content": "Test prompt"}])
+    result = await service.generate_chat_completion(
+        messages=[{"role": "user", "content": "Test prompt"}]
+    )
 
     assert result == "Generated response"
-    mock_client.chat.completions.create.assert_called_once()
+    mock_client.chat.completions.create.assert_awaited_once()
 
     # Verify called with correct parameters
     call_args = mock_client.chat.completions.create.call_args
@@ -91,9 +94,12 @@ def test_generate_chat_completion_success(mock_openai, mock_decrypt, mock_user):
     assert call_args[1]["messages"] == [{"role": "user", "content": "Test prompt"}]
 
 
+@pytest.mark.asyncio
 @patch("app.services.openai_service.decrypt_api_key")
-@patch("app.services.openai_service.OpenAI")
-def test_generate_chat_completion_with_custom_params(mock_openai, mock_decrypt, mock_user):
+@patch("app.services.openai_service.AsyncOpenAI")
+async def test_generate_chat_completion_with_custom_params(
+    mock_openai, mock_decrypt, mock_user
+):
     """Test chat completion with custom parameters."""
     mock_decrypt.return_value = "sk-test-key"
 
@@ -102,11 +108,11 @@ def test_generate_chat_completion_with_custom_params(mock_openai, mock_decrypt, 
     mock_response.choices[0].message.content = "Custom response"
 
     mock_client = MagicMock()
-    mock_client.chat.completions.create.return_value = mock_response
+    mock_client.chat.completions.create = AsyncMock(return_value=mock_response)
     mock_openai.return_value = mock_client
 
     service = OpenAIService(mock_user)
-    result = service.generate_chat_completion(
+    result = await service.generate_chat_completion(
         messages=[{"role": "user", "content": "Test"}],
         model="gpt-4",
         temperature=0.5,
@@ -121,9 +127,13 @@ def test_generate_chat_completion_with_custom_params(mock_openai, mock_decrypt, 
     assert call_args[1]["max_tokens"] == 100
 
 
+@pytest.mark.asyncio
 @patch("app.services.openai_service.decrypt_api_key")
-@patch("app.services.openai_service.OpenAI")
-def test_generate_chat_completion_rate_limit(mock_openai, mock_decrypt, mock_user):
+@patch("app.services.openai_service.AsyncOpenAI")
+@patch("app.services.openai_service.record_openai_error")
+async def test_generate_chat_completion_rate_limit(
+    mock_record_openai_error, mock_openai, mock_decrypt, mock_user
+):
     """Test rate limit error handling."""
     mock_decrypt.return_value = "sk-test-key"
 
@@ -135,41 +145,52 @@ def test_generate_chat_completion_rate_limit(mock_openai, mock_decrypt, mock_use
         response=mock_response,
         body={"error": {"message": "Rate limit exceeded"}},
     )
-    mock_client.chat.completions.create.side_effect = rate_limit_error
+    mock_client.chat.completions.create = AsyncMock(side_effect=rate_limit_error)
     mock_openai.return_value = mock_client
 
     service = OpenAIService(mock_user)
 
     with pytest.raises(HTTPException) as exc_info:
-        service.generate_chat_completion(messages=[{"role": "user", "content": "Test"}])
+        await service.generate_chat_completion(
+            messages=[{"role": "user", "content": "Test"}]
+        )
 
     assert exc_info.value.status_code == 429
     assert "OPENAI_RATE_LIMIT" in str(exc_info.value.detail)
+    mock_record_openai_error.assert_called()
 
 
+@pytest.mark.asyncio
 @patch("app.services.openai_service.decrypt_api_key")
-@patch("app.services.openai_service.OpenAI")
-def test_generate_chat_completion_connection_error(mock_openai, mock_decrypt, mock_user):
+@patch("app.services.openai_service.AsyncOpenAI")
+async def test_generate_chat_completion_connection_error(
+    mock_openai, mock_decrypt, mock_user
+):
     """Test connection error handling."""
     mock_decrypt.return_value = "sk-test-key"
 
     mock_client = MagicMock()
     connection_error = APIConnectionError(request=Mock())
-    mock_client.chat.completions.create.side_effect = connection_error
+    mock_client.chat.completions.create = AsyncMock(side_effect=connection_error)
     mock_openai.return_value = mock_client
 
     service = OpenAIService(mock_user)
 
     with pytest.raises(HTTPException) as exc_info:
-        service.generate_chat_completion(messages=[{"role": "user", "content": "Test"}])
+        await service.generate_chat_completion(
+            messages=[{"role": "user", "content": "Test"}]
+        )
 
     assert exc_info.value.status_code == 503
     assert "OPENAI_CONNECTION_ERROR" in str(exc_info.value.detail)
 
 
+@pytest.mark.asyncio
 @patch("app.services.openai_service.decrypt_api_key")
-@patch("app.services.openai_service.OpenAI")
-def test_generate_chat_completion_invalid_key(mock_openai, mock_decrypt, mock_user):
+@patch("app.services.openai_service.AsyncOpenAI")
+async def test_generate_chat_completion_invalid_key(
+    mock_openai, mock_decrypt, mock_user
+):
     """Test invalid API key error."""
     mock_decrypt.return_value = "sk-invalid-key"
 
@@ -182,21 +203,24 @@ def test_generate_chat_completion_invalid_key(mock_openai, mock_decrypt, mock_us
         body={"error": {"message": "Invalid API key"}},
     )
     api_error.status_code = 401
-    mock_client.chat.completions.create.side_effect = api_error
+    mock_client.chat.completions.create = AsyncMock(side_effect=api_error)
     mock_openai.return_value = mock_client
 
     service = OpenAIService(mock_user)
 
     with pytest.raises(HTTPException) as exc_info:
-        service.generate_chat_completion(messages=[{"role": "user", "content": "Test"}])
+        await service.generate_chat_completion(
+            messages=[{"role": "user", "content": "Test"}]
+        )
 
     assert exc_info.value.status_code == 400
     assert "INVALID_API_KEY" in str(exc_info.value.detail)
 
 
+@pytest.mark.asyncio
 @patch("app.services.openai_service.decrypt_api_key")
-@patch("app.services.openai_service.OpenAI")
-def test_generate_chat_completion_api_error(mock_openai, mock_decrypt, mock_user):
+@patch("app.services.openai_service.AsyncOpenAI")
+async def test_generate_chat_completion_api_error(mock_openai, mock_decrypt, mock_user):
     """Test general API error handling."""
     mock_decrypt.return_value = "sk-test-key"
 
@@ -207,32 +231,41 @@ def test_generate_chat_completion_api_error(mock_openai, mock_decrypt, mock_user
         body={"error": {"message": "Internal error"}},
     )
     api_error.status_code = 500
-    mock_client.chat.completions.create.side_effect = api_error
+    mock_client.chat.completions.create = AsyncMock(side_effect=api_error)
     mock_openai.return_value = mock_client
 
     service = OpenAIService(mock_user)
 
     with pytest.raises(HTTPException) as exc_info:
-        service.generate_chat_completion(messages=[{"role": "user", "content": "Test"}])
+        await service.generate_chat_completion(
+            messages=[{"role": "user", "content": "Test"}]
+        )
 
-    assert exc_info.value.status_code == 500
-    assert "OPENAI_API_ERROR" in str(exc_info.value.detail)
+    assert exc_info.value.status_code == 503
+    assert "OPENAI_SERVER_ERROR" in str(exc_info.value.detail)
 
 
+@pytest.mark.asyncio
 @patch("app.services.openai_service.decrypt_api_key")
-@patch("app.services.openai_service.OpenAI")
-def test_generate_chat_completion_unexpected_error(mock_openai, mock_decrypt, mock_user):
+@patch("app.services.openai_service.AsyncOpenAI")
+async def test_generate_chat_completion_unexpected_error(
+    mock_openai, mock_decrypt, mock_user
+):
     """Test unexpected error handling."""
     mock_decrypt.return_value = "sk-test-key"
 
     mock_client = MagicMock()
-    mock_client.chat.completions.create.side_effect = ValueError("Unexpected")
+    mock_client.chat.completions.create = AsyncMock(
+        side_effect=ValueError("Unexpected")
+    )
     mock_openai.return_value = mock_client
 
     service = OpenAIService(mock_user)
 
     with pytest.raises(HTTPException) as exc_info:
-        service.generate_chat_completion(messages=[{"role": "user", "content": "Test"}])
+        await service.generate_chat_completion(
+            messages=[{"role": "user", "content": "Test"}]
+        )
 
-    assert exc_info.value.status_code == 500
-    assert "UNEXPECTED_ERROR" in str(exc_info.value.detail)
+    assert exc_info.value.status_code == 502
+    assert "OPENAI_INVALID_RESPONSE" in str(exc_info.value.detail)

@@ -1,19 +1,34 @@
-"""OpenAI service for making AI API calls with user API keys."""
+"""OpenAI service for making AI API calls with user API keys.
+
+This layer:
+- Decrypts user API keys
+- Classifies OpenAI SDK errors into app-specific error categories
+- Retries only transient failures with exponential backoff
+- Raises FastAPI HTTPException with user-friendly messages (never secrets)
+"""
+
+from __future__ import annotations
 
 import logging
+from typing import Any
 
 from fastapi import HTTPException, status
-from openai import APIConnectionError, APIError, OpenAI, RateLimitError
-from tenacity import (
-    before_sleep_log,
-    retry,
-    retry_if_exception_type,
-    stop_after_attempt,
-    wait_exponential,
-)
+from openai import AsyncOpenAI
 
+from app.core.exceptions import (
+    AuthenticationError,
+    InvalidResponseError,
+    NetworkError,
+    OpenAIIntegrationError,
+    QuotaExceededError,
+    RateLimitError,
+    ServerError,
+)
+from app.core.monitoring import record_openai_error, report_to_monitoring_service
 from app.models.user import User
 from app.services.encryption_service import decrypt_api_key
+from app.utils.error_handler import classify_openai_error, mask_secrets
+from app.utils.retry import async_retry
 
 logger = logging.getLogger(__name__)
 
@@ -39,7 +54,10 @@ class OpenAIService:
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail={
                     "code": "API_KEY_NOT_CONFIGURED",
-                    "message": ("Please configure your OpenAI API key " "in settings before using AI features"),
+                    "message": (
+                        "Please configure your OpenAI API key "
+                        "in settings before using AI features"
+                    ),
                 },
             )
 
@@ -48,98 +66,65 @@ class OpenAIService:
             decrypted_key = decrypt_api_key(user.openai_api_key_encrypted)
 
             # Initialize OpenAI client with user's key
-            self.client = OpenAI(api_key=decrypted_key)
+            self.client = AsyncOpenAI(api_key=decrypted_key)
             self.user_id = user.id
 
         except Exception as e:
-            logger.error(f"Failed to decrypt API key for user {user.id}: {str(e)}")
+            logger.error(
+                "Failed to decrypt API key",
+                extra={"user_id": str(user.id), "error_type": type(e).__name__},
+                exc_info=True,
+            )
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail={
                     "code": "API_KEY_DECRYPTION_FAILED",
-                    "message": ("Failed to decrypt API key. Please " "reconfigure your API key."),
+                    "message": (
+                        "Failed to decrypt API key. Please " "reconfigure your API key."
+                    ),
                 },
             ) from e
 
-    @retry(
-        stop=stop_after_attempt(3),
-        wait=wait_exponential(multiplier=1, min=1, max=8),
-        retry=retry_if_exception_type((RateLimitError, APIConnectionError)),
-        before_sleep=before_sleep_log(logger, logging.WARNING),
+    @async_retry(
+        max_retries=3,
+        backoff_base_seconds=1.0,
+        retriable_exceptions=(NetworkError, ServerError),
+        jitter_ratio=0.1,
+        log_context_provider=lambda args, kwargs: {
+            **(kwargs.get("context") or {}),
+            "user_id": str(getattr(args[0], "user_id", "")),
+        },
     )
-    def _make_api_call(self, api_func, **kwargs):
-        """Make an API call with retry logic.
-
-        Args:
-            api_func: OpenAI API function to call
-            **kwargs: Arguments to pass to API function
-
-        Returns:
-            API response
-
-        Raises:
-            HTTPException: With user-friendly error message
-        """
+    async def _chat_completion_create(
+        self,
+        *,
+        model: str,
+        messages: list[dict[str, str]],
+        temperature: float,
+        max_tokens: int | None,
+        context: dict[str, Any] | None,
+    ):
         try:
-            return api_func(**kwargs)
+            kwargs: dict[str, Any] = {
+                "model": model,
+                "messages": messages,
+                "temperature": temperature,
+            }
+            if max_tokens is not None:
+                kwargs["max_tokens"] = max_tokens
 
-        except RateLimitError:
-            logger.warning(f"Rate limit hit for user {self.user_id}")
-            raise HTTPException(
-                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-                detail={
-                    "code": "OPENAI_RATE_LIMIT",
-                    "message": ("OpenAI rate limit exceeded. " "Please wait a moment and try again."),
-                },
-            ) from None
-
-        except APIConnectionError as e:
-            logger.error(f"OpenAI connection error for user {self.user_id}: {str(e)}")
-            raise HTTPException(
-                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-                detail={
-                    "code": "OPENAI_CONNECTION_ERROR",
-                    "message": ("Unable to connect to OpenAI. Please check " "your internet connection and try again."),
-                },
-            ) from e
-
-        except APIError as e:
-            logger.error(f"OpenAI API error for user {self.user_id}: {str(e)}")
-
-            # Check for authentication errors (invalid API key)
-            if e.status_code == 401:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail={
-                        "code": "INVALID_API_KEY",
-                        "message": ("Your OpenAI API key is invalid. " "Please update it in settings."),
-                    },
-                ) from e
-
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail={
-                    "code": "OPENAI_API_ERROR",
-                    "message": f"OpenAI API error: {str(e)}",
-                },
-            ) from e
-
+            return await self.client.chat.completions.create(**kwargs)
         except Exception as e:
-            logger.error(f"Unexpected error in OpenAI call for user {self.user_id}: {str(e)}")
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail={
-                    "code": "UNEXPECTED_ERROR",
-                    "message": ("An unexpected error occurred. " "Please try again."),
-                },
-            ) from e
+            raise classify_openai_error(e) from e
 
-    def generate_chat_completion(
+    async def generate_chat_completion(
         self,
         messages: list[dict[str, str]],
         model: str = "gpt-3.5-turbo",
         temperature: float = 0.7,
         max_tokens: int | None = None,
+        *,
+        context: dict[str, Any] | None = None,
     ) -> str:
         """Generate a chat completion using OpenAI.
 
@@ -155,17 +140,113 @@ class OpenAIService:
         Raises:
             HTTPException: If API call fails
         """
-        api_func = self.client.chat.completions.create
+        try:
+            response = await self._chat_completion_create(
+                model=model,
+                messages=messages,
+                temperature=temperature,
+                max_tokens=max_tokens,
+                context=context,
+            )
 
-        kwargs = {
-            "model": model,
-            "messages": messages,
-            "temperature": temperature,
-        }
+            content = None
+            try:
+                content = response.choices[0].message.content
+            except Exception:
+                content = None
 
-        if max_tokens:
-            kwargs["max_tokens"] = max_tokens
+            if not content:
+                raise InvalidResponseError(
+                    message="OpenAI returned an empty response.",
+                    error_code="EMPTY_RESPONSE",
+                )
 
-        response = self._make_api_call(api_func, **kwargs)
+            return content
 
-        return response.choices[0].message.content
+        except OpenAIIntegrationError as e:
+            safe_message = mask_secrets(e.message)
+            log_extra = {
+                **(context or {}),
+                "user_id": str(self.user_id),
+                "error_code": e.error_code,
+                "error_type": type(e).__name__,
+            }
+
+            if isinstance(e, AuthenticationError):
+                category = "authentication"
+            elif isinstance(e, QuotaExceededError):
+                category = "quota"
+            elif isinstance(e, RateLimitError):
+                category = "rate_limit"
+            elif isinstance(e, NetworkError):
+                category = "network"
+            elif isinstance(e, ServerError):
+                category = "server"
+            else:
+                category = "invalid_response"
+
+            record_openai_error(category=category, error_code=e.error_code)
+
+            # Logging levels: transient WARNING, others ERROR
+            if isinstance(e, (NetworkError, ServerError, RateLimitError)):
+                logger.warning("OpenAI call failed", extra=log_extra, exc_info=True)
+            else:
+                logger.error("OpenAI call failed", extra=log_extra, exc_info=True)
+
+            if isinstance(e, (AuthenticationError, QuotaExceededError)):
+                report_to_monitoring_service(
+                    event="openai_critical_error",
+                    payload={
+                        **log_extra,
+                        "category": category,
+                        "message": safe_message,
+                    },
+                )
+
+            if isinstance(e, AuthenticationError):
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail={"code": "INVALID_API_KEY", "message": safe_message},
+                ) from e
+
+            if isinstance(e, RateLimitError):
+                raise HTTPException(
+                    status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                    detail={"code": "OPENAI_RATE_LIMIT", "message": safe_message},
+                ) from e
+
+            if isinstance(e, QuotaExceededError):
+                raise HTTPException(
+                    status_code=status.HTTP_402_PAYMENT_REQUIRED,
+                    detail={"code": "OPENAI_QUOTA_EXCEEDED", "message": safe_message},
+                ) from e
+
+            if isinstance(e, NetworkError):
+                raise HTTPException(
+                    status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                    detail={"code": "OPENAI_CONNECTION_ERROR", "message": safe_message},
+                ) from e
+
+            if isinstance(e, ServerError):
+                raise HTTPException(
+                    status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                    detail={"code": "OPENAI_SERVER_ERROR", "message": safe_message},
+                ) from e
+
+            raise HTTPException(
+                status_code=status.HTTP_502_BAD_GATEWAY,
+                detail={"code": "OPENAI_INVALID_RESPONSE", "message": safe_message},
+            ) from e
+
+        except Exception as e:
+            safe_message = mask_secrets(str(e))
+            record_openai_error(category="unexpected", error_code="UNEXPECTED_ERROR")
+            logger.error(
+                "Unexpected OpenAI integration error",
+                extra={"user_id": str(self.user_id), **(context or {})},
+                exc_info=True,
+            )
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail={"code": "UNEXPECTED_ERROR", "message": safe_message},
+            ) from e

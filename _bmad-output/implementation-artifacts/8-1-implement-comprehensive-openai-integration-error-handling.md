@@ -1,6 +1,6 @@
 # Story 8.1: Implement Comprehensive OpenAI Integration Error Handling
 
-Status: ready-for-dev
+Status: review
 
 ## Story
 
@@ -22,50 +22,50 @@ so that the system gracefully handles all failure scenarios.
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Create comprehensive error classification system (AC: #1)
+- [x] Task 1: Create comprehensive error classification system (AC: #1)
 
-  - [ ] Define error categories: NetworkError, AuthenticationError,
+  - [x] Define error categories: NetworkError, AuthenticationError,
         RateLimitError, ServerError, InvalidResponseError, QuotaExceededError
-  - [ ] Create custom exception classes in `backend/app/core/exceptions.py`
-  - [ ] Add error_code field to each exception for structured logging
+  - [x] Create custom exception classes in `backend/app/core/exceptions.py`
+  - [x] Add error_code field to each exception for structured logging
 
-- [ ] Task 2: Implement retry logic with exponential backoff (AC: #1)
+- [x] Task 2: Implement retry logic with exponential backoff (AC: #1)
 
-  - [ ] Create retry decorator in `backend/app/utils/retry.py`
-  - [ ] Configure retry for transient errors only (network, 5xx)
-  - [ ] Implement exponential backoff: 1s, 2s, 4s (max 3 retries)
-  - [ ] Add jitter to prevent thundering herd
-  - [ ] Log each retry attempt with context
+  - [x] Create retry decorator in `backend/app/utils/retry.py`
+  - [x] Configure retry for transient errors only (network, 5xx)
+  - [x] Implement exponential backoff: 1s, 2s, 4s (max 3 retries)
+  - [x] Add jitter to prevent thundering herd
+  - [x] Log each retry attempt with context
 
-- [ ] Task 3: Update OpenAI service with comprehensive error handling (AC: #1)
+- [x] Task 3: Update OpenAI service with comprehensive error handling (AC: #1)
 
-  - [ ] Wrap all OpenAI API calls in try/except blocks
-  - [ ] Classify errors into appropriate categories
-  - [ ] Apply retry decorator to transient error types
-  - [ ] Update Operation model status to 'failed' on unrecoverable errors
-  - [ ] Store error_message in Operation model
-  - [ ] Never expose API keys in logs or error messages
+  - [x] Wrap all OpenAI API calls in try/except blocks
+  - [x] Classify errors into appropriate categories
+  - [x] Apply retry decorator to transient error types
+  - [x] Update Operation model status to 'failed' on unrecoverable errors
+  - [x] Store error_message in Operation model
+  - [x] Never expose API keys in logs or error messages
 
-- [ ] Task 4: Implement structured error logging (AC: #1)
+- [x] Task 4: Implement structured error logging (AC: #1)
 
-  - [ ] Log all errors with structured context (JSON format)
-  - [ ] Include: timestamp, operation_id, session_id, error_type, error_message
-  - [ ] Mask sensitive data (API keys, user PII) in logs
-  - [ ] Use Python logging module with appropriate levels
-  - [ ] Add stack traces for unexpected errors
+  - [x] Log all errors with structured context (JSON format)
+  - [x] Include: timestamp, operation_id, session_id, error_type, error_message
+  - [x] Mask sensitive data (API keys, user PII) in logs
+  - [x] Use Python logging module with appropriate levels
+  - [x] Add stack traces for unexpected errors
 
-- [ ] Task 5: Create error recovery mechanisms (AC: #1)
+- [x] Task 5: Create error recovery mechanisms (AC: #1)
 
-  - [ ] Ensure database transactions are rolled back on errors
-  - [ ] Mark Operation as 'failed' atomically
-  - [ ] Clean up any partial state (e.g., incomplete message records)
-  - [ ] Prevent resource leaks (connections, file handles)
+  - [x] Ensure database transactions are rolled back on errors
+  - [x] Mark Operation as 'failed' atomically
+  - [x] Clean up any partial state (e.g., incomplete message records)
+  - [x] Prevent resource leaks (connections, file handles)
 
-- [ ] Task 6: Add error monitoring and alerting hooks (AC: #1)
-  - [ ] Log critical errors (authentication, quota) at ERROR level
-  - [ ] Log transient errors at WARNING level
-  - [ ] Add metrics for error rates by category
-  - [ ] Prepare hooks for external monitoring services
+- [x] Task 6: Add error monitoring and alerting hooks (AC: #1)
+  - [x] Log critical errors (authentication, quota) at ERROR level
+  - [x] Log transient errors at WARNING level
+  - [x] Add metrics for error rates by category
+  - [x] Prepare hooks for external monitoring services
 
 ## Dev Notes
 
@@ -405,3 +405,54 @@ GPT-5.2
 - All error types classified and documented
 - Retry logic with exponential backoff specified
 - Structured logging configuration provided
+
+- ✅ Implemented Task 1: added OpenAI integration exception hierarchy with
+  `error_code` and tests.
+
+- ✅ Implemented Task 2: added async exponential backoff retry decorator with
+  jitter + tests.
+
+- ✅ Implemented Task 3: refactored OpenAI service to async w/ classification,
+  transient retries, and safe HTTP error mapping.
+
+- ✅ Implemented Task 4: enabled JSON structured logging with masking.
+
+- ✅ Implemented Task 5: ensured DB rollback + atomic persistence for
+  question/feedback background tasks; added tests to prevent partial state.
+
+- ✅ Implemented Task 6: added lightweight monitoring hooks + in-process
+  counters for OpenAI error rates by category/code; wired into OpenAI service.
+
+## File List
+
+- backend/app/core/exceptions.py
+- backend/tests/core/test_exceptions.py
+- backend/app/utils/retry.py
+- backend/tests/utils/test_retry.py
+- backend/app/utils/error_handler.py
+- backend/app/services/openai_service.py
+- backend/app/services/question_generation_service.py
+- backend/app/services/feedback_analysis_service.py
+- backend/tests/services/test_openai_service.py
+- backend/tests/services/test_openai_error_handling.py
+- backend/tests/services/test_question_generation_service.py
+- backend/tests/services/test_feedback_analysis_service.py
+- backend/app/core/logging_config.py
+- backend/app/main.py
+- backend/app/tasks/question_tasks.py
+- backend/app/tasks/feedback_tasks.py
+- backend/tests/tasks/test_question_tasks.py
+- backend/tests/tasks/test_feedback_tasks.py
+- backend/app/core/monitoring.py
+- backend/tests/core/test_monitoring.py
+- backend/tests/services/test_openai_service.py
+- \_bmad/bmm/config.yaml
+
+## Change Log
+
+- 2025-12-26: Completed Task 1 (error classification system)
+- 2025-12-26: Completed Task 2 (async retry decorator)
+- 2025-12-26: Completed Task 3 (OpenAI service error handling + retries)
+- 2025-12-26: Completed Task 4 (structured JSON logging)
+- 2025-12-26: Completed Task 5 (transaction rollback + atomic operation updates)
+- 2025-12-26: Completed Task 6 (monitoring hooks + error rate metrics)

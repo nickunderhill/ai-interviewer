@@ -3,7 +3,7 @@ Tests for feedback analysis service.
 """
 
 import json
-from unittest.mock import MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import uuid4
 
 from fastapi import HTTPException
@@ -106,11 +106,15 @@ async def complete_interview_session(db_session, test_user):
 
 
 @pytest.mark.asyncio
-async def test_analyze_session_success(db_session, test_user, complete_interview_session, mock_openai_response):
+async def test_analyze_session_success(
+    db_session, test_user, complete_interview_session, mock_openai_response
+):
     """Test successful feedback analysis with valid OpenAI response."""
     with patch("app.services.feedback_analysis_service.OpenAIService") as mock_openai:
         mock_service = MagicMock()
-        mock_service.generate_chat_completion.return_value = mock_openai_response
+        mock_service.generate_chat_completion = AsyncMock(
+            return_value=mock_openai_response
+        )
         mock_openai.return_value = mock_service
 
         result = await feedback_analysis_service.analyze_session(
@@ -126,7 +130,10 @@ async def test_analyze_session_success(db_session, test_user, complete_interview
         assert "Strong grasp" in result.technical_feedback
         assert len(result.knowledge_gaps) == 2
         assert len(result.learning_recommendations) == 3
-        assert result.overall_comments == "Strong candidate with solid fundamentals and good problem-solving skills."
+        assert (
+            result.overall_comments
+            == "Strong candidate with solid fundamentals and good problem-solving skills."
+        )
 
 
 @pytest.mark.asyncio
@@ -144,7 +151,9 @@ async def test_analyze_session_not_found(db_session, test_user):
 
 
 @pytest.mark.asyncio
-async def test_analyze_session_missing_resume(db_session, test_user, complete_interview_session):
+async def test_analyze_session_missing_resume(
+    db_session, test_user, complete_interview_session
+):
     """Test error when user has no resume."""
     # Delete resume using SQLAlchemy delete
     from sqlalchemy import delete
@@ -235,11 +244,15 @@ async def test_analyze_session_no_answers(db_session, test_user):
 
 
 @pytest.mark.asyncio
-async def test_analyze_session_malformed_json(db_session, test_user, complete_interview_session):
+async def test_analyze_session_malformed_json(
+    db_session, test_user, complete_interview_session
+):
     """Test error when OpenAI returns malformed JSON."""
     with patch("app.services.feedback_analysis_service.OpenAIService") as mock_openai:
         mock_service = MagicMock()
-        mock_service.generate_chat_completion.return_value = "This is not JSON"
+        mock_service.generate_chat_completion = AsyncMock(
+            return_value="This is not JSON"
+        )
         mock_openai.return_value = mock_service
 
         with pytest.raises(HTTPException) as exc_info:
@@ -254,7 +267,9 @@ async def test_analyze_session_malformed_json(db_session, test_user, complete_in
 
 
 @pytest.mark.asyncio
-async def test_analyze_session_invalid_schema(db_session, test_user, complete_interview_session):
+async def test_analyze_session_invalid_schema(
+    db_session, test_user, complete_interview_session
+):
     """Test error when OpenAI returns JSON with invalid schema."""
     invalid_response = json.dumps(
         {
@@ -265,7 +280,7 @@ async def test_analyze_session_invalid_schema(db_session, test_user, complete_in
 
     with patch("app.services.feedback_analysis_service.OpenAIService") as mock_openai:
         mock_service = MagicMock()
-        mock_service.generate_chat_completion.return_value = invalid_response
+        mock_service.generate_chat_completion = AsyncMock(return_value=invalid_response)
         mock_openai.return_value = mock_service
 
         with pytest.raises(HTTPException) as exc_info:
@@ -280,7 +295,9 @@ async def test_analyze_session_invalid_schema(db_session, test_user, complete_in
 
 
 @pytest.mark.asyncio
-async def test_analyze_session_score_clamping(db_session, test_user, complete_interview_session):
+async def test_analyze_session_score_clamping(
+    db_session, test_user, complete_interview_session
+):
     """Test that out-of-range scores are clamped to 0-100."""
     response_with_invalid_scores = json.dumps(
         {
@@ -300,7 +317,9 @@ async def test_analyze_session_score_clamping(db_session, test_user, complete_in
 
     with patch("app.services.feedback_analysis_service.OpenAIService") as mock_openai:
         mock_service = MagicMock()
-        mock_service.generate_chat_completion.return_value = response_with_invalid_scores
+        mock_service.generate_chat_completion = AsyncMock(
+            return_value=response_with_invalid_scores
+        )
         mock_openai.return_value = mock_service
 
         result = await feedback_analysis_service.analyze_session(
@@ -317,24 +336,28 @@ async def test_analyze_session_score_clamping(db_session, test_user, complete_in
 
 
 @pytest.mark.asyncio
-async def test_build_analysis_prompt_format(db_session, test_user, complete_interview_session):
+async def test_build_analysis_prompt_format(
+    db_session, test_user, complete_interview_session
+):
     """Test that the prompt includes all required information."""
     with patch("app.services.feedback_analysis_service.OpenAIService") as mock_openai:
         mock_service = MagicMock()
-        mock_service.generate_chat_completion.return_value = json.dumps(
-            {
-                "technical_accuracy_score": 75,
-                "communication_clarity_score": 75,
-                "problem_solving_score": 75,
-                "relevance_score": 75,
-                "technical_feedback": "Test",
-                "communication_feedback": "Test",
-                "problem_solving_feedback": "Test",
-                "relevance_feedback": "Test",
-                "overall_comments": "Test",
-                "knowledge_gaps": [],
-                "learning_recommendations": [],
-            }
+        mock_service.generate_chat_completion = AsyncMock(
+            return_value=json.dumps(
+                {
+                    "technical_accuracy_score": 75,
+                    "communication_clarity_score": 75,
+                    "problem_solving_score": 75,
+                    "relevance_score": 75,
+                    "technical_feedback": "Test",
+                    "communication_feedback": "Test",
+                    "problem_solving_feedback": "Test",
+                    "relevance_feedback": "Test",
+                    "overall_comments": "Test",
+                    "knowledge_gaps": [],
+                    "learning_recommendations": [],
+                }
+            )
         )
         mock_openai.return_value = mock_service
 

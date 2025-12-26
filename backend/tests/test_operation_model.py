@@ -1,6 +1,7 @@
 """Tests for Operation model."""
 
 import pytest
+from sqlalchemy import Text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.operation import Operation
@@ -65,6 +66,18 @@ async def test_operation_error_handling(db_session: AsyncSession):
     assert operation.status == "failed"
     assert operation.error_message == "OpenAI API rate limit exceeded"
     assert operation.result is None
+
+
+def test_operation_model_schema_supports_user_friendly_errors():
+    error_message_col = Operation.__table__.c.error_message
+    assert error_message_col.nullable is True
+    assert isinstance(error_message_col.type, Text)
+
+    # Index should exist for efficient status querying (either column-level or composite).
+    index_columns = [
+        [col.name for col in index.columns] for index in Operation.__table__.indexes
+    ]
+    assert any("status" in cols for cols in index_columns)
 
 
 @pytest.mark.asyncio

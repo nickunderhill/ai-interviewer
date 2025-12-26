@@ -5,6 +5,7 @@ import LoginForm from './features/auth/components/LoginForm';
 import RegisterForm from './features/auth/components/RegisterForm';
 import Dashboard from './features/auth/components/Dashboard';
 import { SessionHistory, SessionDetail } from './features/sessions';
+import FeedbackView from './features/feedback/components/FeedbackView';
 import Progress from './pages/Progress';
 import ProtectedRoute from './components/layout/ProtectedRoute';
 import AppLayout from './components/layout/AppLayout';
@@ -26,6 +27,7 @@ function App() {
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/history" element={<SessionHistory />} />
             <Route path="/sessions/:id" element={<SessionDetail />} />
+            <Route path="/sessions/:id/feedback" element={<FeedbackView />} />
             <Route path="/progress" element={<Progress />} />
           </Route>
           <Route path="/" element={<Navigate to="/login" replace />} />

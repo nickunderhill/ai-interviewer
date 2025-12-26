@@ -3,6 +3,7 @@
 import logging
 from uuid import UUID
 
+from fastapi import HTTPException
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
@@ -12,8 +13,26 @@ from app.models.operation import Operation
 from app.models.session_message import SessionMessage
 from app.models.user import User
 from app.services.question_generation_service import generate_question
+from app.utils.error_messages import generate_user_friendly_message
+from app.utils.error_handler import mask_secrets
 
 logger = logging.getLogger(__name__)
+
+
+def _safe_error_message(exc: Exception) -> str:
+    if isinstance(exc, HTTPException) and isinstance(exc.detail, dict):
+        msg = exc.detail.get("message") or exc.detail.get("code") or str(exc.detail)
+        return mask_secrets(str(msg))
+
+    return mask_secrets(str(exc))
+
+
+def _extract_error_code(exc: Exception) -> str:
+    if isinstance(exc, HTTPException) and isinstance(exc.detail, dict):
+        code = exc.detail.get("code")
+        if isinstance(code, str) and code:
+            return code
+    return "UNEXPECTED_ERROR"
 
 
 async def generate_question_task(operation_id: UUID, session_id: UUID):
@@ -25,14 +44,18 @@ async def generate_question_task(operation_id: UUID, session_id: UUID):
         session_id: UUID of the InterviewSession
     """
     async with AsyncSessionLocal() as db:
+        operation: Operation | None = None
+        operation_type_value: str = "question_generation"
         try:
             # Load operation
-            result = await db.execute(select(Operation).where(Operation.id == operation_id))
-            operation = result.scalar_one_or_none()
+            operation = await db.get(Operation, operation_id)
 
             if not operation:
                 logger.error(f"Operation {operation_id} not found")
                 return
+
+            # Avoid ORM attribute access after rollback/expiration.
+            operation_type_value = operation.operation_type
 
             # Update to processing
             operation.status = "processing"
@@ -52,16 +75,19 @@ async def generate_question_task(operation_id: UUID, session_id: UUID):
             if not session:
                 logger.error(f"Session {session_id} not found")
                 operation.status = "failed"
-                operation.error_message = "Session not found"
+                operation.error_message = generate_user_friendly_message(
+                    "SESSION_NOT_FOUND",
+                    {"operation_type": operation_type_value},
+                )
                 await db.commit()
                 return
 
             # Generate question
             question_data = await generate_question(session)
 
-            # Store question as SessionMessage (atomic with session update)
+            # Persist message + session update + operation completion in one commit.
+            message: SessionMessage | None = None
             try:
-                # Create message record
                 message = SessionMessage(
                     session_id=session.id,
                     message_type="question",
@@ -70,44 +96,61 @@ async def generate_question_task(operation_id: UUID, session_id: UUID):
                 )
                 db.add(message)
 
-                # Increment session question number
                 session.current_question_number += 1
 
-                # Commit both changes atomically
+                operation.status = "completed"
+                operation.result = question_data
+
+                # Surface DB issues early and ensure rollback removes partial state.
+                await db.flush()
                 await db.commit()
+
                 await db.refresh(message)
 
                 logger.info(
-                    f"Question stored as message {message.id} for session {session_id}, "
-                    f"question number now {session.current_question_number}"
+                    f"Question generated and stored successfully for operation {operation_id}"
+                )
+            except Exception as db_error:
+                logger.error(
+                    f"Failed to store question for session {session_id}: {str(db_error)}"
                 )
 
-            except Exception as db_error:
-                logger.error(f"Failed to store question in session {session_id}: {str(db_error)}")
-                await db.rollback()
+                try:
+                    await db.rollback()
+                except Exception:
+                    pass
 
                 operation.status = "failed"
-                operation.error_message = "Failed to store question in database"
+                operation.error_message = generate_user_friendly_message(
+                    "DB_WRITE_FAILED",
+                    {"operation_type": operation_type_value},
+                )
                 await db.commit()
                 return
 
-            # Update operation with result
-            operation.status = "completed"
-            operation.result = question_data
-            await db.commit()
-
-            logger.info(f"Question generated and stored successfully for operation {operation_id}")
-
         except Exception as e:
+            error_code = _extract_error_code(e)
             logger.error(
-                f"Error in question generation task {operation_id}: {str(e)}",
+                f"Error in question generation task {operation_id}: {_safe_error_message(e)}",
                 exc_info=True,
             )
 
+            try:
+                await db.rollback()
+            except Exception:
+                pass
+
             # Update operation with error
             try:
-                operation.status = "failed"
-                operation.error_message = str(e)
-                await db.commit()
+                op = operation or await db.get(Operation, operation_id)
+                if op:
+                    op.status = "failed"
+                    op.error_message = generate_user_friendly_message(
+                        error_code,
+                        {"operation_type": operation_type_value},
+                    )
+                    await db.commit()
             except Exception as commit_error:
-                logger.error(f"Failed to update operation {operation_id} with error: {commit_error}")
+                logger.error(
+                    f"Failed to update operation {operation_id} with error: {commit_error}"
+                )

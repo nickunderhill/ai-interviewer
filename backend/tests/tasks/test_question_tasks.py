@@ -3,6 +3,7 @@
 from unittest.mock import patch
 from uuid import uuid4
 
+from fastapi import HTTPException
 import pytest
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -149,7 +150,149 @@ async def test_question_task_handles_generation_failure(
     # Verify operation failed
     await db_session.refresh(operation)
     assert operation.status == "failed"
-    assert "OpenAI error" in operation.error_message
+    assert operation.error_message is not None
+    assert "What to do:" in operation.error_message
+
+
+@pytest.mark.asyncio
+@patch("app.tasks.question_tasks.AsyncSessionLocal")
+@patch("app.tasks.question_tasks.generate_question")
+async def test_question_task_rolls_back_partial_state_on_db_failure(
+    mock_generate,
+    mock_session_local,
+    db_session: AsyncSession,
+    test_user,
+    test_job_posting,
+):
+    """If DB write fails, task must rollback and not persist partial state."""
+    mock_session_local.return_value.__aenter__.return_value = db_session
+    mock_generate.return_value = {
+        "question_text": "What is Python?",
+        "question_type": "technical",
+    }
+
+    session = InterviewSession(
+        user_id=test_user.id,
+        job_posting_id=test_job_posting.id,
+        status="active",
+        current_question_number=0,
+    )
+    db_session.add(session)
+    await db_session.commit()
+    await db_session.refresh(session)
+
+    operation = Operation(operation_type="question_generation", status="pending")
+    db_session.add(operation)
+    await db_session.commit()
+    await db_session.refresh(operation)
+
+    # Simulate a DB failure during the atomic write (after objects are staged).
+    with patch.object(db_session, "flush", side_effect=Exception("db flush failed")):
+        await generate_question_task(operation.id, session.id)
+
+    await db_session.refresh(operation)
+    assert operation.status == "failed"
+
+    await db_session.refresh(session)
+    assert session.current_question_number == 0
+
+    result = await db_session.execute(
+        select(SessionMessage).where(
+            SessionMessage.session_id == session.id,
+            SessionMessage.message_type == "question",
+        )
+    )
+    assert result.scalar_one_or_none() is None
+
+
+@pytest.mark.asyncio
+@patch("app.tasks.question_tasks.AsyncSessionLocal")
+@patch("app.tasks.question_tasks.generate_question")
+async def test_question_task_masks_sensitive_error_message_from_http_exception(
+    mock_generate,
+    mock_session_local,
+    db_session: AsyncSession,
+    test_user,
+    test_job_posting,
+):
+    """Ensure error_message stored on Operation is safe (no API keys)."""
+    mock_session_local.return_value.__aenter__.return_value = db_session
+    mock_generate.side_effect = HTTPException(
+        status_code=502,
+        detail={
+            "code": "OPENAI_INVALID_RESPONSE",
+            "message": "OpenAI failed with key sk-1234567890abcdef",
+        },
+    )
+
+    session = InterviewSession(
+        user_id=test_user.id,
+        job_posting_id=test_job_posting.id,
+        status="active",
+        current_question_number=0,
+    )
+    db_session.add(session)
+    await db_session.commit()
+    await db_session.refresh(session)
+
+    operation = Operation(operation_type="question_generation", status="pending")
+    db_session.add(operation)
+    await db_session.commit()
+    await db_session.refresh(operation)
+
+    await generate_question_task(operation.id, session.id)
+
+    await db_session.refresh(operation)
+    assert operation.status == "failed"
+    assert "sk-" not in (operation.error_message or "")
+    assert "unexpected response" in (operation.error_message or "").lower()
+    assert "What to do:" in (operation.error_message or "")
+
+
+@pytest.mark.asyncio
+@patch("app.tasks.question_tasks.AsyncSessionLocal")
+@patch("app.tasks.question_tasks.generate_question")
+async def test_question_task_sets_user_friendly_message_for_invalid_api_key(
+    mock_generate,
+    mock_session_local,
+    db_session: AsyncSession,
+    test_user,
+    test_job_posting,
+):
+    """AI auth failures should store actionable, non-technical messages."""
+
+    mock_session_local.return_value.__aenter__.return_value = db_session
+    mock_generate.side_effect = HTTPException(
+        status_code=400,
+        detail={
+            "code": "INVALID_API_KEY",
+            "message": "Invalid OpenAI API key sk-1234567890abcdef",
+        },
+    )
+
+    session = InterviewSession(
+        user_id=test_user.id,
+        job_posting_id=test_job_posting.id,
+        status="active",
+        current_question_number=0,
+    )
+    db_session.add(session)
+    await db_session.commit()
+    await db_session.refresh(session)
+
+    operation = Operation(operation_type="question_generation", status="pending")
+    db_session.add(operation)
+    await db_session.commit()
+    await db_session.refresh(operation)
+
+    await generate_question_task(operation.id, session.id)
+
+    await db_session.refresh(operation)
+    assert operation.status == "failed"
+    assert operation.error_message is not None
+    assert "OpenAI API key" in operation.error_message
+    assert "What to do:" in operation.error_message
+    assert "sk-" not in operation.error_message
 
 
 @pytest.mark.asyncio
@@ -218,7 +361,9 @@ async def test_multiple_questions_create_separate_messages(
 
 @pytest.mark.asyncio
 @patch("app.tasks.question_tasks.AsyncSessionLocal")
-async def test_question_task_handles_nonexistent_session(mock_session_local, db_session: AsyncSession):
+async def test_question_task_handles_nonexistent_session(
+    mock_session_local, db_session: AsyncSession
+):
     """Test task handles non-existent session gracefully."""
     mock_session_local.return_value.__aenter__.return_value = db_session
 
@@ -234,7 +379,9 @@ async def test_question_task_handles_nonexistent_session(mock_session_local, db_
     # Verify operation failed
     await db_session.refresh(operation)
     assert operation.status == "failed"
-    assert "Session not found" in operation.error_message
+    assert operation.error_message is not None
+    assert "what to do:" in operation.error_message.lower()
+    assert "session could not be found" in operation.error_message.lower()
 
 
 @pytest.mark.asyncio
@@ -273,7 +420,9 @@ async def test_question_task_all_fields_populated(
     await generate_question_task(operation.id, session.id)
 
     # Get the created message
-    result = await db_session.execute(select(SessionMessage).where(SessionMessage.session_id == session.id))
+    result = await db_session.execute(
+        select(SessionMessage).where(SessionMessage.session_id == session.id)
+    )
     message = result.scalar_one()
 
     # Verify all fields
