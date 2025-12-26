@@ -87,14 +87,14 @@ describe('SessionDetail', () => {
       isLoading: true,
       isError: false,
       error: null,
-    } as ReturnType<typeof useSessionHook.useSession>);
+    } as any);
 
     vi.spyOn(useMessagesHook, 'useMessages').mockReturnValue({
       data: undefined,
       isLoading: true,
       isError: false,
       error: null,
-    } as ReturnType<typeof useMessagesHook.useMessages>);
+    } as any);
 
     const { container } = renderWithProviders(<SessionDetail />);
     const skeleton = container.querySelector('.animate-pulse');
@@ -107,14 +107,14 @@ describe('SessionDetail', () => {
       isLoading: false,
       isError: true,
       error: new Error('Session not found'),
-    } as ReturnType<typeof useSessionHook.useSession>);
+    } as any);
 
     vi.spyOn(useMessagesHook, 'useMessages').mockReturnValue({
       data: [],
       isLoading: false,
       isError: false,
       error: null,
-    } as ReturnType<typeof useMessagesHook.useMessages>);
+    } as any);
 
     renderWithProviders(<SessionDetail />);
     expect(screen.getByText(/failed to load session/i)).toBeInTheDocument();
@@ -126,14 +126,14 @@ describe('SessionDetail', () => {
       isLoading: false,
       isError: false,
       error: null,
-    } as ReturnType<typeof useSessionHook.useSession>);
+    } as any);
 
     vi.spyOn(useMessagesHook, 'useMessages').mockReturnValue({
       data: mockMessages,
       isLoading: false,
       isError: false,
       error: null,
-    } as ReturnType<typeof useMessagesHook.useMessages>);
+    } as any);
 
     renderWithProviders(<SessionDetail />);
 
@@ -149,14 +149,14 @@ describe('SessionDetail', () => {
       isLoading: false,
       isError: false,
       error: null,
-    } as ReturnType<typeof useSessionHook.useSession>);
+    } as any);
 
     vi.spyOn(useMessagesHook, 'useMessages').mockReturnValue({
       data: mockMessages,
       isLoading: false,
       isError: false,
       error: null,
-    } as ReturnType<typeof useMessagesHook.useMessages>);
+    } as any);
 
     const { container } = renderWithProviders(<SessionDetail />);
 
@@ -174,14 +174,14 @@ describe('SessionDetail', () => {
       isLoading: false,
       isError: false,
       error: null,
-    } as ReturnType<typeof useSessionHook.useSession>);
+    } as any);
 
     vi.spyOn(useMessagesHook, 'useMessages').mockReturnValue({
       data: mockMessages,
       isLoading: false,
       isError: false,
       error: null,
-    } as ReturnType<typeof useMessagesHook.useMessages>);
+    } as any);
 
     renderWithProviders(<SessionDetail />);
 
@@ -198,14 +198,14 @@ describe('SessionDetail', () => {
       isLoading: false,
       isError: false,
       error: null,
-    } as ReturnType<typeof useSessionHook.useSession>);
+    } as any);
 
     vi.spyOn(useMessagesHook, 'useMessages').mockReturnValue({
       data: [],
       isLoading: false,
       isError: false,
       error: null,
-    } as ReturnType<typeof useMessagesHook.useMessages>);
+    } as any);
 
     renderWithProviders(<SessionDetail />);
 
