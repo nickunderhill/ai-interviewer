@@ -2,8 +2,8 @@
 Test for retake chain endpoint edge cases.
 """
 
-import pytest
 from httpx import AsyncClient
+import pytest
 
 
 @pytest.mark.asyncio

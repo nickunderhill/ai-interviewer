@@ -6,12 +6,12 @@ Implements an exponential backoff retry decorator for transient failures.
 from __future__ import annotations
 
 import asyncio
+from collections.abc import Awaitable, Callable
+from contextlib import suppress
+from functools import wraps
 import logging
 import random
-from collections.abc import Awaitable, Callable
-from functools import wraps
 from typing import Any, ParamSpec, TypeVar
-
 
 logger = logging.getLogger(__name__)
 
@@ -71,11 +71,8 @@ def async_retry(
                         "error_type": type(exc).__name__,
                     }
                     if log_context_provider is not None:
-                        try:
+                        with suppress(Exception):
                             extra.update(log_context_provider(args, kwargs))
-                        except Exception:
-                            # Never let logging context break retry.
-                            pass
 
                     logger.warning("retrying transient error", extra=extra)
                     await asyncio.sleep(wait_seconds)

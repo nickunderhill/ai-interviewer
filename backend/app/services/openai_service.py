@@ -207,12 +207,12 @@ class OpenAIService:
             record_openai_error(category=category, error_code=e.error_code)
 
             # Logging levels: transient WARNING, others ERROR
-            if isinstance(e, (NetworkError, ServerError, RateLimitError)):
+            if isinstance(e, NetworkError | ServerError | RateLimitError):
                 logger.warning("OpenAI call failed", extra=log_extra, exc_info=True)
             else:
                 logger.error("OpenAI call failed", extra=log_extra, exc_info=True)
 
-            if isinstance(e, (AuthenticationError, QuotaExceededError)):
+            if isinstance(e, AuthenticationError | QuotaExceededError):
                 report_to_monitoring_service(
                     event="openai_critical_error",
                     payload={

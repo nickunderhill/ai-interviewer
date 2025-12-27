@@ -13,8 +13,9 @@ async def test_create_retake_success_first_retake(
     async_client: AsyncClient, auth_headers: dict, test_session_completed, db_session
 ):
     """Test creating first retake from original session."""
-    from app.models.interview_session import InterviewSession
     from sqlalchemy import select
+
+    from app.models.interview_session import InterviewSession
 
     response = await async_client.post(
         f"/api/v1/sessions/{test_session_completed.id}/retake",
@@ -49,8 +50,9 @@ async def test_create_retake_success_second_retake(
     async_client: AsyncClient, auth_headers: dict, test_session_completed, db_session
 ):
     """Test creating second retake - should chain to original."""
-    from app.models.interview_session import InterviewSession
     from sqlalchemy import select
+
+    from app.models.interview_session import InterviewSession
 
     # Create first retake
     first_retake_response = await async_client.post(
@@ -88,8 +90,9 @@ async def test_create_retake_chain_integrity(
     async_client: AsyncClient, auth_headers: dict, test_session_completed, db_session
 ):
     """Test that retake chain maintains integrity across multiple retakes."""
-    from app.models.interview_session import InterviewSession
     from sqlalchemy import select
+
+    from app.models.interview_session import InterviewSession
 
     original_id = test_session_completed.id
 
@@ -212,8 +215,9 @@ async def test_create_retake_persists_to_database(
     async_client: AsyncClient, auth_headers: dict, test_session_completed, db_session
 ):
     """Test that retake session is properly persisted to database."""
-    from app.models.interview_session import InterviewSession
     from sqlalchemy import select
+
+    from app.models.interview_session import InterviewSession
 
     response = await async_client.post(
         f"/api/v1/sessions/{test_session_completed.id}/retake",

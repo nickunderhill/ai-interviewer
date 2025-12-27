@@ -1,6 +1,6 @@
+from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.types import ASGIApp
-from fastapi import Request
 
 
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):

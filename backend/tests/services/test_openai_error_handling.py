@@ -5,7 +5,6 @@ from __future__ import annotations
 from unittest.mock import Mock
 
 from openai import APIConnectionError, APIError
-import pytest
 
 from app.core.exceptions import (
     AuthenticationError,

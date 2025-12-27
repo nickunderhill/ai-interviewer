@@ -5,13 +5,12 @@ Keeps logs machine-readable and masks common sensitive values.
 
 from __future__ import annotations
 
+from datetime import UTC, datetime
 import json
 import logging
-from datetime import datetime, timezone
 from typing import Any
 
 from app.utils.error_handler import mask_secrets
-
 
 _RESERVED_LOG_RECORD_KEYS = {
     "name",
@@ -44,7 +43,7 @@ class JSONFormatter(logging.Formatter):
 
     def format(self, record: logging.LogRecord) -> str:
         payload: dict[str, Any] = {
-            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
             "level": record.levelname,
             "logger": record.name,
             "message": mask_secrets(record.getMessage()),

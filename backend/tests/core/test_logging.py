@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
+from io import StringIO
 import json
 import logging
-from io import StringIO
 
 import pytest
 

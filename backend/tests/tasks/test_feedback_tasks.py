@@ -1,7 +1,7 @@
 """Tests for feedback generation background tasks."""
 
 from contextlib import asynccontextmanager
-from unittest.mock import AsyncMock, patch
+from unittest.mock import patch
 
 import pytest
 from sqlalchemy import select

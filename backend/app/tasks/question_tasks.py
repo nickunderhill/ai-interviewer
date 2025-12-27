@@ -1,5 +1,6 @@
 """Background tasks for question generation."""
 
+from contextlib import suppress
 import logging
 from uuid import UUID
 
@@ -13,8 +14,8 @@ from app.models.operation import Operation
 from app.models.session_message import SessionMessage
 from app.models.user import User
 from app.services.question_generation_service import generate_question
-from app.utils.error_messages import generate_user_friendly_message
 from app.utils.error_handler import mask_secrets
+from app.utils.error_messages import generate_user_friendly_message
 
 logger = logging.getLogger(__name__)
 
@@ -135,10 +136,8 @@ async def generate_question_task(operation_id: UUID, session_id: UUID):
                     exc_info=True,
                 )
 
-                try:
+                with suppress(Exception):
                     await db.rollback()
-                except Exception:
-                    pass
 
                 operation.status = "failed"
                 operation.error_message = generate_user_friendly_message(
@@ -155,10 +154,8 @@ async def generate_question_task(operation_id: UUID, session_id: UUID):
                 exc_info=True,
             )
 
-            try:
+            with suppress(Exception):
                 await db.rollback()
-            except Exception:
-                pass
 
             # Update operation with error
             try:

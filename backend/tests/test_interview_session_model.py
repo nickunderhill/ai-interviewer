@@ -465,8 +465,6 @@ async def test_interview_session_set_null_on_original_session_deletion(db_sessio
     await db_session.commit()
     await db_session.refresh(retake_session)
 
-    retake_id = retake_session.id
-
     # Delete original session
     await db_session.delete(original_session)
     await db_session.commit()
@@ -555,10 +553,11 @@ async def test_interview_session_retake_number_consistency(db_session):
 @pytest.mark.asyncio
 async def test_interview_session_retake_chain_query_performance(db_session):
     """Test that retake chain queries use composite index."""
+    from sqlalchemy import select
+
     from app.models.interview_session import InterviewSession
     from app.models.job_posting import JobPosting
     from app.models.user import User
-    from sqlalchemy import select
 
     user = User(email="perf_test@example.com", hashed_password="hashed")
     db_session.add(user)

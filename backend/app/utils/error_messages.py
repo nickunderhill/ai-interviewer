@@ -10,10 +10,10 @@ information like API keys.
 
 from __future__ import annotations
 
-from typing import Any, Mapping
+from collections.abc import Mapping
+from typing import Any
 
 from app.utils.error_handler import mask_secrets
-
 
 _OPERATION_PHRASES: dict[str, str] = {
     "question_generation": "generate your interview question",

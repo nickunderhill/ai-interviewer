@@ -2,9 +2,10 @@
 Tests for API key validation endpoint POST /api/v1/users/me/api-key/validate.
 """
 
+from unittest.mock import AsyncMock, patch
+
 from httpx import AsyncClient
 import pytest
-from unittest.mock import AsyncMock, patch, MagicMock
 
 from app.models.user import User
 

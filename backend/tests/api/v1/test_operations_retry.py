@@ -1,7 +1,7 @@
 """Test operations retry endpoint."""
 
-import pytest
 from httpx import AsyncClient
+import pytest
 from sqlalchemy import select
 
 from app.models.interview_session import InterviewSession

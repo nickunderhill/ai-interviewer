@@ -60,20 +60,20 @@ async def test_async_retry_raises_after_exhaustion():
 
 @pytest.mark.asyncio
 async def test_async_retry_does_not_retry_non_retriable_exception():
-    class NonRetriable(Exception):
+    class NonRetriableError(Exception):
         pass
 
     calls = {"n": 0}
 
     async def fail_fast():
         calls["n"] += 1
-        raise NonRetriable("no")
+        raise NonRetriableError("no")
 
     wrapped = async_retry(
         max_retries=3, backoff_base_seconds=1.0, retriable_exceptions=(NetworkError,)
     )(fail_fast)
 
-    with pytest.raises(NonRetriable):
+    with pytest.raises(NonRetriableError):
         await wrapped()
 
     assert calls["n"] == 1

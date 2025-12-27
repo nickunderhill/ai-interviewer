@@ -1,13 +1,11 @@
 """Operation service for retry logic."""
 
-import asyncio
 import logging
 from uuid import UUID
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.interview_session import InterviewSession
 from app.models.operation import Operation
 
 logger = logging.getLogger(__name__)

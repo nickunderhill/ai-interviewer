@@ -2,6 +2,7 @@
 Background tasks for feedback generation.
 """
 
+from contextlib import suppress
 import datetime as dt
 import logging
 from uuid import UUID
@@ -14,8 +15,8 @@ from app.models.interview_feedback import InterviewFeedback
 from app.models.operation import Operation
 from app.models.user import User
 from app.services import feedback_analysis_service
-from app.utils.error_messages import generate_user_friendly_message
 from app.utils.error_handler import mask_secrets
+from app.utils.error_messages import generate_user_friendly_message
 
 logger = logging.getLogger(__name__)
 
@@ -153,10 +154,8 @@ async def generate_feedback_task(
                     extra={"session_id": str(session_id)},
                 )
 
-                try:
+                with suppress(Exception):
                     await db.rollback()
-                except Exception:
-                    pass
 
                 operation.status = "failed"
                 operation.error_message = generate_user_friendly_message(
@@ -187,10 +186,8 @@ async def generate_feedback_task(
                 exc_info=True,
             )
 
-            try:
+            with suppress(Exception):
                 await db.rollback()
-            except Exception:
-                pass
 
             # Try to update operation status to failed
             try:

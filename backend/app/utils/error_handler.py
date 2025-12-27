@@ -9,6 +9,8 @@ from openai import (
     APIConnectionError,
     APIError,
     APITimeoutError,
+)
+from openai import (
     RateLimitError as OpenAIRateLimitError,
 )
 
@@ -21,7 +23,6 @@ from app.core.exceptions import (
     RateLimitError,
     ServerError,
 )
-
 
 _API_KEY_RE = re.compile(r"\bsk-[A-Za-z0-9]{10,}\b")
 
@@ -42,7 +43,7 @@ def _extract_body(error: Exception) -> Any:
 def classify_openai_error(error: Exception) -> OpenAIIntegrationError:
     """Classify OpenAI SDK exceptions into app-specific error types."""
 
-    if isinstance(error, (APIConnectionError, APITimeoutError)):
+    if isinstance(error, APIConnectionError | APITimeoutError):
         return NetworkError(
             message="Network error connecting to OpenAI. Please try again.",
             error_code="NETWORK_ERROR",

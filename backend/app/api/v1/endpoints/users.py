@@ -76,7 +76,7 @@ async def set_api_key(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail={"code": "INVALID_API_KEY_FORMAT", "message": str(e)},
-        )
+        ) from e
 
     # Encrypt the API key before storing
     encrypted_key = encrypt_api_key(payload.api_key)
@@ -122,7 +122,7 @@ async def update_api_key(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail={"code": "INVALID_API_KEY_FORMAT", "message": str(e)},
-        )
+        ) from e
 
     # Encrypt the new API key before storing
     encrypted_key = encrypt_api_key(payload.api_key)
@@ -163,7 +163,7 @@ async def validate_api_key(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail={"code": "INVALID_API_KEY_FORMAT", "message": str(e)},
-        )
+        ) from e
 
     # Test the API key with OpenAI
     try:

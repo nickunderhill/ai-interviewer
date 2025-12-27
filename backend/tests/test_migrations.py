@@ -1,10 +1,9 @@
+
 import pytest
-from alembic.config import Config
+
 from alembic import command
-from sqlalchemy.ext.asyncio import create_async_engine
-from sqlalchemy import text
+from alembic.config import Config
 from app.core.config import settings
-import os
 
 # Use sync URL for alembic
 ALEMBIC_DB_URL = settings.database_url_sync

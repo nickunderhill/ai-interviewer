@@ -2,8 +2,8 @@
 Test that retake chain endpoint returns dimension scores for story 7-5.
 """
 
-import pytest
 from httpx import AsyncClient
+import pytest
 
 
 @pytest.mark.asyncio
