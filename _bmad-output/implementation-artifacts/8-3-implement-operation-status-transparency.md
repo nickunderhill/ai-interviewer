@@ -1,6 +1,6 @@
 # Story 8.3: Implement Operation Status Transparency
 
-Status: ready-for-dev
+Status: done
 
 ## Story
 
@@ -20,57 +20,57 @@ so that I know what's happening with my requests.
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Create operation status constants and types (AC: #1)
+- [x] Task 1: Create operation status constants and types (AC: #1)
 
-  - [ ] Define TypeScript types for operation statuses
-  - [ ] Create status display text mapping
-  - [ ] Define visual indicators for each status
-  - [ ] Create status badge color schemes
+  - [x] Define TypeScript types for operation statuses
+  - [x] Create status display text mapping
+  - [x] Define visual indicators for each status
+  - [x] Create status badge color schemes
 
-- [ ] Task 2: Implement polling hook for operation status (AC: #1)
+- [x] Task 2: Implement polling hook for operation status (AC: #1)
 
-  - [ ] Create `useOperationPolling` custom hook
-  - [ ] Poll every 2-3 seconds while status is 'pending' or 'processing'
-  - [ ] Stop polling when status is 'completed' or 'failed'
-  - [ ] Handle timeout after 30 seconds with warning message
-  - [ ] Cleanup intervals on component unmount
+  - [x] Create `useOperationPolling` custom hook
+  - [x] Poll every 2-3 seconds while status is 'pending' or 'processing'
+  - [x] Stop polling when status is 'completed' or 'failed'
+  - [x] Handle timeout after 30 seconds with warning message
+  - [x] Cleanup intervals on component unmount
 
-- [ ] Task 3: Create status indicator components (AC: #1)
+- [x] Task 3: Create status indicator components (AC: #1)
 
-  - [ ] Create `OperationStatus.tsx` component
-  - [ ] Show spinner for 'pending'/'processing' states
-  - [ ] Show success checkmark for 'completed' state
-  - [ ] Show error icon for 'failed' state
-  - [ ] Add status text with appropriate colors
-  - [ ] Include elapsed time display
+  - [x] Create `OperationStatus.tsx` component
+  - [x] Show spinner for 'pending'/'processing' states
+  - [x] Show success checkmark for 'completed' state
+  - [x] Show error icon for 'failed' state
+  - [x] Add status text with appropriate colors
+  - [x] Include elapsed time display
 
-- [ ] Task 4: Create loading state components (AC: #1)
+- [x] Task 4: Create loading state components (AC: #1)
 
-  - [ ] Create `ProcessingIndicator.tsx` for AI operations
-  - [ ] Animated spinner or progress bar
-  - [ ] Display operation type (e.g., "Generating question...")
-  - [ ] Show elapsed time after 10 seconds
-  - [ ] Show "taking longer than expected" message after 30 seconds
+  - [x] Create `ProcessingIndicator.tsx` for AI operations
+  - [x] Animated spinner or progress bar
+  - [x] Display operation type (e.g., "Generating question...")
+  - [x] Show elapsed time after 10 seconds
+  - [x] Show "taking longer than expected" message after 30 seconds
 
-- [ ] Task 5: Integrate status indicators in session views (AC: #1)
+- [x] Task 5: Integrate status indicators in session views (AC: #1)
 
-  - [ ] Update SessionDetail to show question generation status
-  - [ ] Update AnswerForm to show analysis status after submission
-  - [ ] Replace static loading states with real-time polling
-  - [ ] Show status history for completed operations
+  - [x] Update SessionDetail to show question generation status
+  - [x] Update AnswerForm to show analysis status after submission
+  - [x] Replace static loading states with real-time polling
+  - [x] Show status history for completed operations
 
-- [ ] Task 6: Integrate status indicators in feedback views (AC: #1)
+- [x] Task 6: Integrate status indicators in feedback views (AC: #1)
 
-  - [ ] Update FeedbackView to show analysis status
-  - [ ] Show real-time progress during feedback generation
-  - [ ] Display completion status prominently
-  - [ ] Handle timeout scenarios gracefully
+  - [x] Update FeedbackView to show analysis status
+  - [x] Show real-time progress during feedback generation
+  - [x] Display completion status prominently
+  - [x] Handle timeout scenarios gracefully
 
-- [ ] Task 7: Add operation status badges (AC: #1)
-  - [ ] Create `StatusBadge.tsx` component
-  - [ ] Color-coded badges (blue=processing, green=completed, red=failed)
-  - [ ] Use Tailwind CSS for consistent styling
-  - [ ] Accessible with ARIA labels
+- [x] Task 7: Add operation status badges (AC: #1)
+  - [x] Create `StatusBadge.tsx` component
+  - [x] Color-coded badges (blue=processing, green=completed, red=failed)
+  - [x] Use Tailwind CSS for consistent styling
+  - [x] Accessible with ARIA labels
 
 ## Dev Notes
 
@@ -420,8 +420,36 @@ GPT-5.2
 
 ### Completion Notes List
 
-- Story created with comprehensive status transparency system
-- Real-time polling with TanStack Query
-- Visual indicators for all operation states
-- Timeout handling and warnings
-- Ready for dev implementation
+- Implemented operation status transparency UI and polling hook
+- Added OperationStatus / ProcessingIndicator / StatusBadge components
+- Updated SessionDetail + FeedbackView to show real-time operation status and
+  timeout warning after 30s
+- Created AnswerForm component with auto feedback generation and status display
+- Added unit tests for new components and polling hook
+- All tests passing: frontend (93 tests), backend (441 tests), lint clean
+- Validated with `pnpm -s lint`, `pnpm -s vitest run`, and `pytest -q`
+
+## File List
+
+- \_bmad-output/implementation-artifacts/sprint-status.yaml
+- frontend/src/components/common/OperationStatus.tsx
+- frontend/src/components/common/ProcessingIndicator.tsx
+- frontend/src/components/common/StatusBadge.tsx
+- frontend/src/components/common/**tests**/OperationStatus.test.tsx
+- frontend/src/components/common/**tests**/ProcessingIndicator.test.tsx
+- frontend/src/components/common/**tests**/StatusBadge.test.tsx
+- frontend/src/features/feedback/components/FeedbackView.tsx
+- frontend/src/features/sessions/api/sessionApi.ts
+- frontend/src/features/sessions/components/AnswerForm.tsx
+- frontend/src/features/sessions/components/**tests**/AnswerForm.test.tsx
+- frontend/src/features/sessions/components/RetakeButton.tsx
+- frontend/src/features/sessions/components/SessionDetail.tsx
+- frontend/src/features/sessions/hooks/useOperationPolling.ts
+- frontend/src/features/sessions/hooks/useOperationPolling.test.tsx
+- frontend/src/services/operationsApi.ts
+- frontend/src/types/operation.ts
+
+## Change Log
+
+- 2025-12-26: Added frontend operation status polling + UI indicators and
+  integrated them into session/feedback views.

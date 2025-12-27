@@ -16,5 +16,7 @@ class OperationResponse(BaseModel):
     status: str
     result: dict | None = None
     error_message: str | None = None
+    parent_operation_id: UUID | None = None
+    retry_count: int = 0
     created_at: dt.datetime
     updated_at: dt.datetime

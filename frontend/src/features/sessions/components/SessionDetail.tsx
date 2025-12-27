@@ -3,7 +3,7 @@
  */
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import { useSession } from '../hooks/useSession';
 import { useMessages } from '../hooks/useMessages';
 import JobPostingContext from './JobPostingContext';
@@ -12,11 +12,11 @@ import FeedbackLink from './FeedbackLink';
 import { RetakeBadge } from './RetakeBadge';
 import { RetakeButton } from './RetakeButton';
 import { ErrorDisplay } from '../../../components/common/ErrorDisplay';
+import { OperationStatus } from '../../../components/common/OperationStatus';
+import { StatusBadge } from '../../../components/common/StatusBadge';
 import { generateQuestion } from '../../../services/sessionAiApi';
-import {
-  fetchOperation,
-  type OperationResponse,
-} from '../../../services/operationsApi';
+import { useOperationPolling } from '../hooks/useOperationPolling';
+import { AnswerForm } from './AnswerForm';
 
 export default function SessionDetail() {
   const { id } = useParams<{ id: string }>();
@@ -48,31 +48,23 @@ export default function SessionDetail() {
     },
   });
 
-  const questionOperationQuery = useQuery({
-    queryKey: ['operations', questionOperationId],
-    queryFn: () => fetchOperation(questionOperationId!),
-    enabled: !!questionOperationId,
-    retry: false,
-    refetchInterval: query => {
-      const data = query.state.data as OperationResponse | undefined;
-      if (!data) return 1000;
-      if (data.status === 'pending' || data.status === 'processing')
-        return 1000;
-      return false;
-    },
-  });
+  const {
+    operation: questionOperation,
+    isFetching: questionOperationFetching,
+    elapsedSeconds: questionElapsedSeconds,
+    showTimeoutWarning: questionTimeoutWarning,
+  } = useOperationPolling(questionOperationId);
 
   useEffect(() => {
-    if (questionOperationQuery.data?.status === 'completed') {
+    if (questionOperation?.status === 'completed') {
       void refetchMessages();
       void refetchSession();
     }
-  }, [questionOperationQuery.data?.status, refetchMessages, refetchSession]);
+  }, [questionOperation?.status, refetchMessages, refetchSession]);
 
-  const questionOperationFailed =
-    questionOperationQuery.data?.status === 'failed';
+  const questionOperationFailed = questionOperation?.status === 'failed';
   const questionOperationErrorMessage =
-    questionOperationQuery.data?.error_message ||
+    questionOperation?.error_message ||
     'Unable to generate question.\n\nWhat to do: Try again.';
 
   if (isLoading) {
@@ -181,6 +173,18 @@ export default function SessionDetail() {
 
         {session.status === 'active' && (
           <div className="mb-4 space-y-3">
+            {questionOperation ? (
+              <div className="flex items-center justify-between gap-4">
+                <OperationStatus
+                  status={questionOperation.status}
+                  operationType={questionOperation.operation_type}
+                  elapsedSeconds={questionElapsedSeconds}
+                  showTimeoutWarning={questionTimeoutWarning}
+                />
+                <StatusBadge status={questionOperation.status} size="sm" />
+              </div>
+            ) : null}
+
             {questionOperationFailed && (
               <ErrorDisplay
                 message={questionOperationErrorMessage}
@@ -200,12 +204,10 @@ export default function SessionDetail() {
                 generateQuestionMutation.mutate();
               }}
               disabled={
-                generateQuestionMutation.isPending ||
-                questionOperationQuery.isFetching
+                generateQuestionMutation.isPending || questionOperationFetching
               }
             >
-              {generateQuestionMutation.isPending ||
-              questionOperationQuery.isFetching
+              {generateQuestionMutation.isPending || questionOperationFetching
                 ? 'Generating...'
                 : 'Generate Next Question'}
             </button>
@@ -213,7 +215,21 @@ export default function SessionDetail() {
         )}
 
         {messages && messages.length > 0 ? (
-          <MessageList messages={messages} />
+          <div className="space-y-6">
+            <MessageList messages={messages} />
+
+            {session.status === 'active' &&
+            messages[messages.length - 1]?.message_type === 'question' ? (
+              <div className="border border-gray-200 rounded-lg p-4 sm:p-6">
+                <AnswerForm
+                  sessionId={session.id}
+                  onSubmitted={() => {
+                    void refetchMessages();
+                  }}
+                />
+              </div>
+            ) : null}
+          </div>
         ) : (
           <p className="text-gray-500 text-center py-8">
             No messages in this session yet.

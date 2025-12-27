@@ -61,6 +61,22 @@ export const fetchSessionMessages = async (
 };
 
 /**
+ * Submit an answer to the current interview question.
+ */
+export const submitAnswer = async (
+  sessionId: string,
+  answerText: string
+): Promise<Message> => {
+  const response = await apiClient.post<Message>(
+    `${BASE_URL}/${sessionId}/answers`,
+    {
+      answer_text: answerText,
+    }
+  );
+  return response.data;
+};
+
+/**
  * Create a retake (new session) from an existing completed session.
  */
 export const retakeInterview = async (sessionId: string): Promise<Session> => {

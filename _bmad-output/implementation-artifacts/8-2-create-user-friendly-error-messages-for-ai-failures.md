@@ -1,6 +1,6 @@
 # Story 8.2: Create User-Friendly Error Messages for AI Failures
 
-Status: review
+Status: done
 
 ## Story
 

@@ -5,7 +5,9 @@ Pydantic schemas for interview session API.
 import datetime as dt
 from typing import Any
 
-from pydantic import UUID4, BaseModel, ConfigDict, Field
+from pydantic import UUID4, BaseModel, ConfigDict, Field, field_validator
+
+from app.utils.validators import ensure_not_blank
 
 
 class SessionCreate(BaseModel):
@@ -152,4 +154,14 @@ class SessionWithFeedbackResponse(BaseModel):
 class AnswerCreate(BaseModel):
     """Request schema for submitting an answer."""
 
-    answer_text: str = Field(..., min_length=1, description="User's answer text")
+    answer_text: str = Field(
+        ...,
+        min_length=1,
+        max_length=20000,
+        description="User's answer text",
+    )
+
+    @field_validator("answer_text", mode="before")
+    @classmethod
+    def normalize_answer_text(cls, v: str):
+        return ensure_not_blank(v)

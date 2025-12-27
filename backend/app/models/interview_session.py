@@ -51,6 +51,7 @@ class InterviewSession(Base):
         String(50),
         nullable=False,
         default="active",
+        index=True,
     )
 
     current_question_number: Mapped[int] = mapped_column(
@@ -76,6 +77,7 @@ class InterviewSession(Base):
         DateTime(timezone=True),
         default=utcnow,
         nullable=False,
+        index=True,
     )
 
     updated_at: Mapped[dt.datetime] = mapped_column(

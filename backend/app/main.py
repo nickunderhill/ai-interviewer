@@ -8,9 +8,11 @@ import logging
 import os
 from typing import Any
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from sqlalchemy import text
+from sqlalchemy.exc import OperationalError
 
 from app.api.v1.endpoints.auth import router as auth_router
 from app.api.v1.endpoints.job_postings import router as job_postings_router
@@ -22,6 +24,7 @@ from app.api.v1.endpoints.users import router as users_router
 from app.core.config import settings
 from app.core.database import AsyncSessionLocal, close_db, init_db
 from app.core.logging_config import configure_logging
+from app.middleware.security_headers import SecurityHeadersMiddleware
 
 # Configure structured JSON logging (idempotent)
 configure_logging(level=logging.INFO)
@@ -67,6 +70,23 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+
+@app.exception_handler(OperationalError)
+async def db_connection_exception_handler(request: Request, exc: OperationalError):
+    """
+    Handle database connection errors globally.
+    Returns 503 Service Unavailable instead of 500 Internal Server Error.
+    """
+    logger.error(f"Database connection error: {str(exc)}")
+    return JSONResponse(
+        status_code=503,
+        content={
+            "code": "SERVICE_UNAVAILABLE",
+            "message": "The service is temporarily unavailable due to a database connection issue. Please try again later.",
+        },
+    )
+
+
 app.include_router(auth_router)
 app.include_router(users_router)
 app.include_router(resumes_router, prefix="/api/v1/resumes", tags=["Resumes"])
@@ -77,13 +97,16 @@ app.include_router(sessions_router, prefix="/api/v1/sessions", tags=["Sessions"]
 app.include_router(operations_router, prefix="/api/v1/operations", tags=["Operations"])
 app.include_router(metrics_router, prefix="/api/v1/metrics", tags=["Metrics"])
 
+# Add Security Headers Middleware
+app.add_middleware(SecurityHeadersMiddleware)
+
 # Configure CORS for frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],  # Vite dev server
+    allow_origins=[settings.FRONTEND_ORIGIN],
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+    allow_headers=["Authorization", "Content-Type"],
 )
 
 

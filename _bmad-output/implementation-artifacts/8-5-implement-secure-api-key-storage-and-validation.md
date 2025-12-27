@@ -1,6 +1,6 @@
 # Story 8.5: Implement Secure API Key Storage and Validation
 
-Status: ready-for-dev
+Status: in-progress
 
 ## Story
 

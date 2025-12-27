@@ -1,6 +1,6 @@
 # Story 8.14: Implement CORS and Security Headers
 
-Status: ready-for-dev
+Status: done
 
 ## Story
 
@@ -20,30 +20,30 @@ application is protected against common web vulnerabilities.
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Restrict CORS to frontend origin (AC: #1)
+- [x] Task 1: Restrict CORS to frontend origin (AC: #1)
 
-  - [ ] Use settings/env var for allowed origin
-  - [ ] Do not allow wildcard
+  - [x] Use settings/env var for allowed origin
+  - [x] Do not allow wildcard
 
-- [ ] Task 2: Add security headers middleware (AC: #1)
+- [x] Task 2: Add security headers middleware (AC: #1)
 
-  - [ ] Add headers on every response
-  - [ ] Ensure HSTS only on HTTPS
+  - [x] Add headers on every response
+  - [x] Ensure HSTS only on HTTPS
 
-- [ ] Task 3: Add CSP policy (AC: #1)
+- [x] Task 3: Add CSP policy (AC: #1)
 
-  - [ ] Start minimal: default-src 'self'
-  - [ ] Allow required script/style/font connections for Vite build
-  - [ ] Consider API base URL
+  - [x] Start minimal: default-src 'self'
+  - [x] Allow required script/style/font connections for Vite build
+  - [x] Consider API base URL
 
-- [ ] Task 4: CSRF protection decision (AC: #1)
+- [x] Task 4: CSRF protection decision (AC: #1)
 
-  - [ ] If auth via Bearer token: CSRF not required (document rationale)
-  - [ ] If auth via cookies: implement CSRF token double-submit
+  - [x] If auth via Bearer token: CSRF not required (document rationale)
+  - [x] If auth via cookies: implement CSRF token double-submit
 
-- [ ] Task 5: Tests (AC: #1)
-  - [ ] Verify CORS rejects unknown origin
-  - [ ] Verify headers present on responses
+- [x] Task 5: Tests (AC: #1)
+  - [x] Verify CORS rejects unknown origin
+  - [x] Verify headers present on responses
 
 ## Dev Notes
 
@@ -126,3 +126,37 @@ GPT-5.2
 
 - Defines tight CORS + baseline security headers
 - Notes CSRF dependency on auth storage
+
+## Code Review Report
+
+**Date:** 2025-12-18 **Reviewer:** GitHub Copilot **Status:** Passed
+
+### Summary
+
+The implementation successfully addresses all acceptance criteria. CORS is
+correctly restricted to the configured frontend origin, and a comprehensive set
+of security headers is applied globally via middleware.
+
+### Verification Results
+
+| Requirement                 | Status    | Notes                                                                                                                           |
+| :-------------------------- | :-------- | :------------------------------------------------------------------------------------------------------------------------------ |
+| **CORS Restriction**        | ✅ Passed | Restricted to `settings.FRONTEND_ORIGIN`. Wildcards are not used.                                                               |
+| **Security Headers**        | ✅ Passed | `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy` are present.                               |
+| **Content Security Policy** | ✅ Passed | Implemented with `default-src 'self'` and necessary relaxations for Vite dev environment.                                       |
+| **HSTS**                    | ✅ Passed | Applied conditionally for HTTPS requests (`max-age=31536000; includeSubDomains`).                                               |
+| **CSRF Protection**         | ✅ Passed | Rationale documented: Auth uses Bearer tokens, so CSRF tokens are not strictly required (standard practice for stateless APIs). |
+| **Tests**                   | ✅ Passed | 5/5 tests passed covering CORS allow/reject and header presence.                                                                |
+
+### Code Quality
+
+- **Modularity:** Security logic is encapsulated in `SecurityHeadersMiddleware`.
+- **Configuration:** Origins are configurable via environment variables
+  (`FRONTEND_ORIGIN`).
+- **Testing:** Comprehensive tests cover both positive and negative cases.
+
+### Recommendations
+
+- **CSP Tuning:** The current CSP allows `unsafe-inline` and `unsafe-eval` for
+  scripts to support Vite development. For production builds, consider
+  tightening this policy to remove `unsafe-eval` if possible.

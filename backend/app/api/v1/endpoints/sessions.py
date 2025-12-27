@@ -3,6 +3,7 @@ API endpoints for interview sessions.
 """
 
 import datetime as dt
+from typing import Literal
 from uuid import UUID
 
 from fastapi import (
@@ -72,7 +73,7 @@ async def create_session(
     summary="List user's interview sessions",
 )
 async def list_sessions(
-    status_param: str | None = Query(
+    status_param: Literal["active", "paused", "completed"] | None = Query(
         None,
         alias="status",
         description="Filter by status: active, paused, or completed",
@@ -103,17 +104,6 @@ async def list_sessions(
 
     Returns sessions ordered by created_at DESC (newest first)
     """
-    # Validate status parameter
-    valid_statuses = {"active", "paused", "completed"}
-    if status_param and status_param not in valid_statuses:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail={
-                "code": "INVALID_STATUS_FILTER",
-                "message": f"Status must be one of: {valid_statuses}",
-            },
-        )
-
     # Validate date range
     if start_date and end_date and start_date > end_date:
         raise HTTPException(

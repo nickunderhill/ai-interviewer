@@ -1,6 +1,6 @@
 # Story 8.13: Implement Database Connection Pooling and Optimization
 
-Status: ready-for-dev
+Status: done
 
 ## Story
 
@@ -21,32 +21,32 @@ system scales efficiently.
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Verify SQLAlchemy async engine configuration (AC: #1)
+- [x] Task 1: Verify SQLAlchemy async engine configuration (AC: #1)
 
-  - [ ] Confirm async engine + AsyncSession are used everywhere
-  - [ ] Ensure connection pool parameters: pool_size=5, max_overflow=15
+  - [x] Confirm async engine + AsyncSession are used everywhere
+  - [x] Ensure connection pool parameters: pool_size=5, max_overflow=15
         (total 20)
 
-- [ ] Task 2: Configure connection pool timeouts and recycling (AC: #1)
+- [x] Task 2: Configure connection pool timeouts and recycling (AC: #1)
 
-  - [ ] Add pool_pre_ping=True
-  - [ ] Set pool_timeout
-  - [ ] Set pool_recycle to avoid stale connections
+  - [x] Add pool_pre_ping=True
+  - [x] Set pool_timeout
+  - [x] Set pool_recycle to avoid stale connections
 
-- [ ] Task 3: Add missing indexes (AC: #1)
+- [x] Task 3: Add missing indexes (AC: #1)
 
-  - [ ] user_id FKs indexed
-  - [ ] session_id/message_id indexed
-  - [ ] status + created_at indexes where used for filtering
+  - [x] user_id FKs indexed
+  - [x] session_id/message_id indexed
+  - [x] status + created_at indexes where used for filtering
 
-- [ ] Task 4: Add graceful DB failure handling (AC: #1)
+- [x] Task 4: Add graceful DB failure handling (AC: #1)
 
-  - [ ] Catch connection errors at startup with clear logs
-  - [ ] Return 503 for DB unavailable
+  - [x] Catch connection errors at startup with clear logs
+  - [x] Return 503 for DB unavailable
 
-- [ ] Task 5: Add migration reversibility checks (AC: #1)
-  - [ ] Ensure new migrations have downgrade
-  - [ ] Add CI job or test that applies + downgrades
+- [x] Task 5: Add migration reversibility checks (AC: #1)
+  - [x] Ensure new migrations have downgrade
+  - [x] Add CI job or test that applies + downgrades
 
 ## Dev Notes
 

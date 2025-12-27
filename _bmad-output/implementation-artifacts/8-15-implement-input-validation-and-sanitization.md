@@ -1,6 +1,6 @@
 # Story 8.15: Implement Input Validation and Sanitization
 
-Status: ready-for-dev
+Status: done
 
 ## Story
 
@@ -20,36 +20,37 @@ system is protected against injection attacks.
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Audit all request schemas for validation gaps (AC: #1)
+- [x] Task 1: Audit all request schemas for validation gaps (AC: #1)
 
-  - [ ] Add max_length constraints for text fields (resume, job description)
-  - [ ] Validate enums for status/type fields
+  - [x] Add max_length constraints for text fields (resume, job description,
+        answers)
+  - [x] Validate enums for status/type fields
 
-- [ ] Task 2: Add centralized validators (AC: #1)
+- [x] Task 2: Add centralized validators (AC: #1)
 
-  - [ ] Email regex validation
-  - [ ] String length guards
-  - [ ] Optional HTML stripping for freeform text (if needed)
+  - [x] Email validation (via `EmailStr`)
+  - [x] String length guards (schema-level `max_length`)
+  - [x] Optional sanitization for freeform text (trim + NUL byte rejection)
 
-- [ ] Task 3: Ensure ORM-only queries (AC: #1)
+- [x] Task 3: Ensure ORM-only queries (AC: #1)
 
-  - [ ] Search for any raw SQL usages
-  - [ ] Replace with SQLAlchemy constructs
+  - [x] Search for any raw SQL usages
+  - [x] Confirm no raw SQL with user input
 
-- [ ] Task 4: Improve validation error responses (AC: #1)
+- [x] Task 4: Improve validation error responses (AC: #1)
 
-  - [ ] Ensure FastAPI returns structured error format
-  - [ ] Avoid leaking stack traces or internals
+  - [x] Ensure FastAPI returns structured error format
+  - [x] Avoid leaking stack traces or internals
 
-- [ ] Task 5: Frontend input constraints (AC: #1)
+- [x] Task 5: Frontend input constraints (AC: #1)
 
-  - [ ] Zod schemas mirror backend constraints
-  - [ ] Show clear, friendly field errors
+  - [x] Zod schemas mirror backend constraints where forms exist
+  - [x] Show clear, friendly field errors
 
-- [ ] Task 6: Tests (AC: #1)
-  - [ ] Oversized payload rejected
-  - [ ] Invalid email rejected
-  - [ ] Invalid enum rejected
+- [x] Task 6: Tests (AC: #1)
+  - [x] Oversized payload rejected
+  - [x] Invalid email rejected
+  - [x] Invalid enum rejected
 
 ## Dev Notes
 
@@ -133,5 +134,43 @@ GPT-5.2
 
 ### Completion Notes List
 
-- Adds schema-level constraints + aligned frontend validation
-- Includes DoS-size guards and testing checklist
+- Added centralized text normalization helpers (`normalize_text`,
+  `ensure_not_blank`)
+- Hardened request schemas with `max_length` and trimming for freeform text
+- Added enum-like validation for session `status` filter via `Literal[...]`
+- Frontend: enforced `max(128)` password rules in Zod; answer textarea capped at
+  20,000 chars
+- Added backend tests for invalid email, oversized password, and invalid status
+  enum
+
+### Code Review
+
+**Review Date:** 2025-12-27 \
+**Reviewer:** GitHub Copilot (GPT-5.2) \
+**Result:** ✅ Approved
+
+**Acceptance Criteria Verification (AC #1):**
+
+- ✅ Pydantic models validate types/formats and enforce max-length caps (notably
+  password max 128, answer max 20,000, API key max 256).
+- ✅ SQL injection risk minimized: request handling uses SQLAlchemy ORM; only
+  benign `text("SELECT 1")` health-check style queries found.
+- ✅ XSS mitigation: no `dangerouslySetInnerHTML` usage found in `frontend/src`;
+  React rendering provides output encoding by default.
+- ✅ Email validation: uses `EmailStr` (library-based validation) rather than a
+  handwritten regex; functionally meets the “valid email” requirement with
+  stronger semantics.
+- ✅ Validation failures return structured FastAPI errors (422) without stack
+  traces.
+
+**Notes / Minor Gaps:**
+
+- The “File Structure” section references `frontend/src/**/validation.ts` as a
+  target pattern; this repo currently applies Zod constraints directly in the
+  existing form components (auth + answer form). If additional forms (job
+  posting/resume) are added later, consider centralizing shared Zod schemas to
+  match the doc snippet.
+
+**Test Evidence:**
+
+- Backend: `pytest -q tests/test_validation.py` (3 passed)

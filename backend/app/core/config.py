@@ -21,6 +21,7 @@ class Settings(BaseSettings):
     # Application Configuration
     APP_NAME: str = "AI Interviewer API"
     DEBUG: bool = False
+    FRONTEND_ORIGIN: str = "http://localhost:5173"
 
     # Security Configuration (to be used in Epic 2)
     SECRET_KEY: str  # Required - no default for security
@@ -28,7 +29,9 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440  # 24 hours
     ENCRYPTION_KEY: str  # Required for encrypting API keys
 
-    model_config = SettingsConfigDict(env_file=".env", case_sensitive=True, extra="ignore")
+    model_config = SettingsConfigDict(
+        env_file=".env", case_sensitive=True, extra="ignore"
+    )
 
     @property
     def database_url(self) -> str:

@@ -20,8 +20,8 @@ engine = create_async_engine(
     echo=settings.DEBUG,  # Log SQL queries in debug mode
     pool_size=5,  # Minimum number of connections
     max_overflow=15,  # Maximum connections beyond pool_size (total max = 20)
-    pool_recycle=7200,  # Recycle connections after 2 hours (less aggressive)
-    pool_pre_ping=False,  # Disabled for better performance in production
+    pool_recycle=1800,  # Recycle connections after 30 minutes
+    pool_pre_ping=True,  # Check connection health before usage
     connect_args={
         "timeout": 30,  # Connection timeout in seconds
         "command_timeout": 60,  # Command execution timeout

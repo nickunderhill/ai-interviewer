@@ -51,7 +51,9 @@ async def generate_question_task(operation_id: UUID, session_id: UUID):
             operation = await db.get(Operation, operation_id)
 
             if not operation:
-                logger.error(f"Operation {operation_id} not found")
+                logger.error(
+                    "Operation not found", extra={"operation_id": str(operation_id)}
+                )
                 return
 
             # Avoid ORM attribute access after rollback/expiration.
@@ -60,6 +62,14 @@ async def generate_question_task(operation_id: UUID, session_id: UUID):
             # Update to processing
             operation.status = "processing"
             await db.commit()
+
+            logger.info(
+                "Question generation started",
+                extra={
+                    "operation_id": str(operation_id),
+                    "session_id": str(session_id),
+                },
+            )
 
             # Load session with relationships
             result = await db.execute(
@@ -73,7 +83,7 @@ async def generate_question_task(operation_id: UUID, session_id: UUID):
             session = result.scalar_one_or_none()
 
             if not session:
-                logger.error(f"Session {session_id} not found")
+                logger.error("Session not found", extra={"session_id": str(session_id)})
                 operation.status = "failed"
                 operation.error_message = generate_user_friendly_message(
                     "SESSION_NOT_FOUND",
@@ -108,11 +118,21 @@ async def generate_question_task(operation_id: UUID, session_id: UUID):
                 await db.refresh(message)
 
                 logger.info(
-                    f"Question generated and stored successfully for operation {operation_id}"
+                    "Question generated and stored successfully",
+                    extra={
+                        "operation_id": str(operation_id),
+                        "session_id": str(session_id),
+                        "question_type": question_data.get("question_type"),
+                    },
                 )
             except Exception as db_error:
                 logger.error(
-                    f"Failed to store question for session {session_id}: {str(db_error)}"
+                    "Failed to store question",
+                    extra={
+                        "session_id": str(session_id),
+                        "error": str(db_error),
+                    },
+                    exc_info=True,
                 )
 
                 try:

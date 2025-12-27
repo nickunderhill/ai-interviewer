@@ -59,7 +59,9 @@ async def generate_feedback_task(
             # Load operation
             operation = await db.get(Operation, operation_id)
             if not operation:
-                logger.error(f"Operation {operation_id} not found")
+                logger.error(
+                    "Operation not found", extra={"operation_id": str(operation_id)}
+                )
                 return
 
             # Avoid ORM attribute access after rollback/expiration.
@@ -70,10 +72,25 @@ async def generate_feedback_task(
             operation.updated_at = dt.datetime.now(dt.UTC)
             await db.commit()
 
+            logger.info(
+                "Feedback generation started",
+                extra={
+                    "operation_id": str(operation_id),
+                    "session_id": str(session_id),
+                    "user_id": str(user_id),
+                },
+            )
+
             # Load user
             user = await db.get(User, user_id)
             if not user:
-                logger.error(f"User {user_id} not found for operation {operation_id}")
+                logger.error(
+                    "User not found for operation",
+                    extra={
+                        "user_id": str(user_id),
+                        "operation_id": str(operation_id),
+                    },
+                )
                 operation.status = "failed"
                 operation.error_message = generate_user_friendly_message(
                     "USER_NOT_FOUND",
@@ -131,7 +148,10 @@ async def generate_feedback_task(
                     operation.updated_at = dt.datetime.now(dt.UTC)
             except IntegrityError:
                 # Feedback already exists (duplicate session_id)
-                logger.warning(f"Feedback already exists for session {session_id}")
+                logger.warning(
+                    "Feedback already exists for session",
+                    extra={"session_id": str(session_id)},
+                )
 
                 try:
                     await db.rollback()
@@ -148,14 +168,22 @@ async def generate_feedback_task(
                 return
 
             logger.info(
-                f"Feedback generated and stored successfully for operation {operation_id}, "
-                f"session {session_id}, overall_score={overall_score}"
+                "Feedback generated and stored successfully",
+                extra={
+                    "operation_id": str(operation_id),
+                    "session_id": str(session_id),
+                    "overall_score": overall_score,
+                },
             )
 
         except Exception as e:
             error_code = _extract_error_code(e)
             logger.error(
-                f"Error in feedback generation task {operation_id}: {_safe_error_message(e)}",
+                "Error in feedback generation task",
+                extra={
+                    "operation_id": str(operation_id),
+                    "error": _safe_error_message(e),
+                },
                 exc_info=True,
             )
 
@@ -177,5 +205,9 @@ async def generate_feedback_task(
                     await db.commit()
             except Exception as update_error:
                 logger.error(
-                    f"Failed to update operation {operation_id} status: {update_error}"
+                    "Failed to update operation status",
+                    extra={
+                        "operation_id": str(operation_id),
+                        "error": str(update_error),
+                    },
                 )

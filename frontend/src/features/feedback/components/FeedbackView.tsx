@@ -5,12 +5,11 @@ import DimensionScores from './DimensionScores';
 import KnowledgeGaps from './KnowledgeGaps';
 import LearningRecommendations from './LearningRecommendations';
 import { ErrorDisplay } from '../../../components/common/ErrorDisplay';
+import { OperationStatus } from '../../../components/common/OperationStatus';
+import { StatusBadge } from '../../../components/common/StatusBadge';
 import { fetchFeedback } from '../api/feedbackApi';
 import { generateFeedback } from '../../../services/sessionAiApi';
-import {
-  fetchOperation,
-  type OperationResponse,
-} from '../../../services/operationsApi';
+import { useOperationPolling } from '../../sessions/hooks/useOperationPolling';
 
 export default function FeedbackView() {
   const { id } = useParams<{ id: string }>();
@@ -47,29 +46,22 @@ export default function FeedbackView() {
     },
   });
 
-  const operationQuery = useQuery({
-    queryKey: ['operations', operationId],
-    queryFn: () => fetchOperation(operationId!),
-    enabled: !!operationId,
-    retry: false,
-    refetchInterval: query => {
-      const data = query.state.data as OperationResponse | undefined;
-      if (!data) return 1000;
-      if (data.status === 'pending' || data.status === 'processing')
-        return 1000;
-      return false;
-    },
-  });
+  const {
+    operation,
+    isFetching: operationFetching,
+    elapsedSeconds,
+    showTimeoutWarning,
+  } = useOperationPolling(operationId);
 
   useEffect(() => {
-    if (operationQuery.data?.status === 'completed') {
+    if (operation?.status === 'completed') {
       void feedbackQuery.refetch();
     }
-  }, [feedbackQuery, operationQuery.data?.status]);
+  }, [feedbackQuery, operation?.status]);
 
-  const operationFailed = operationQuery.data?.status === 'failed';
+  const operationFailed = operation?.status === 'failed';
   const operationErrorMessage =
-    operationQuery.data?.error_message ||
+    operation?.error_message ||
     'Unable to generate feedback.\n\nWhat to do: Try again.';
 
   const showGenerateSection =
@@ -88,6 +80,18 @@ export default function FeedbackView() {
         ← Back to Session
       </Link>
       <h1 className="text-2xl font-bold text-gray-900">Feedback</h1>
+
+      {operation ? (
+        <div className="mt-4 flex items-center justify-between gap-4">
+          <OperationStatus
+            status={operation.status}
+            operationType={operation.operation_type}
+            elapsedSeconds={elapsedSeconds}
+            showTimeoutWarning={showTimeoutWarning}
+          />
+          <StatusBadge status={operation.status} size="sm" />
+        </div>
+      ) : null}
 
       {feedbackQuery.isLoading && (
         <div className="mt-6" aria-label="Loading feedback">
@@ -135,9 +139,9 @@ export default function FeedbackView() {
                 setOperationId(null);
                 generateMutation.mutate();
               }}
-              disabled={generateMutation.isPending || operationQuery.isFetching}
+              disabled={generateMutation.isPending || operationFetching}
             >
-              {generateMutation.isPending || operationQuery.isFetching
+              {generateMutation.isPending || operationFetching
                 ? 'Generating...'
                 : 'Generate Feedback'}
             </button>

@@ -23,7 +23,7 @@ export function RetakeButton({ sessionId, className = '' }: RetakeButtonProps) {
       // Navigate to the new session
       navigate(`/sessions/${newSession.id}`);
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       // Basic error handling - could be enhanced with toast notifications
       console.error('Failed to create retake:', error);
       alert('Failed to create retake. Please try again.');

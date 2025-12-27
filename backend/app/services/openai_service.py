@@ -141,6 +141,15 @@ class OpenAIService:
             HTTPException: If API call fails
         """
         try:
+            logger.info(
+                "OpenAI call started",
+                extra={
+                    **(context or {}),
+                    "user_id": str(self.user_id),
+                    "model": model,
+                },
+            )
+
             response = await self._chat_completion_create(
                 model=model,
                 messages=messages,
@@ -160,6 +169,16 @@ class OpenAIService:
                     message="OpenAI returned an empty response.",
                     error_code="EMPTY_RESPONSE",
                 )
+
+            logger.info(
+                "OpenAI call completed",
+                extra={
+                    **(context or {}),
+                    "user_id": str(self.user_id),
+                    "model": model,
+                    "tokens_used": response.usage.total_tokens if response.usage else 0,
+                },
+            )
 
             return content
 

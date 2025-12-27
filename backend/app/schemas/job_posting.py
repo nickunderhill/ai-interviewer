@@ -7,6 +7,8 @@ import uuid
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
+from app.utils.validators import ensure_not_blank, normalize_optional_text
+
 
 class JobPostingCreate(BaseModel):
     """Schema for creating a new job posting."""
@@ -38,6 +40,16 @@ class JobPostingCreate(BaseModel):
         description="Technologies required (e.g., ['Python', 'React'])",
     )
 
+    @field_validator("title", "description", mode="before")
+    @classmethod
+    def normalize_required_text(cls, v: str):
+        return ensure_not_blank(v)
+
+    @field_validator("company", "experience_level", mode="before")
+    @classmethod
+    def normalize_optional_text_fields(cls, v: str | None):
+        return normalize_optional_text(v)
+
 
 class JobPostingUpdate(BaseModel):
     """Schema for updating an existing job posting."""
@@ -47,6 +59,16 @@ class JobPostingUpdate(BaseModel):
     description: str = Field(..., min_length=1, max_length=10000)
     experience_level: str | None = Field(None, max_length=50)
     tech_stack: list[str] | None = Field(default_factory=list)
+
+    @field_validator("title", "description", mode="before")
+    @classmethod
+    def normalize_required_text(cls, v: str):
+        return ensure_not_blank(v)
+
+    @field_validator("company", "experience_level", mode="before")
+    @classmethod
+    def normalize_optional_text_fields(cls, v: str | None):
+        return normalize_optional_text(v)
 
     @field_validator("tech_stack")
     @classmethod

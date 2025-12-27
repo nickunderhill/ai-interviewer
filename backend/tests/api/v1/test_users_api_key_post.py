@@ -48,7 +48,7 @@ async def test_set_api_key_successfully_stores_encrypted_value(
     db_session: AsyncSession,
 ) -> None:
     """Test that API key is encrypted and stored successfully."""
-    api_key = "sk-proj-testkey123456789"
+    api_key = "sk-proj-testkey123456789012345678901234567890"
 
     response = await async_client.post(
         "/api/v1/users/me/api-key",
@@ -80,7 +80,7 @@ async def test_set_api_key_response_does_not_contain_api_key(
     auth_headers: dict[str, str],
 ) -> None:
     """Test that API key is never included in response."""
-    api_key = "sk-proj-secretkey987654321"
+    api_key = "sk-proj-secretkey98765432101234567890123456789"
 
     response = await async_client.post(
         "/api/v1/users/me/api-key",
@@ -105,7 +105,7 @@ async def test_set_api_key_stores_plaintext_not_in_database(
     db_session: AsyncSession,
 ) -> None:
     """Test that plaintext API key is never stored in database."""
-    api_key = "sk-test-plaintext-should-not-be-stored"
+    api_key = "sk-test-plaintext-should-not-be-stored-ever-123"
 
     response = await async_client.post(
         "/api/v1/users/me/api-key",
@@ -133,7 +133,7 @@ async def test_set_api_key_can_update_existing_key(
 ) -> None:
     """Test that API key can be updated/replaced."""
     # Set initial key
-    first_key = "sk-test-first-key"
+    first_key = "sk-test-first-key-123456789012345678901234567"
     await async_client.post(
         "/api/v1/users/me/api-key",
         headers=auth_headers,
@@ -141,7 +141,7 @@ async def test_set_api_key_can_update_existing_key(
     )
 
     # Update with new key
-    second_key = "sk-test-second-key"
+    second_key = "sk-test-second-key-12345678901234567890123456"
     response = await async_client.post(
         "/api/v1/users/me/api-key",
         headers=auth_headers,

@@ -2,6 +2,7 @@
 Service layer for interview session business logic.
 """
 
+import logging
 from uuid import UUID
 
 from fastapi import HTTPException, status
@@ -15,8 +16,12 @@ from app.models.session_message import SessionMessage
 from app.models.user import User
 from app.schemas.session import AnswerCreate, SessionCreate
 
+logger = logging.getLogger(__name__)
 
-async def create_session(db: AsyncSession, session_data: SessionCreate, current_user: User) -> InterviewSession:
+
+async def create_session(
+    db: AsyncSession, session_data: SessionCreate, current_user: User
+) -> InterviewSession:
     """Create a new interview session."""
 
     # Fetch job posting with user validation
@@ -33,7 +38,9 @@ async def create_session(db: AsyncSession, session_data: SessionCreate, current_
             status_code=status.HTTP_404_NOT_FOUND,
             detail={
                 "code": "JOB_POSTING_NOT_FOUND",
-                "message": ("Job posting not found or you don't have " "permission to access it"),
+                "message": (
+                    "Job posting not found or you don't have " "permission to access it"
+                ),
             },
         )
 
@@ -48,6 +55,15 @@ async def create_session(db: AsyncSession, session_data: SessionCreate, current_
     db.add(new_session)
     await db.commit()
     await db.refresh(new_session, ["job_posting"])
+
+    logger.info(
+        "Interview session created",
+        extra={
+            "session_id": str(new_session.id),
+            "user_id": str(current_user.id),
+            "job_posting_id": str(session_data.job_posting_id),
+        },
+    )
 
     return new_session
 
@@ -64,7 +80,10 @@ async def get_sessions_by_user(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail={
                 "code": "INVALID_STATUS_FILTER",
-                "message": ("Invalid status filter. Must be one of: " "active, paused, completed"),
+                "message": (
+                    "Invalid status filter. Must be one of: "
+                    "active, paused, completed"
+                ),
             },
         )
 
@@ -88,7 +107,9 @@ async def get_sessions_by_user(
     return list(sessions)
 
 
-async def get_session_by_id(db: AsyncSession, session_id: UUID, current_user: User) -> InterviewSession:
+async def get_session_by_id(
+    db: AsyncSession, session_id: UUID, current_user: User
+) -> InterviewSession:
     """Get a session by ID with full details."""
 
     # Query with eager loading for job_posting and user.resume
@@ -111,14 +132,18 @@ async def get_session_by_id(db: AsyncSession, session_id: UUID, current_user: Us
             status_code=status.HTTP_404_NOT_FOUND,
             detail={
                 "code": "SESSION_NOT_FOUND",
-                "message": ("Session not found or you don't have " "permission to access it"),
+                "message": (
+                    "Session not found or you don't have " "permission to access it"
+                ),
             },
         )
 
     return session
 
 
-async def complete_session(db: AsyncSession, session_id: UUID, current_user: User) -> InterviewSession:
+async def complete_session(
+    db: AsyncSession, session_id: UUID, current_user: User
+) -> InterviewSession:
     """Mark an interview session as completed.
 
     Rules:
@@ -161,13 +186,22 @@ async def complete_session(db: AsyncSession, session_id: UUID, current_user: Use
             detail={
                 "code": "INVALID_SESSION_STATE",
                 "message": (
-                    f"Cannot complete {session.status} session. " "Only active or paused sessions can be completed."
+                    f"Cannot complete {session.status} session. "
+                    "Only active or paused sessions can be completed."
                 ),
             },
         )
 
     session.status = "completed"
     await db.commit()
+
+    logger.info(
+        "Interview session completed",
+        extra={
+            "session_id": str(session_id),
+            "user_id": str(current_user.id),
+        },
+    )
 
     # Reload with relationship(s) eagerly loaded for response validation
     result = await db.execute(
@@ -242,7 +276,9 @@ async def submit_answer(
     return message
 
 
-async def get_session_messages(db: AsyncSession, session_id: UUID, current_user: User) -> list[SessionMessage]:
+async def get_session_messages(
+    db: AsyncSession, session_id: UUID, current_user: User
+) -> list[SessionMessage]:
     """
     Get all messages for a session in chronological order.
 
@@ -277,7 +313,9 @@ async def get_session_messages(db: AsyncSession, session_id: UUID, current_user:
 
     # Get messages in chronological order
     result = await db.execute(
-        select(SessionMessage).where(SessionMessage.session_id == session_id).order_by(SessionMessage.created_at.asc())
+        select(SessionMessage)
+        .where(SessionMessage.session_id == session_id)
+        .order_by(SessionMessage.created_at.asc())
     )
     messages = result.scalars().all()
 

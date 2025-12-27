@@ -3,9 +3,9 @@
 import datetime as dt
 import uuid
 
-from sqlalchemy import DateTime, Index, String, Text
+from sqlalchemy import DateTime, ForeignKey, Index, Integer, String, Text
 from sqlalchemy.dialects.postgresql import JSONB, UUID
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
 
@@ -61,6 +61,33 @@ class Operation(Base):
     error_message: Mapped[str | None] = mapped_column(
         Text,
         nullable=True,
+    )
+
+    # Retry tracking
+    parent_operation_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("operations.id"),
+        nullable=True,
+    )
+
+    retry_count: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+        default=0,
+    )
+
+    # Relationships
+    retries: Mapped[list["Operation"]] = relationship(
+        "Operation",
+        back_populates="parent",
+        foreign_keys=[parent_operation_id],
+    )
+
+    parent: Mapped["Operation | None"] = relationship(
+        "Operation",
+        back_populates="retries",
+        remote_side=[id],
+        foreign_keys=[parent_operation_id],
     )
 
     created_at: Mapped[dt.datetime] = mapped_column(
