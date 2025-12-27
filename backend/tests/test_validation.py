@@ -38,6 +38,8 @@ def test_sessions_rejects_invalid_status_enum() -> None:
 
     try:
         response = client.get("/api/v1/sessions", params={"status": "bogus"})
-        assert response.status_code == 422
+        assert response.status_code == 400
+        detail = response.json()["detail"]
+        assert detail["code"] == "INVALID_STATUS_FILTER"
     finally:
         app.dependency_overrides.clear()

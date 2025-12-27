@@ -20,8 +20,9 @@ async def test_async_retry_retries_then_succeeds():
             raise NetworkError("net", error_code="NETWORK_ERROR")
         return "ok"
 
-    with patch("app.utils.retry.asyncio.sleep", new=AsyncMock()) as sleep_mock, patch(
-        "app.utils.retry.random.uniform", return_value=0.0
+    with (
+        patch("app.utils.retry.asyncio.sleep", new=AsyncMock()) as sleep_mock,
+        patch("app.utils.retry.random.uniform", return_value=0.0),
     ):
         wrapped = async_retry(
             max_retries=3,
@@ -42,8 +43,9 @@ async def test_async_retry_raises_after_exhaustion():
     async def always_fail():
         raise NetworkError("net", error_code="NETWORK_ERROR")
 
-    with patch("app.utils.retry.asyncio.sleep", new=AsyncMock()) as sleep_mock, patch(
-        "app.utils.retry.random.uniform", return_value=0.0
+    with (
+        patch("app.utils.retry.asyncio.sleep", new=AsyncMock()) as sleep_mock,
+        patch("app.utils.retry.random.uniform", return_value=0.0),
     ):
         wrapped = async_retry(
             max_retries=3,
@@ -69,9 +71,7 @@ async def test_async_retry_does_not_retry_non_retriable_exception():
         calls["n"] += 1
         raise NonRetriableError("no")
 
-    wrapped = async_retry(
-        max_retries=3, backoff_base_seconds=1.0, retriable_exceptions=(NetworkError,)
-    )(fail_fast)
+    wrapped = async_retry(max_retries=3, backoff_base_seconds=1.0, retriable_exceptions=(NetworkError,))(fail_fast)
 
     with pytest.raises(NonRetriableError):
         await wrapped()

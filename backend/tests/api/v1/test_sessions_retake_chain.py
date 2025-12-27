@@ -137,9 +137,7 @@ async def test_get_retake_chain_includes_feedback(
 
 
 @pytest.mark.asyncio
-async def test_get_retake_chain_nonexistent_session_returns_404(
-    async_client: AsyncClient, auth_headers: dict
-):
+async def test_get_retake_chain_nonexistent_session_returns_404(async_client: AsyncClient, auth_headers: dict):
     """Test error when getting chain for non-existent session."""
     fake_id = str(uuid.uuid4())
     response = await async_client.get(
@@ -170,9 +168,7 @@ async def test_get_retake_chain_other_users_session_returns_403(
 
 
 @pytest.mark.asyncio
-async def test_get_retake_chain_unauthenticated_returns_401(
-    async_client: AsyncClient, test_session_completed
-):
+async def test_get_retake_chain_unauthenticated_returns_401(async_client: AsyncClient, test_session_completed):
     """Test error when getting chain without authentication."""
     response = await async_client.get(
         f"/api/v1/sessions/{test_session_completed.id}/retake-chain",

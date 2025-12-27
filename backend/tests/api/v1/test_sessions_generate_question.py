@@ -32,9 +32,7 @@ async def test_generate_question_returns_operation(
 
     # Verify operation was created in database
     operation_id = UUID(data["id"])
-    result = await db_session.execute(
-        select(Operation).where(Operation.id == operation_id)
-    )
+    result = await db_session.execute(select(Operation).where(Operation.id == operation_id))
     operation = result.scalar_one_or_none()
     assert operation is not None
     assert operation.operation_type == "question_generation"
@@ -184,9 +182,7 @@ async def test_generate_question_paused_session(
 
 
 @pytest.mark.asyncio
-async def test_generate_question_not_found(
-    async_client: AsyncClient, auth_headers: dict
-):
+async def test_generate_question_not_found(async_client: AsyncClient, auth_headers: dict):
     """Test generating question for non-existent session."""
     fake_id = uuid4()
 
@@ -290,9 +286,7 @@ async def test_generate_question_multiple_operations_allowed(
 
     # Verify both operations exist in database
     result = await db_session.execute(
-        select(Operation).where(
-            Operation.id.in_([UUID(operation_id_1), UUID(operation_id_2)])
-        )
+        select(Operation).where(Operation.id.in_([UUID(operation_id_1), UUID(operation_id_2)]))
     )
     operations = result.scalars().all()
     assert len(operations) == 2

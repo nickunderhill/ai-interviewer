@@ -22,13 +22,9 @@ router = APIRouter(prefix="/api/v1/auth", tags=["Auth"])
 
 
 @router.post("/register", status_code=201, response_model=UserResponse)
-async def register(
-    payload: RegisterRequest, db: AsyncSession = Depends(get_db)
-) -> UserResponse:
+async def register(payload: RegisterRequest, db: AsyncSession = Depends(get_db)) -> UserResponse:
     try:
-        user = await create_user(
-            db, email=str(payload.email), password=payload.password
-        )
+        user = await create_user(db, email=str(payload.email), password=payload.password)
         logger.info(
             "User registered successfully",
             extra={"user_id": str(user.id), "email": user.email},
@@ -54,12 +50,8 @@ async def register(
 
 
 @router.post("/login", response_model=TokenResponse)
-async def login(
-    payload: LoginRequest, db: AsyncSession = Depends(get_db)
-) -> TokenResponse:
-    user = await authenticate_user(
-        db, email=str(payload.email), password=payload.password
-    )
+async def login(payload: LoginRequest, db: AsyncSession = Depends(get_db)) -> TokenResponse:
+    user = await authenticate_user(db, email=str(payload.email), password=payload.password)
 
     if user is None:
         logger.warning(

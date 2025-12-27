@@ -25,9 +25,7 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
 
         # Restrict browser features
-        response.headers["Permissions-Policy"] = (
-            "geolocation=(), microphone=(), camera=()"
-        )
+        response.headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()"
 
         # Content Security Policy (CSP)
         # Start with a restrictive policy and relax as needed
@@ -42,8 +40,6 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         # HSTS (Strict-Transport-Security)
         # Only apply if the request was made over HTTPS
         if request.url.scheme == "https":
-            response.headers["Strict-Transport-Security"] = (
-                "max-age=31536000; includeSubDomains"
-            )
+            response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
 
         return response

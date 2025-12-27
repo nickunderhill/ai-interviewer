@@ -129,9 +129,7 @@ async def test_interview_session_cascade_behavior_on_user_deletion(db_session):
     await db_session.commit()
 
     # Verify session was also deleted
-    result = await db_session.execute(
-        select(InterviewSession).where(InterviewSession.id == session_id)
-    )
+    result = await db_session.execute(select(InterviewSession).where(InterviewSession.id == session_id))
     deleted_session = result.scalar_one_or_none()
     assert deleted_session is None
 
@@ -174,9 +172,7 @@ async def test_interview_session_set_null_on_job_posting_deletion(db_session):
     await db_session.commit()
 
     # Verify session still exists but job_posting_id is NULL
-    result = await db_session.execute(
-        select(InterviewSession).where(InterviewSession.id == session_id)
-    )
+    result = await db_session.execute(select(InterviewSession).where(InterviewSession.id == session_id))
     updated_session = result.scalar_one_or_none()
     assert updated_session is not None
     assert updated_session.job_posting_id is None

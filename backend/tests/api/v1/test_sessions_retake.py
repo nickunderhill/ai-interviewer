@@ -34,9 +34,7 @@ async def test_create_retake_success_first_retake(
     assert data["job_posting_id"] == str(test_session_completed.job_posting_id)
 
     # Verify in database
-    result = await db_session.execute(
-        select(InterviewSession).where(InterviewSession.id == data["id"])
-    )
+    result = await db_session.execute(select(InterviewSession).where(InterviewSession.id == data["id"]))
     new_session = result.scalar_one_or_none()
 
     assert new_session is not None
@@ -63,9 +61,7 @@ async def test_create_retake_success_second_retake(
     first_retake_id = first_retake_response.json()["id"]
 
     # Mark first retake as completed
-    result = await db_session.execute(
-        select(InterviewSession).where(InterviewSession.id == first_retake_id)
-    )
+    result = await db_session.execute(select(InterviewSession).where(InterviewSession.id == first_retake_id))
     first_retake = result.scalar_one()
     first_retake.status = "completed"
     await db_session.commit()
@@ -112,9 +108,7 @@ async def test_create_retake_chain_integrity(
         assert data["original_session_id"] == str(original_id)
 
         # Mark as completed for next iteration
-        result = await db_session.execute(
-            select(InterviewSession).where(InterviewSession.id == data["id"])
-        )
+        result = await db_session.execute(select(InterviewSession).where(InterviewSession.id == data["id"]))
         retake = result.scalar_one()
         retake.status = "completed"
         await db_session.commit()
@@ -123,9 +117,7 @@ async def test_create_retake_chain_integrity(
 
 
 @pytest.mark.asyncio
-async def test_create_retake_not_completed_returns_400(
-    async_client: AsyncClient, auth_headers: dict, test_session
-):
+async def test_create_retake_not_completed_returns_400(async_client: AsyncClient, auth_headers: dict, test_session):
     """Test error when retaking non-completed session."""
     # test_session has status='active'
     response = await async_client.post(
@@ -140,9 +132,7 @@ async def test_create_retake_not_completed_returns_400(
 
 
 @pytest.mark.asyncio
-async def test_create_retake_nonexistent_session_returns_404(
-    async_client: AsyncClient, auth_headers: dict
-):
+async def test_create_retake_nonexistent_session_returns_404(async_client: AsyncClient, auth_headers: dict):
     """Test error when retaking non-existent session."""
     fake_id = str(uuid.uuid4())
     response = await async_client.post(
@@ -171,9 +161,7 @@ async def test_create_retake_other_users_session_returns_403(
 
 
 @pytest.mark.asyncio
-async def test_create_retake_unauthenticated_returns_401(
-    async_client: AsyncClient, test_session_completed
-):
+async def test_create_retake_unauthenticated_returns_401(async_client: AsyncClient, test_session_completed):
     """Test error when retaking without authentication."""
     response = await async_client.post(
         f"/api/v1/sessions/{test_session_completed.id}/retake",
@@ -228,9 +216,7 @@ async def test_create_retake_persists_to_database(
     new_session_id = response.json()["id"]
 
     # Verify in database
-    result = await db_session.execute(
-        select(InterviewSession).where(InterviewSession.id == new_session_id)
-    )
+    result = await db_session.execute(select(InterviewSession).where(InterviewSession.id == new_session_id))
     new_session = result.scalar_one_or_none()
 
     assert new_session is not None

@@ -119,9 +119,7 @@ async def test_get_session_detail_handles_missing_resume(
 
 
 @pytest.mark.asyncio
-async def test_get_session_detail_not_found_returns_404(
-    async_client: AsyncClient, auth_headers: dict
-):
+async def test_get_session_detail_not_found_returns_404(async_client: AsyncClient, auth_headers: dict):
     """Test retrieving non-existent session returns 404."""
     fake_id = uuid.uuid4()
 
@@ -155,9 +153,7 @@ async def test_get_session_detail_other_user_returns_404(
 
 
 @pytest.mark.asyncio
-async def test_get_session_detail_invalid_uuid_returns_422(
-    async_client: AsyncClient, auth_headers: dict
-):
+async def test_get_session_detail_invalid_uuid_returns_422(async_client: AsyncClient, auth_headers: dict):
     """Test invalid UUID format returns 422."""
     response = await async_client.get(
         "/api/v1/sessions/not-a-valid-uuid",

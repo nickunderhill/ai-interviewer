@@ -43,9 +43,7 @@ async def test_retry_failed_operation_creates_new_operation(
     assert data["operation_type"] == "question_generation"
 
     # Verify in database
-    result = await db_session.execute(
-        select(Operation).where(Operation.id == data["id"])
-    )
+    result = await db_session.execute(select(Operation).where(Operation.id == data["id"]))
     new_op = result.scalar_one()
     assert new_op.parent_operation_id == failed_op.id
     assert new_op.retry_count == 1

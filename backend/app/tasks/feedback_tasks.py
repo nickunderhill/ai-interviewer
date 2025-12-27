@@ -60,9 +60,7 @@ async def generate_feedback_task(
             # Load operation
             operation = await db.get(Operation, operation_id)
             if not operation:
-                logger.error(
-                    "Operation not found", extra={"operation_id": str(operation_id)}
-                )
+                logger.error("Operation not found", extra={"operation_id": str(operation_id)})
                 return
 
             # Avoid ORM attribute access after rollback/expiration.

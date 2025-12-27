@@ -128,9 +128,7 @@ class InterviewSession(Base):
     retakes: Mapped[list["InterviewSession"]] = relationship(
         "InterviewSession",
         back_populates="original_session",
-        foreign_keys=[
-            original_session_id
-        ],  # Explicit FK for bidirectional self-reference
+        foreign_keys=[original_session_id],  # Explicit FK for bidirectional self-reference
         lazy="selectin",
     )
 

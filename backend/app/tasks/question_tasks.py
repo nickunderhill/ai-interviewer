@@ -52,9 +52,7 @@ async def generate_question_task(operation_id: UUID, session_id: UUID):
             operation = await db.get(Operation, operation_id)
 
             if not operation:
-                logger.error(
-                    "Operation not found", extra={"operation_id": str(operation_id)}
-                )
+                logger.error("Operation not found", extra={"operation_id": str(operation_id)})
                 return
 
             # Avoid ORM attribute access after rollback/expiration.
@@ -168,6 +166,4 @@ async def generate_question_task(operation_id: UUID, session_id: UUID):
                     )
                     await db.commit()
             except Exception as commit_error:
-                logger.error(
-                    f"Failed to update operation {operation_id} with error: {commit_error}"
-                )
+                logger.error(f"Failed to update operation {operation_id} with error: {commit_error}")

@@ -132,9 +132,7 @@ async def test_generate_question_success_with_resume(
 
     # Mock OpenAI response
     mock_service_instance = Mock()
-    mock_service_instance.generate_chat_completion = AsyncMock(
-        return_value="What is your experience with Python?"
-    )
+    mock_service_instance.generate_chat_completion = AsyncMock(return_value="What is your experience with Python?")
     mock_openai_service.return_value = mock_service_instance
 
     result = await generate_question(mock_session)
@@ -172,9 +170,7 @@ async def test_generate_question_without_resume(mock_openai_service):
     mock_session.user = mock_user
 
     mock_service_instance = Mock()
-    mock_service_instance.generate_chat_completion = AsyncMock(
-        return_value="Tell me about a time you worked in a team"
-    )
+    mock_service_instance.generate_chat_completion = AsyncMock(return_value="Tell me about a time you worked in a team")
     mock_openai_service.return_value = mock_service_instance
 
     result = await generate_question(mock_session)
@@ -217,9 +213,7 @@ async def test_generate_question_cycles_through_types(
     mock_user.resume = None
 
     mock_service_instance = Mock()
-    mock_service_instance.generate_chat_completion = AsyncMock(
-        return_value="Test question"
-    )
+    mock_service_instance.generate_chat_completion = AsyncMock(return_value="Test question")
     mock_openai_service.return_value = mock_service_instance
 
     # Test questions 1-6 to verify full cycle
@@ -265,9 +259,7 @@ async def test_generate_question_cleans_response(mock_openai_service):
 
     # Mock response with quotes and whitespace
     mock_service_instance = Mock()
-    mock_service_instance.generate_chat_completion = AsyncMock(
-        return_value='  "What is your experience?"  '
-    )
+    mock_service_instance.generate_chat_completion = AsyncMock(return_value='  "What is your experience?"  ')
     mock_openai_service.return_value = mock_service_instance
 
     result = await generate_question(mock_session)
@@ -298,9 +290,7 @@ async def test_generate_question_openai_failure(mock_openai_service):
 
     # Mock OpenAI service to raise exception
     mock_service_instance = Mock()
-    mock_service_instance.generate_chat_completion.side_effect = Exception(
-        "OpenAI API error"
-    )
+    mock_service_instance.generate_chat_completion.side_effect = Exception("OpenAI API error")
     mock_openai_service.return_value = mock_service_instance
 
     with pytest.raises(Exception, match="OpenAI API error"):

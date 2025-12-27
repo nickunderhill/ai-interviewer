@@ -74,9 +74,7 @@ def test_operation_model_schema_supports_user_friendly_errors():
     assert isinstance(error_message_col.type, Text)
 
     # Index should exist for efficient status querying (either column-level or composite).
-    index_columns = [
-        [col.name for col in index.columns] for index in Operation.__table__.indexes
-    ]
+    index_columns = [[col.name for col in index.columns] for index in Operation.__table__.indexes]
     assert any("status" in cols for cols in index_columns)
 
 

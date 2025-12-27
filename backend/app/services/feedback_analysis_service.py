@@ -55,11 +55,7 @@ async def analyze_session(
         )
 
     # Load user's resume
-    user_stmt = (
-        select(User)
-        .where(User.id == current_user.id)
-        .options(selectinload(User.resume))
-    )
+    user_stmt = select(User).where(User.id == current_user.id).options(selectinload(User.resume))
     user_result = await db.execute(user_stmt)
     user = user_result.scalar_one()
 
@@ -146,9 +142,7 @@ def _build_analysis_prompt(
     Returns:
         Formatted prompt string
     """
-    tech_stack_str = (
-        ", ".join(job_posting.tech_stack) if job_posting.tech_stack else "Not specified"
-    )
+    tech_stack_str = ", ".join(job_posting.tech_stack) if job_posting.tech_stack else "Not specified"
 
     qa_transcript = "\n\n".join(
         f"Q{i+1}: {pair['question']}\nA{i+1}: {pair.get('answer', '[No answer provided]')}"

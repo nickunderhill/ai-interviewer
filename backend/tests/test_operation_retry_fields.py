@@ -38,9 +38,7 @@ async def test_operation_retry_fields_exist(db_session):
     assert parent_op.retry_count == 0
 
     # Verify relationship works
-    result = await db_session.execute(
-        select(Operation).where(Operation.parent_operation_id == parent_op.id)
-    )
+    result = await db_session.execute(select(Operation).where(Operation.parent_operation_id == parent_op.id))
     retries = result.scalars().all()
     assert len(retries) == 1
     assert retries[0].id == retry_op.id

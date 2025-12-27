@@ -55,9 +55,7 @@ def test_render_template_is_safe_for_missing_variables():
 def test_generate_user_friendly_message_includes_actionable_steps():
     from app.utils.error_messages import generate_user_friendly_message
 
-    message = generate_user_friendly_message(
-        "INVALID_API_KEY", {"operation_type": "question_generation"}
-    )
+    message = generate_user_friendly_message("INVALID_API_KEY", {"operation_type": "question_generation"})
     assert "Unable" in message
     assert "generate your interview question" in message
     assert "What to do:" in message
@@ -67,8 +65,6 @@ def test_generate_user_friendly_message_includes_actionable_steps():
 def test_generate_user_friendly_message_uses_default_for_unknown_code():
     from app.utils.error_messages import generate_user_friendly_message
 
-    message = generate_user_friendly_message(
-        "SOME_UNKNOWN_CODE", {"operation_type": "feedback_analysis"}
-    )
+    message = generate_user_friendly_message("SOME_UNKNOWN_CODE", {"operation_type": "feedback_analysis"})
     assert "What to do:" in message
     assert "contact support" in message.lower()

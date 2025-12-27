@@ -109,9 +109,7 @@ async def test_validate_api_key_with_invalid_openai_key_returns_failure(
     with patch("app.api.v1.endpoints.users.AsyncOpenAI") as mock_openai:
         # Mock OpenAI 401 error
         mock_client = AsyncMock()
-        mock_client.models.list = AsyncMock(
-            side_effect=Exception("401 Incorrect API key provided")
-        )
+        mock_client.models.list = AsyncMock(side_effect=Exception("401 Incorrect API key provided"))
         mock_openai.return_value = mock_client
 
         response = await async_client.post(
@@ -135,9 +133,7 @@ async def test_validate_api_key_with_rate_limit_error(
     with patch("app.api.v1.endpoints.users.AsyncOpenAI") as mock_openai:
         # Mock OpenAI 429 rate limit error
         mock_client = AsyncMock()
-        mock_client.models.list = AsyncMock(
-            side_effect=Exception("429 Rate limit exceeded")
-        )
+        mock_client.models.list = AsyncMock(side_effect=Exception("429 Rate limit exceeded"))
         mock_openai.return_value = mock_client
 
         response = await async_client.post(

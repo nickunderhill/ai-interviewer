@@ -20,7 +20,8 @@ class UserResponse(BaseModel):
 
 class LoginRequest(BaseModel):
     email: EmailStr
-    password: str = Field(min_length=8, max_length=128)
+    # Login should not enforce minimum length; wrong credentials should return 401.
+    password: str = Field(max_length=128)
 
 
 class TokenResponse(BaseModel):

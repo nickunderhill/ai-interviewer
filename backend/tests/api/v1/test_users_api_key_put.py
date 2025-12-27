@@ -67,10 +67,7 @@ async def test_update_api_key_overwrites_existing_encrypted_key(
     assert response.status_code == 200
     data = response.json()
     assert "message" in data
-    assert (
-        "successfully" in data["message"].lower()
-        or "updated" in data["message"].lower()
-    )
+    assert "successfully" in data["message"].lower() or "updated" in data["message"].lower()
 
     # Verify the encrypted key was overwritten
     await db_session.refresh(test_user)
@@ -91,9 +88,7 @@ async def test_update_api_key_response_does_not_contain_api_key(
 ) -> None:
     """Test that the response never contains the API key."""
     # Set initial key
-    test_user.encrypted_api_key = encrypt_api_key(
-        "sk-initial-key-1234567890123456789012345678"
-    )
+    test_user.encrypted_api_key = encrypt_api_key("sk-initial-key-1234567890123456789012345678")
     await db_session.commit()
 
     # Update with new key
@@ -154,9 +149,7 @@ async def test_update_api_key_with_empty_string_fails(
 ) -> None:
     """Test that empty API key is rejected."""
     # Set initial key
-    test_user.encrypted_api_key = encrypt_api_key(
-        "sk-initial-0123456789012345678901234567890"
-    )
+    test_user.encrypted_api_key = encrypt_api_key("sk-initial-0123456789012345678901234567890")
     await db_session.commit()
 
     # Try to update with empty string
