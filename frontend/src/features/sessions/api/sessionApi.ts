@@ -12,6 +12,16 @@ import type {
 const BASE_URL = '/api/v1/sessions';
 
 /**
+ * Create a new interview session for a job posting.
+ */
+export const createSession = async (jobPostingId: string): Promise<Session> => {
+  const response = await apiClient.post<Session>(BASE_URL, {
+    job_posting_id: jobPostingId,
+  });
+  return response.data;
+};
+
+/**
  * Fetch all sessions for the authenticated user.
  */
 export const fetchSessions = async (
@@ -84,4 +94,21 @@ export const retakeInterview = async (sessionId: string): Promise<Session> => {
     `${BASE_URL}/${sessionId}/retake`
   );
   return response.data;
+};
+
+/**
+ * Mark a session as completed.
+ */
+export const completeSession = async (sessionId: string): Promise<Session> => {
+  const response = await apiClient.post<Session>(
+    `${BASE_URL}/${sessionId}/complete`
+  );
+  return response.data;
+};
+
+/**
+ * Delete a session.
+ */
+export const deleteSession = async (sessionId: string): Promise<void> => {
+  await apiClient.delete(`${BASE_URL}/${sessionId}`);
 };

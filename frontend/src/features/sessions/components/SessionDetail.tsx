@@ -17,6 +17,7 @@ import { StatusBadge } from '../../../components/common/StatusBadge';
 import { generateQuestion } from '../../../services/sessionAiApi';
 import { useOperationPolling } from '../hooks/useOperationPolling';
 import { AnswerForm } from './AnswerForm';
+import { completeSession } from '../api/sessionApi';
 
 export default function SessionDetail() {
   const { id } = useParams<{ id: string }>();
@@ -45,6 +46,13 @@ export default function SessionDetail() {
     mutationFn: () => generateQuestion(id!),
     onSuccess: operation => {
       setQuestionOperationId(operation.id);
+    },
+  });
+
+  const completeSessionMutation = useMutation({
+    mutationFn: () => completeSession(id!),
+    onSuccess: () => {
+      void refetchSession();
     },
   });
 
@@ -165,6 +173,8 @@ export default function SessionDetail() {
       {/* Job Posting Context */}
       <JobPostingContext jobPosting={session.job_posting} />
 
+      <FeedbackLink sessionId={session.id} sessionStatus={session.status} />
+
       {/* Q&A Messages */}
       <div className="mt-6 sm:mt-8">
         <h2 className="text-xl sm:text-2xl font-bold mb-4">
@@ -214,6 +224,32 @@ export default function SessionDetail() {
           </div>
         )}
 
+        {(session.status === 'active' || session.status === 'paused') && (
+          <div className="mb-4 space-y-3">
+            {completeSessionMutation.isError ? (
+              <ErrorDisplay
+                message={
+                  'Unable to complete session.\n\nWhat to do: Try again.'
+                }
+                onRetry={() => completeSessionMutation.mutate()}
+                severity="error"
+              />
+            ) : null}
+
+            <button
+              type="button"
+              className="inline-flex items-center justify-center bg-gray-100 text-gray-900 border border-gray-300 px-4 sm:px-6 py-2 rounded-lg hover:bg-gray-200 font-medium text-sm sm:text-base disabled:opacity-50"
+              onClick={() => completeSessionMutation.mutate()}
+              disabled={completeSessionMutation.isPending}
+              aria-label="Complete session"
+            >
+              {completeSessionMutation.isPending
+                ? 'Completing...'
+                : 'Complete Session'}
+            </button>
+          </div>
+        )}
+
         {messages && messages.length > 0 ? (
           <div className="space-y-6">
             <MessageList messages={messages} />
@@ -237,13 +273,10 @@ export default function SessionDetail() {
         )}
       </div>
 
-      {/* Feedback Link and Retake Button */}
+      {/* Retake Button */}
       {session.status === 'completed' && (
-        <div className="mt-6 space-y-4">
-          <FeedbackLink sessionId={session.id} />
-          <div className="flex justify-center">
-            <RetakeButton sessionId={session.id} />
-          </div>
+        <div className="mt-6 flex justify-center">
+          <RetakeButton sessionId={session.id} />
         </div>
       )}
     </div>

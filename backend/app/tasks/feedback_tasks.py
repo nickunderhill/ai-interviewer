@@ -5,6 +5,7 @@ Background tasks for feedback generation.
 from contextlib import suppress
 import datetime as dt
 import logging
+from typing import Any, cast
 from uuid import UUID
 
 from fastapi import HTTPException
@@ -22,18 +23,27 @@ logger = logging.getLogger(__name__)
 
 
 def _safe_error_message(exc: Exception) -> str:
-    if isinstance(exc, HTTPException) and isinstance(exc.detail, dict):
-        msg = exc.detail.get("message") or exc.detail.get("code") or str(exc.detail)
-        return mask_secrets(str(msg))
+    if isinstance(exc, HTTPException):
+        detail = getattr(exc, "detail", None)
+        if isinstance(detail, dict):
+            detail_dict = cast(dict[str, Any], detail)
+            msg = (
+                detail_dict.get("message")
+                or detail_dict.get("code")
+                or str(detail_dict)
+            )
+            return mask_secrets(str(msg))
 
     return mask_secrets(str(exc))
 
 
 def _extract_error_code(exc: Exception) -> str:
-    if isinstance(exc, HTTPException) and isinstance(exc.detail, dict):
-        code = exc.detail.get("code")
-        if isinstance(code, str) and code:
-            return code
+    if isinstance(exc, HTTPException):
+        detail = getattr(exc, "detail", None)
+        if isinstance(detail, dict):
+            code = cast(dict[str, Any], detail).get("code")
+            if isinstance(code, str) and code:
+                return code
     return "UNEXPECTED_ERROR"
 
 
@@ -60,7 +70,10 @@ async def generate_feedback_task(
             # Load operation
             operation = await db.get(Operation, operation_id)
             if not operation:
-                logger.error("Operation not found", extra={"operation_id": str(operation_id)})
+                logger.error(
+                    "Operation not found",
+                    extra={"operation_id": str(operation_id)},
+                )
                 return
 
             # Avoid ORM attribute access after rollback/expiration.
@@ -119,32 +132,37 @@ async def generate_feedback_task(
 
             # Persist feedback to database
             try:
-                async with db.begin():
-                    feedback = InterviewFeedback(
-                        session_id=session_id,
-                        technical_accuracy_score=result.technical_accuracy_score,
-                        communication_clarity_score=result.communication_clarity_score,
-                        problem_solving_score=result.problem_solving_score,
-                        relevance_score=result.relevance_score,
-                        overall_score=overall_score,
-                        technical_feedback=result.technical_feedback,
-                        communication_feedback=result.communication_feedback,
-                        problem_solving_feedback=result.problem_solving_feedback,
-                        relevance_feedback=result.relevance_feedback,
-                        overall_comments=result.overall_comments,
-                        knowledge_gaps=result.knowledge_gaps,
-                        learning_recommendations=result.learning_recommendations,
-                    )
-                    db.add(feedback)
-                    await db.flush()
+                feedback = InterviewFeedback(
+                    session_id=session_id,
+                    technical_accuracy_score=result.technical_accuracy_score,
+                    communication_clarity_score=(
+                        result.communication_clarity_score
+                    ),
+                    problem_solving_score=result.problem_solving_score,
+                    relevance_score=result.relevance_score,
+                    overall_score=overall_score,
+                    technical_feedback=result.technical_feedback,
+                    communication_feedback=result.communication_feedback,
+                    problem_solving_feedback=result.problem_solving_feedback,
+                    relevance_feedback=result.relevance_feedback,
+                    overall_comments=result.overall_comments,
+                    knowledge_gaps=result.knowledge_gaps,
+                    learning_recommendations=result.learning_recommendations,
+                )
+                db.add(feedback)
 
-                    # Convert result to dict for Operation.result, include overall_score
-                    result_dict = result.model_dump()
-                    result_dict["overall_score"] = overall_score
+                # Convert result to dict for Operation.result
+                result_dict = result.model_dump()
+                result_dict["overall_score"] = overall_score
 
-                    operation.status = "completed"
-                    operation.result = result_dict
-                    operation.updated_at = dt.datetime.now(dt.UTC)
+                operation.status = "completed"
+                operation.result = result_dict
+                operation.updated_at = dt.datetime.now(dt.UTC)
+
+                # Persist feedback + operation update in one transaction.
+                await db.flush()
+                await db.commit()
+
             except IntegrityError:
                 # Feedback already exists (duplicate session_id)
                 logger.warning(
@@ -158,6 +176,28 @@ async def generate_feedback_task(
                 operation.status = "failed"
                 operation.error_message = generate_user_friendly_message(
                     "FEEDBACK_ALREADY_EXISTS",
+                    {"operation_type": operation_type_value},
+                )
+                operation.updated_at = dt.datetime.now(dt.UTC)
+                await db.commit()
+                return
+
+            except Exception as db_error:
+                logger.error(
+                    "Failed to store feedback",
+                    extra={
+                        "session_id": str(session_id),
+                        "error": str(db_error),
+                    },
+                    exc_info=True,
+                )
+
+                with suppress(Exception):
+                    await db.rollback()
+
+                operation.status = "failed"
+                operation.error_message = generate_user_friendly_message(
+                    "DB_WRITE_FAILED",
                     {"operation_type": operation_type_value},
                 )
                 operation.updated_at = dt.datetime.now(dt.UTC)

@@ -49,18 +49,26 @@ class OpenAIService:
             HTTPException: If user hasn't configured API key or
                           decryption fails
         """
-        if not user.openai_api_key_encrypted:
+        encrypted_api_key = getattr(user, "encrypted_api_key", None)
+        if encrypted_api_key is None:
+            # Backward-compatible fallback for older attribute name.
+            encrypted_api_key = getattr(user, "openai_api_key_encrypted", None)
+
+        if not encrypted_api_key:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail={
                     "code": "API_KEY_NOT_CONFIGURED",
-                    "message": ("Please configure your OpenAI API key " "in settings before using AI features"),
+                    "message": (
+                        "Please configure your OpenAI API key "
+                        "in settings before using AI features"
+                    ),
                 },
             )
 
         try:
             # Decrypt user's API key
-            decrypted_key = decrypt_api_key(user.openai_api_key_encrypted)
+            decrypted_key = decrypt_api_key(encrypted_api_key)
 
             # Initialize OpenAI client with user's key
             self.client = AsyncOpenAI(api_key=decrypted_key)
@@ -76,7 +84,9 @@ class OpenAIService:
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail={
                     "code": "API_KEY_DECRYPTION_FAILED",
-                    "message": ("Failed to decrypt API key. Please " "reconfigure your API key."),
+                    "message": (
+                        "Failed to decrypt API key. Please " "reconfigure your API key."
+                    ),
                 },
             ) from e
 
@@ -165,13 +175,16 @@ class OpenAIService:
                     error_code="EMPTY_RESPONSE",
                 )
 
+            usage = getattr(response, "usage", None)
+            tokens_used = getattr(usage, "total_tokens", 0) if usage is not None else 0
+
             logger.info(
                 "OpenAI call completed",
                 extra={
                     **(context or {}),
                     "user_id": str(self.user_id),
                     "model": model,
-                    "tokens_used": response.usage.total_tokens if response.usage else 0,
+                    "tokens_used": tokens_used,
                 },
             )
 

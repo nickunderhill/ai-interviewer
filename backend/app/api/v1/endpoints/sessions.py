@@ -23,6 +23,7 @@ from app.core.dependencies import get_current_user
 from app.models.interview_session import InterviewSession
 from app.models.job_posting import JobPosting
 from app.models.operation import Operation
+from app.models.resume import Resume
 from app.models.user import User
 from app.schemas import feedback as schemas
 from app.schemas.operation import OperationResponse
@@ -154,7 +155,9 @@ async def list_sessions(
         query = query.where(InterviewSession.status == status_param)
 
     if start_date:
-        start_datetime = dt.datetime.combine(start_date, dt.time.min).replace(tzinfo=dt.UTC)
+        start_datetime = dt.datetime.combine(start_date, dt.time.min).replace(
+            tzinfo=dt.UTC
+        )
         query = query.where(InterviewSession.created_at >= start_datetime)
 
     if end_date:
@@ -173,7 +176,7 @@ async def list_sessions(
 
 
 @router.get(
-    "/{session_id}",
+    "/{session_id:uuid}",
     response_model=SessionDetailResponse,
     status_code=status.HTTP_200_OK,
     summary="Get session details",
@@ -202,11 +205,34 @@ async def get_session(
         "created_at": session.created_at,
         "updated_at": session.updated_at,
         "job_posting": session.job_posting,
-        "resume": (session.user.resume if session.user and session.user.resume else None),
+        "resume": (
+            session.user.resume if session.user and session.user.resume else None
+        ),
         "messages": session.messages,
     }
 
     return SessionDetailResponse.model_validate(response_data)
+
+
+@router.delete(
+    "/{session_id:uuid}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Delete a session",
+)
+async def delete_session(
+    session_id: UUID = Path(..., description="Session UUID"),
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> None:
+    """Delete an interview session.
+
+    This removes the session from history and deletes its associated messages and feedback.
+
+    **Authorization**: Requires valid JWT token and session ownership.
+    """
+
+    await session_service.delete_session(db, session_id, current_user)
+    return None
 
 
 @router.get(
@@ -261,7 +287,7 @@ async def get_sessions_with_feedback(
 
 
 @router.put(
-    "/{session_id}/pause",
+    "/{session_id:uuid}/pause",
     response_model=SessionResponse,
     status_code=status.HTTP_200_OK,
     summary="Pause an active session",
@@ -323,7 +349,7 @@ async def pause_session(
 
 
 @router.put(
-    "/{session_id}/resume",
+    "/{session_id:uuid}/resume",
     response_model=SessionResponse,
     status_code=status.HTTP_200_OK,
     summary="Resume a paused session",
@@ -384,7 +410,7 @@ async def resume_session(
 
 
 @router.post(
-    "/{session_id}/complete",
+    "/{session_id:uuid}/complete",
     response_model=SessionResponse,
     status_code=status.HTTP_200_OK,
     summary="Mark session as completed",
@@ -401,7 +427,7 @@ async def complete_session(
 
 
 @router.post(
-    "/{session_id}/generate-question",
+    "/{session_id:uuid}/generate-question",
     response_model=OperationResponse,
     status_code=status.HTTP_202_ACCEPTED,
     summary="Generate next interview question",
@@ -464,7 +490,7 @@ async def generate_question(
 
 
 @router.get(
-    "/{session_id}/messages",
+    "/{session_id:uuid}/messages",
     response_model=list[MessageResponse],
     status_code=status.HTTP_200_OK,
     summary="Get session messages (Q&A history)",
@@ -490,7 +516,7 @@ async def get_session_messages(
 
 
 @router.post(
-    "/{session_id}/answers",
+    "/{session_id:uuid}/answers",
     response_model=MessageResponse,
     status_code=status.HTTP_201_CREATED,
     summary="Submit an answer to interview question",
@@ -510,12 +536,14 @@ async def submit_answer(
     - Returns 400 if session not active
     - Returns 404 if session not found or unauthorized
     """
-    message = await session_service.submit_answer(db, session_id, answer_data, current_user)
+    message = await session_service.submit_answer(
+        db, session_id, answer_data, current_user
+    )
     return MessageResponse.model_validate(message)
 
 
 @router.post(
-    "/{session_id}/generate-feedback",
+    "/{session_id:uuid}/generate-feedback",
     response_model=OperationResponse,
     status_code=status.HTTP_202_ACCEPTED,
     summary="Generate AI feedback for a completed session",
@@ -578,9 +606,28 @@ async def generate_feedback(
             },
         )
 
-    # Create operation to track feedback generation
-    import datetime as dt
+    # Validate prerequisites before creating an async operation.
+    if not session.job_posting_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={
+                "code": "JOB_POSTING_REQUIRED",
+                "message": "Job posting is required for feedback analysis",
+            },
+        )
 
+    resume_stmt = select(Resume).where(Resume.user_id == current_user.id)
+    resume_result = await db.execute(resume_stmt)
+    if resume_result.scalar_one_or_none() is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={
+                "code": "RESUME_REQUIRED",
+                "message": "Resume is required for feedback analysis",
+            },
+        )
+
+    # Create operation to track feedback generation
     operation = Operation(
         operation_type="feedback_analysis",
         status="pending",
@@ -603,7 +650,7 @@ async def generate_feedback(
 
 
 @router.get(
-    "/{session_id}/feedback",
+    "/{session_id:uuid}/feedback",
     response_model=schemas.InterviewFeedbackResponse,
     status_code=status.HTTP_200_OK,
     summary="Get AI feedback for a completed session",
@@ -689,7 +736,7 @@ async def get_session_feedback(
 
 
 @router.post(
-    "/{session_id}/retake",
+    "/{session_id:uuid}/retake",
     response_model=SessionResponse,
     status_code=status.HTTP_201_CREATED,
     summary="Create retake session",
@@ -813,7 +860,9 @@ async def create_retake_session(
     # Calculate retake fields
     new_retake_number = original_session.retake_number + 1
     new_original_session_id = (
-        original_session.original_session_id if original_session.original_session_id else original_session.id
+        original_session.original_session_id
+        if original_session.original_session_id
+        else original_session.id
     )
 
     # Create new retake session
@@ -834,7 +883,7 @@ async def create_retake_session(
 
 
 @router.get(
-    "/{session_id}/retake-chain",
+    "/{session_id:uuid}/retake-chain",
     response_model=list[SessionWithFeedbackResponse],
     summary="Get retake chain for comparison",
     responses={
@@ -875,7 +924,9 @@ async def get_retake_chain(
         )
 
     # Determine the original session ID
-    original_id = session.original_session_id if session.original_session_id else session.id
+    original_id = (
+        session.original_session_id if session.original_session_id else session.id
+    )
 
     # Query all sessions in the chain with eager-loaded feedback
     query = (
@@ -907,7 +958,9 @@ async def get_retake_chain(
             "created_at": session.created_at,
             "updated_at": session.updated_at,
             "feedback": (
-                schemas.InterviewFeedbackResponse.model_validate(session.feedback) if session.feedback else None
+                schemas.InterviewFeedbackResponse.model_validate(session.feedback)
+                if session.feedback
+                else None
             ),
         }
         response_data.append(SessionWithFeedbackResponse(**session_dict))

@@ -51,6 +51,32 @@ def classify_openai_error(error: Exception) -> OpenAIIntegrationError:
         )
 
     if isinstance(error, OpenAIRateLimitError):
+        # NOTE: OpenAI may surface "insufficient_quota" as a 429 RateLimitError.
+        # Distinguish true rate limiting from billing/quota exhaustion.
+        body = _extract_body(error)
+
+        code = None
+        err_type = None
+        try:
+            err_obj = (body or {}).get("error", {})
+            code = err_obj.get("code")
+            err_type = err_obj.get("type")
+        except Exception:
+            code = None
+            err_type = None
+
+        err_str = str(error).lower()
+        if (
+            code == "insufficient_quota"
+            or err_type == "insufficient_quota"
+            or "quota" in err_str
+        ):
+            return QuotaExceededError(
+                message="OpenAI quota exceeded. Please check your plan/billing.",
+                error_code="QUOTA_EXCEEDED",
+                original_error=error,
+            )
+
         return RateLimitError(
             message="OpenAI rate limit exceeded. Please wait and try again.",
             error_code="RATE_LIMIT",

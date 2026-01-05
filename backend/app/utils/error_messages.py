@@ -22,6 +22,30 @@ _OPERATION_PHRASES: dict[str, str] = {
 
 
 ERROR_MESSAGE_TEMPLATES: dict[str, dict[str, Any]] = {
+    "RESUME_REQUIRED": {
+        "message": "Unable to {operation_phrase}. A resume is required.",
+        "action": "Add your resume in your profile settings, then try again.",
+        "retriable": False,
+        "severity": "error",
+    },
+    "JOB_POSTING_REQUIRED": {
+        "message": "Unable to {operation_phrase}. This session is missing its job posting.",
+        "action": "Create or select a job posting for this session, then try again.",
+        "retriable": False,
+        "severity": "error",
+    },
+    "NO_ANSWERS": {
+        "message": "Unable to {operation_phrase}. There are no answers to analyze.",
+        "action": "Complete at least one interview question, then try again.",
+        "retriable": False,
+        "severity": "error",
+    },
+    "API_KEY_NOT_CONFIGURED": {
+        "message": "Unable to {operation_phrase}. No OpenAI API key is configured.",
+        "action": "Add your OpenAI API key in your profile settings, then try again.",
+        "retriable": False,
+        "severity": "error",
+    },
     "INVALID_API_KEY": {
         "message": "Unable to {operation_phrase}. Your OpenAI API key appears to be invalid.",
         "action": "Check your OpenAI API key configuration in your profile settings.",

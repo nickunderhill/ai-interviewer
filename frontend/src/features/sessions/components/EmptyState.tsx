@@ -14,7 +14,7 @@ export const EmptyState = ({
   title = 'No completed interviews yet',
   message = 'Start your first mock interview to track your progress and receive AI-powered feedback!',
   buttonText = 'Start Interview',
-  buttonLink = '/dashboard',
+  buttonLink = '/browse-jobs',
 }: EmptyStateProps) => {
   return (
     <div className="text-center py-12" data-testid="empty-state">

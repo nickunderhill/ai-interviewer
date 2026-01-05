@@ -5,8 +5,17 @@
 import axios, { type AxiosError, type InternalAxiosRequestConfig } from 'axios';
 import { authService } from './authService';
 
+function normalizeApiBaseUrl(rawBaseUrl: string): string {
+  // Call sites in this codebase use paths like `/api/v1/...`.
+  // To avoid accidentally producing `/api/v1/api/v1/...`, ensure the base URL
+  // is the backend origin (no `/api/v1` suffix).
+  return rawBaseUrl.replace(/\/+$/, '').replace(/\/api\/v1$/, '');
+}
+
 const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000',
+  baseURL: normalizeApiBaseUrl(
+    import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
+  ),
   headers: {
     'Content-Type': 'application/json',
   },

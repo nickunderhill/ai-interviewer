@@ -9,6 +9,7 @@ import FeedbackView from './features/feedback/components/FeedbackView';
 import Progress from './pages/Progress';
 import ProtectedRoute from './components/layout/ProtectedRoute';
 import AppLayout from './components/layout/AppLayout';
+import BrowseJobs from './features/jobs/components/BrowseJobs';
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
             }
           >
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/browse-jobs" element={<BrowseJobs />} />
             <Route path="/history" element={<SessionHistory />} />
             <Route path="/sessions/:id" element={<SessionDetail />} />
             <Route path="/sessions/:id/feedback" element={<FeedbackView />} />

@@ -43,6 +43,9 @@ docker-compose logs -f
 - API Docs: http://localhost:8000/docs
 - Database: localhost:5432
 
+Note: The frontend expects `VITE_API_BASE_URL` to be the backend origin (e.g.
+`http://localhost:8000`). API paths already include the `/api/v1` prefix.
+
 **Hot reload is enabled** - changes to frontend or backend code will
 automatically reload.
 

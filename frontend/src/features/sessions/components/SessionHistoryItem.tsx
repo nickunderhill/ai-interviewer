@@ -2,7 +2,9 @@
  * Session history list item component.
  * Displays a single completed session with its details.
  */
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
+import { deleteSession } from '../api/sessionApi';
 import type { Session } from '../types/session';
 import { RetakeBadge } from './RetakeBadge';
 import { RetakeButton } from './RetakeButton';
@@ -24,6 +26,19 @@ const formatDate = (dateString: string): string => {
 };
 
 export const SessionHistoryItem = ({ session }: SessionHistoryItemProps) => {
+  const queryClient = useQueryClient();
+
+  const deleteMutation = useMutation({
+    mutationFn: () => deleteSession(session.id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['sessions'] });
+    },
+    onError: (error: unknown) => {
+      console.error('Failed to delete session:', error);
+      alert('Failed to remove this attempt. Please try again.');
+    },
+  });
+
   return (
     <div
       className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow"
@@ -94,7 +109,18 @@ export const SessionHistoryItem = ({ session }: SessionHistoryItemProps) => {
           </Link>
         )}
 
-        <RetakeButton sessionId={session.id} className="ml-auto" />
+        <div className="ml-auto flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => deleteMutation.mutate()}
+            disabled={deleteMutation.isPending}
+            className="text-sm font-medium text-red-600 hover:text-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            aria-label="Remove this attempt from history"
+          >
+            {deleteMutation.isPending ? 'Removing…' : 'Remove'}
+          </button>
+          <RetakeButton sessionId={session.id} />
+        </div>
       </div>
     </div>
   );
