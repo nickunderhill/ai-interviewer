@@ -6,7 +6,7 @@ inputDocuments:
   - '_bmad-output/prd.md'
   - '_bmad-output/architecture.md'
 totalEpics: 8
-totalStories: 82
+totalStories: 79
 ---
 
 # ai-interviewer - Epic Breakdown

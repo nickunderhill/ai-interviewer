@@ -1,5 +1,3 @@
-import React from 'react';
-
 export type ErrorDisplaySeverity = 'error' | 'warning' | 'info';
 
 export type ErrorDisplayProps = {

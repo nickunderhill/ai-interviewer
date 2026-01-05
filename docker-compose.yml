@@ -37,7 +37,7 @@ services:
       DEBUG: ${DEBUG:-true}
       SECRET_KEY: ${SECRET_KEY:-dev-secret-key-change-in-production}
       ENCRYPTION_KEY: ${ENCRYPTION_KEY:-dev-encryption-key-32-chars-min}
-      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
+      FRONTEND_ORIGIN: ${FRONTEND_ORIGIN:-http://localhost:3000}
       ENVIRONMENT: ${ENVIRONMENT:-development}
     ports:
       - '8000:8000'

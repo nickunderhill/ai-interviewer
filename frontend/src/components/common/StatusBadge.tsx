@@ -1,4 +1,3 @@
-import React from 'react';
 import type { OperationStatus } from '../../types/operation';
 
 type Props = {
