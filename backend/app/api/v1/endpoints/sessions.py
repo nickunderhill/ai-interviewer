@@ -879,7 +879,18 @@ async def create_retake_session(
     await db.commit()
     await db.refresh(new_session)
 
-    return SessionResponse.model_validate(new_session)
+    # Re-fetch with required relationships eagerly loaded.
+    # Pydantic's from_attributes access is sync; it must not trigger
+    # async lazy-loads.
+    new_session_stmt = (
+        select(InterviewSession)
+        .options(selectinload(InterviewSession.job_posting))
+        .where(InterviewSession.id == new_session.id)
+    )
+    new_session_result = await db.execute(new_session_stmt)
+    new_session_loaded = new_session_result.scalar_one()
+
+    return SessionResponse.model_validate(new_session_loaded)
 
 
 @router.get(

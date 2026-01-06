@@ -140,7 +140,26 @@ export default function SessionDetail() {
 
       {/* Retake Badge and Session Context */}
       <div className="mb-4">
-        <RetakeBadge retakeNumber={session.retake_number} />
+        <div className="flex flex-wrap items-center gap-3">
+          <RetakeBadge retakeNumber={session.retake_number} />
+
+          {session.original_session_id && (
+            <Link
+              to={`/history?original=${session.original_session_id}`}
+              className="inline-flex items-center text-sm text-purple-600 hover:text-purple-700 font-medium"
+            >
+              View all attempts →
+            </Link>
+          )}
+          {!session.original_session_id && session.retake_number === 1 && (
+            <Link
+              to={`/history?original=${session.id}`}
+              className="inline-flex items-center text-sm text-purple-600 hover:text-purple-700 font-medium"
+            >
+              View all attempts →
+            </Link>
+          )}
+        </div>
         {session.retake_number > 1 && (
           <p className="text-sm text-gray-600 mt-2">
             This is your{' '}
@@ -151,22 +170,6 @@ export default function SessionDetail() {
               : `${session.retake_number}th`}{' '}
             attempt at this role
           </p>
-        )}
-        {session.original_session_id && (
-          <Link
-            to={`/history?original=${session.original_session_id}`}
-            className="inline-flex items-center text-sm text-purple-600 hover:text-purple-700 font-medium mt-2"
-          >
-            View all attempts →
-          </Link>
-        )}
-        {!session.original_session_id && session.retake_number === 1 && (
-          <Link
-            to={`/history?original=${session.id}`}
-            className="inline-flex items-center text-sm text-purple-600 hover:text-purple-700 font-medium mt-2"
-          >
-            View all attempts →
-          </Link>
         )}
       </div>
 

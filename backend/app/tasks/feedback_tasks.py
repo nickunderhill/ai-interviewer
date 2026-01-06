@@ -135,9 +135,7 @@ async def generate_feedback_task(
                 feedback = InterviewFeedback(
                     session_id=session_id,
                     technical_accuracy_score=result.technical_accuracy_score,
-                    communication_clarity_score=(
-                        result.communication_clarity_score
-                    ),
+                    communication_clarity_score=(result.communication_clarity_score),
                     problem_solving_score=result.problem_solving_score,
                     relevance_score=result.relevance_score,
                     overall_score=overall_score,

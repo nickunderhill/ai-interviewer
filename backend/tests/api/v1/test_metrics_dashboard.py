@@ -233,6 +233,39 @@ async def test_get_dashboard_metrics_only_shows_current_user_data(
 
 
 @pytest.mark.asyncio
+async def test_get_dashboard_metrics_allows_null_company(
+    async_client: AsyncClient,
+    test_user: User,
+    db_session: AsyncSession,
+    auth_headers: dict,
+):
+    """Metrics should not fail when job posting company is null."""
+    job_posting = JobPosting(
+        user_id=test_user.id,
+        title="No Company Role",
+        company=None,
+        description="Test",
+    )
+    db_session.add(job_posting)
+    await db_session.flush()
+
+    session = InterviewSession(
+        user_id=test_user.id,
+        job_posting_id=job_posting.id,
+        status="completed",
+        current_question_number=5,
+    )
+    db_session.add(session)
+    await db_session.commit()
+
+    response = await async_client.get("/api/v1/metrics/dashboard", headers=auth_headers)
+    assert response.status_code == 200
+    data = response.json()
+    assert data["most_practiced_roles"][0]["title"] == "No Company Role"
+    assert data["most_practiced_roles"][0]["company"] is None
+
+
+@pytest.mark.asyncio
 async def test_get_dashboard_metrics_unauthorized(async_client: AsyncClient):
     """Test that unauthorized users cannot access metrics."""
     response = await async_client.get("/api/v1/metrics/dashboard")

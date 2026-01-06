@@ -1,6 +1,8 @@
 /**
  * JobPostingContext component - displays job posting details in session detail view.
  */
+import { useId, useState } from 'react';
+
 import type { JobPostingDetail } from '../types/session';
 
 interface JobPostingContextProps {
@@ -10,6 +12,9 @@ interface JobPostingContextProps {
 export default function JobPostingContext({
   jobPosting,
 }: JobPostingContextProps) {
+  const [isDescriptionOpen, setIsDescriptionOpen] = useState(false);
+  const descriptionId = useId();
+
   return (
     <div className="bg-white shadow-md rounded-lg p-4 sm:p-6 border border-gray-200">
       <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
@@ -28,12 +33,29 @@ export default function JobPostingContext({
       )}
 
       <div className="mb-4">
-        <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2">
-          Job Description
-        </h3>
-        <p className="text-sm sm:text-base text-gray-700 whitespace-pre-wrap">
-          {jobPosting.description}
-        </p>
+        <div className="flex items-center justify-between gap-3 mb-2">
+          <h3 className="text-base sm:text-lg font-semibold text-gray-900">
+            Job Description
+          </h3>
+          <button
+            type="button"
+            className="text-sm font-medium text-gray-700 underline hover:text-gray-900"
+            aria-expanded={isDescriptionOpen}
+            aria-controls={descriptionId}
+            onClick={() => setIsDescriptionOpen(open => !open)}
+          >
+            {isDescriptionOpen ? 'Hide' : 'Show'}
+          </button>
+        </div>
+
+        {isDescriptionOpen && (
+          <p
+            id={descriptionId}
+            className="text-sm sm:text-base text-gray-700 whitespace-pre-wrap"
+          >
+            {jobPosting.description}
+          </p>
+        )}
       </div>
 
       {jobPosting.tech_stack && jobPosting.tech_stack.length > 0 && (

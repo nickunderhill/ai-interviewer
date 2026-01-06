@@ -91,24 +91,6 @@ export const SessionHistoryItem = ({ session }: SessionHistoryItemProps) => {
           </svg>
         </Link>
 
-        {session.original_session_id && session.retake_number > 1 && (
-          <Link
-            to={`/history?original=${session.original_session_id}`}
-            className="text-sm text-purple-600 hover:text-purple-700 font-medium"
-          >
-            View all attempts
-          </Link>
-        )}
-
-        {session.retake_number === 1 && (
-          <Link
-            to={`/history?original=${session.id}`}
-            className="text-sm text-purple-600 hover:text-purple-700 font-medium"
-          >
-            View all attempts
-          </Link>
-        )}
-
         <div className="ml-auto flex items-center gap-3">
           <button
             type="button"

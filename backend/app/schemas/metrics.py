@@ -9,7 +9,7 @@ class PracticedRole(BaseModel):
     """A job role that has been practiced."""
 
     title: str = Field(..., description="Job posting title")
-    company: str = Field(..., description="Company name")
+    company: str | None = Field(None, description="Company name")
     count: int = Field(..., description="Number of sessions for this role", ge=0)
 
 
