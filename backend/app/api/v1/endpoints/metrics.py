@@ -41,7 +41,10 @@ async def get_dashboard_metrics(
     # Calculate average score from feedback
     avg_score = await db.scalar(
         select(func.avg(InterviewFeedback.overall_score))
-        .join(InterviewSession, InterviewFeedback.session_id == InterviewSession.id)
+        .join(
+            InterviewSession,
+            InterviewFeedback.session_id == InterviewSession.id,
+        )
         .where(InterviewSession.user_id == current_user.id)
     )
 
@@ -55,11 +58,15 @@ async def get_dashboard_metrics(
     # Most practiced roles (top 5)
     roles_query = (
         select(
+            JobPosting.id,
             JobPosting.title,
             JobPosting.company,
             func.count(InterviewSession.id).label("count"),
         )
-        .join(InterviewSession, InterviewSession.job_posting_id == JobPosting.id)
+        .join(
+            InterviewSession,
+            InterviewSession.job_posting_id == JobPosting.id,
+        )
         .where(InterviewSession.user_id == current_user.id)
         .where(InterviewSession.status == "completed")
         .group_by(JobPosting.id, JobPosting.title, JobPosting.company)
@@ -67,7 +74,15 @@ async def get_dashboard_metrics(
         .limit(5)
     )
     roles_result = await db.execute(roles_query)
-    most_practiced = [PracticedRole(title=r.title, company=r.company, count=r.count) for r in roles_result]
+    most_practiced = [
+        PracticedRole(
+            job_posting_id=str(r.id),
+            title=r.title,
+            company=r.company,
+            count=r.count,
+        )
+        for r in roles_result
+    ]
 
     return DashboardMetrics(
         completed_interviews=completed_count or 0,

@@ -8,6 +8,7 @@ from pydantic import BaseModel, Field
 class PracticedRole(BaseModel):
     """A job role that has been practiced."""
 
+    job_posting_id: str = Field(..., description="Job posting ID")
     title: str = Field(..., description="Job posting title")
     company: str | None = Field(None, description="Company name")
     count: int = Field(..., description="Number of sessions for this role", ge=0)

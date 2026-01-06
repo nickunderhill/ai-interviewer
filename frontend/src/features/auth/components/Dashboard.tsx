@@ -2,7 +2,7 @@ import { useDashboardMetrics } from '../../metrics';
 import type { PracticedRole } from '../../metrics';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { setOpenAiApiKey } from '../../users/api/userApi';
 import {
   createResume,
@@ -44,6 +44,8 @@ interface MostPracticedRolesProps {
 }
 
 function MostPracticedRoles({ roles }: MostPracticedRolesProps) {
+  const navigate = useNavigate();
+
   if (roles.length === 0) {
     return (
       <div className="bg-white p-6 rounded-lg shadow">
@@ -65,9 +67,12 @@ function MostPracticedRoles({ roles }: MostPracticedRolesProps) {
       </h3>
       <div className="space-y-3">
         {roles.map((role, index) => (
-          <div
+          <button
             key={`${role.title}-${role.company}-${index}`}
-            className="flex justify-between items-center"
+            onClick={() =>
+              navigate(`/history?job_posting_id=${role.job_posting_id}`)
+            }
+            className="w-full flex justify-between items-center hover:bg-gray-50 p-2 rounded-md transition-colors cursor-pointer text-left"
           >
             <div>
               <p className="font-medium text-gray-900">{role.title}</p>
@@ -78,7 +83,7 @@ function MostPracticedRoles({ roles }: MostPracticedRolesProps) {
             <span className="bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full text-sm font-medium">
               {role.count} {role.count === 1 ? 'interview' : 'interviews'}
             </span>
-          </div>
+          </button>
         ))}
       </div>
     </div>
@@ -371,9 +376,30 @@ export const Dashboard = () => {
 
   return (
     <div className="px-4 py-6">
-      <h1 className="text-3xl font-bold text-gray-900 mb-8">
-        Performance Dashboard
-      </h1>
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-3xl font-bold text-gray-900">
+          Performance Dashboard
+        </h1>
+        <Link
+          to="/browse-jobs"
+          className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors font-medium"
+        >
+          <svg
+            className="w-5 h-5 mr-2"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 4v16m8-8H4"
+            />
+          </svg>
+          Create Job Posting
+        </Link>
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
         <MetricCard

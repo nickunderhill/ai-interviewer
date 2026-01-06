@@ -3,6 +3,7 @@
  */
 
 export interface PracticedRole {
+  job_posting_id: string;
   title: string;
   company: string | null;
   count: number;
