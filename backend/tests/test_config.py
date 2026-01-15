@@ -57,8 +57,9 @@ class TestSettingsValues:
 
     def test_database_host(self):
         """Test that DB_HOST is set correctly."""
-        # Should be 'localhost' when backend runs on host
-        assert settings.DB_HOST in ["localhost", "postgres"]
+        # Should be 'localhost' when backend runs on host,
+        # 'postgres' in Docker, or '127.0.0.1' in CI environments
+        assert settings.DB_HOST in ["localhost", "postgres", "127.0.0.1"]
 
     def test_database_port(self):
         """Test that DB_PORT is set correctly."""

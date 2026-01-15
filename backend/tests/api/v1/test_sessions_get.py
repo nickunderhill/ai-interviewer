@@ -119,7 +119,9 @@ async def test_get_session_detail_handles_missing_resume(
 
 
 @pytest.mark.asyncio
-async def test_get_session_detail_not_found_returns_404(async_client: AsyncClient, auth_headers: dict):
+async def test_get_session_detail_not_found_returns_404(
+    async_client: AsyncClient, auth_headers: dict
+):
     """Test retrieving non-existent session returns 404."""
     fake_id = uuid.uuid4()
 
@@ -153,14 +155,17 @@ async def test_get_session_detail_other_user_returns_404(
 
 
 @pytest.mark.asyncio
-async def test_get_session_detail_invalid_uuid_returns_422(async_client: AsyncClient, auth_headers: dict):
-    """Test invalid UUID format returns 422."""
+async def test_get_session_detail_invalid_uuid_returns_422(
+    async_client: AsyncClient, auth_headers: dict
+):
+    """Test invalid UUID format returns 404 (path converter)."""
     response = await async_client.get(
         "/api/v1/sessions/not-a-valid-uuid",
         headers=auth_headers,
     )
 
-    assert response.status_code == 422
+    # FastAPI's :uuid path converter returns 404 when it can't parse
+    assert response.status_code == 404
 
 
 @pytest.mark.asyncio
