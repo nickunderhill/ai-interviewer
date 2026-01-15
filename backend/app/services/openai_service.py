@@ -59,10 +59,7 @@ class OpenAIService:
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail={
                     "code": "API_KEY_NOT_CONFIGURED",
-                    "message": (
-                        "Please configure your OpenAI API key "
-                        "in settings before using AI features"
-                    ),
+                    "message": ("Please configure your OpenAI API key " "in settings before using AI features"),
                 },
             )
 
@@ -84,9 +81,7 @@ class OpenAIService:
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail={
                     "code": "API_KEY_DECRYPTION_FAILED",
-                    "message": (
-                        "Failed to decrypt API key. Please " "reconfigure your API key."
-                    ),
+                    "message": ("Failed to decrypt API key. Please " "reconfigure your API key."),
                 },
             ) from e
 

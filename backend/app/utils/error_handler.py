@@ -66,11 +66,7 @@ def classify_openai_error(error: Exception) -> OpenAIIntegrationError:
             err_type = None
 
         err_str = str(error).lower()
-        if (
-            code == "insufficient_quota"
-            or err_type == "insufficient_quota"
-            or "quota" in err_str
-        ):
+        if code == "insufficient_quota" or err_type == "insufficient_quota" or "quota" in err_str:
             return QuotaExceededError(
                 message="OpenAI quota exceeded. Please check your plan/billing.",
                 error_code="QUOTA_EXCEEDED",

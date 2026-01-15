@@ -84,11 +84,11 @@ def build_question_prompt(
     # Language instruction based on job posting language
     language_instruction = ""
     if language == "ua":
-        language_instruction = "\n\n**IMPORTANT: Generate the question in UKRAINIAN language. The entire question must be in Ukrainian.**"
-    else:
         language_instruction = (
-            "\n\n**IMPORTANT: Generate the question in ENGLISH language.**"
+            "\n\n**IMPORTANT: Generate the question in UKRAINIAN language. The entire question must be in Ukrainian.**"
         )
+    else:
+        language_instruction = "\n\n**IMPORTANT: Generate the question in ENGLISH language.**"
 
     prompt = f"""You are an expert technical interviewer. Generate ONE interview question based on the context below.{language_instruction}
 

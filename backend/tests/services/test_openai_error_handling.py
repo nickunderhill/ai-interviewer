@@ -29,9 +29,7 @@ def test_classify_connection_error_as_network_error():
 
 
 def test_classify_auth_error():
-    api_err = APIError(
-        "Invalid", request=Mock(), body={"error": {"message": "Invalid"}}
-    )
+    api_err = APIError("Invalid", request=Mock(), body={"error": {"message": "Invalid"}})
     api_err.status_code = 401
 
     classified = classify_openai_error(api_err)

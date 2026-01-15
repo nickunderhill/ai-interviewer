@@ -27,11 +27,7 @@ def _safe_error_message(exc: Exception) -> str:
         detail = getattr(exc, "detail", None)
         if isinstance(detail, dict):
             detail_dict = cast(dict[str, Any], detail)
-            msg = (
-                detail_dict.get("message")
-                or detail_dict.get("code")
-                or str(detail_dict)
-            )
+            msg = detail_dict.get("message") or detail_dict.get("code") or str(detail_dict)
             return mask_secrets(str(msg))
 
     return mask_secrets(str(exc))

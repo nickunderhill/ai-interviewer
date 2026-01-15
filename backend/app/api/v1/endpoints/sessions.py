@@ -155,9 +155,7 @@ async def list_sessions(
         query = query.where(InterviewSession.status == status_param)
 
     if start_date:
-        start_datetime = dt.datetime.combine(start_date, dt.time.min).replace(
-            tzinfo=dt.UTC
-        )
+        start_datetime = dt.datetime.combine(start_date, dt.time.min).replace(tzinfo=dt.UTC)
         query = query.where(InterviewSession.created_at >= start_datetime)
 
     if end_date:
@@ -205,9 +203,7 @@ async def get_session(
         "created_at": session.created_at,
         "updated_at": session.updated_at,
         "job_posting": session.job_posting,
-        "resume": (
-            session.user.resume if session.user and session.user.resume else None
-        ),
+        "resume": (session.user.resume if session.user and session.user.resume else None),
         "messages": session.messages,
     }
 
@@ -536,9 +532,7 @@ async def submit_answer(
     - Returns 400 if session not active
     - Returns 404 if session not found or unauthorized
     """
-    message = await session_service.submit_answer(
-        db, session_id, answer_data, current_user
-    )
+    message = await session_service.submit_answer(db, session_id, answer_data, current_user)
     return MessageResponse.model_validate(message)
 
 
@@ -860,9 +854,7 @@ async def create_retake_session(
     # Calculate retake fields
     new_retake_number = original_session.retake_number + 1
     new_original_session_id = (
-        original_session.original_session_id
-        if original_session.original_session_id
-        else original_session.id
+        original_session.original_session_id if original_session.original_session_id else original_session.id
     )
 
     # Create new retake session
@@ -935,9 +927,7 @@ async def get_retake_chain(
         )
 
     # Determine the original session ID
-    original_id = (
-        session.original_session_id if session.original_session_id else session.id
-    )
+    original_id = session.original_session_id if session.original_session_id else session.id
 
     # Query all sessions in the chain with eager-loaded feedback
     query = (
@@ -969,9 +959,7 @@ async def get_retake_chain(
             "created_at": session.created_at,
             "updated_at": session.updated_at,
             "feedback": (
-                schemas.InterviewFeedbackResponse.model_validate(session.feedback)
-                if session.feedback
-                else None
+                schemas.InterviewFeedbackResponse.model_validate(session.feedback) if session.feedback else None
             ),
         }
         response_data.append(SessionWithFeedbackResponse(**session_dict))
