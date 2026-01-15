@@ -34,3 +34,4 @@ frontend/coverage/
 # BMAD folders
 _bmad/
 _bmad-output/
+.github/agents/
