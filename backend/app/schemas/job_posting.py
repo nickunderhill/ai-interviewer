@@ -4,7 +4,6 @@ Pydantic schemas for Job Posting API requests and responses.
 
 import datetime as dt
 import uuid
-
 from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
