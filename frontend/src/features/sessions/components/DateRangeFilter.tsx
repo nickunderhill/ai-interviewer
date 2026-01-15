@@ -1,6 +1,14 @@
 /**
  * Date Range Filter component for session filtering.
  */
+import { useTranslation } from 'react-i18next';
+import DatePicker, { registerLocale } from 'react-datepicker';
+import { uk } from 'date-fns/locale';
+import 'react-datepicker/dist/react-datepicker.css';
+
+// Register Ukrainian locale
+registerLocale('uk', uk);
+
 interface DateRangeFilterProps {
   startDate: string;
   endDate: string;
@@ -18,10 +26,12 @@ export function DateRangeFilter({
   onClear,
   onPresetSelect,
 }: DateRangeFilterProps) {
+  const { t, i18n } = useTranslation();
+
   const presets = [
-    { label: 'Last 7 days', days: 7 },
-    { label: 'Last 30 days', days: 30 },
-    { label: 'Last 3 months', days: 90 },
+    { label: t('sessions.history.last7Days'), days: 7 },
+    { label: t('sessions.history.last30Days'), days: 30 },
+    { label: t('sessions.history.last3Months'), days: 90 },
   ];
 
   // Check if current date range matches a preset
@@ -41,14 +51,14 @@ export function DateRangeFilter({
     <div className="bg-white p-4 rounded-lg shadow space-y-3">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-medium text-gray-700">
-          Filter by Date Range
+          {t('sessions.history.filterByDate')}
         </h3>
         {(startDate || endDate) && (
           <button
             onClick={onClear}
             className="text-sm text-indigo-600 hover:text-indigo-800 font-medium"
           >
-            Clear
+            {t('sessions.history.clear')}
           </button>
         )}
       </div>
@@ -75,14 +85,18 @@ export function DateRangeFilter({
             htmlFor="start-date"
             className="block text-sm font-medium text-gray-700 mb-1"
           >
-            From
+            {t('sessions.history.from')}
           </label>
-          <input
-            type="date"
+          <DatePicker
             id="start-date"
-            value={startDate}
-            onChange={e => onStartDateChange(e.target.value)}
+            selected={startDate ? new Date(startDate) : null}
+            onChange={date =>
+              onStartDateChange(date ? date.toISOString().split('T')[0] : '')
+            }
+            dateFormat="dd.MM.yyyy"
+            locale={i18n.language === 'ua' ? 'uk' : 'en'}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            wrapperClassName="w-full"
           />
         </div>
         <div>
@@ -90,14 +104,18 @@ export function DateRangeFilter({
             htmlFor="end-date"
             className="block text-sm font-medium text-gray-700 mb-1"
           >
-            To
+            {t('sessions.history.to')}
           </label>
-          <input
-            type="date"
+          <DatePicker
             id="end-date"
-            value={endDate}
-            onChange={e => onEndDateChange(e.target.value)}
+            selected={endDate ? new Date(endDate) : null}
+            onChange={date =>
+              onEndDateChange(date ? date.toISOString().split('T')[0] : '')
+            }
+            dateFormat="dd.MM.yyyy"
+            locale={i18n.language === 'ua' ? 'uk' : 'en'}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            wrapperClassName="w-full"
           />
         </div>
       </div>

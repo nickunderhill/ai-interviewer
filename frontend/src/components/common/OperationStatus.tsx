@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import type { OperationStatus, OperationType } from '../../types/operation';
 
 type Props = {
@@ -69,18 +70,19 @@ function ErrorIcon() {
 
 function getStatusText(
   status: OperationStatus,
-  operationType: OperationType
+  operationType: OperationType,
+  t: (key: string) => string
 ): string {
   if (operationType === 'question_generation') {
-    if (status === 'completed') return 'Question ready!';
-    if (status === 'failed') return 'Generation failed';
-    return 'Generating question...';
+    if (status === 'completed') return t('operation.questionReady');
+    if (status === 'failed') return t('operation.generationFailed');
+    return t('operation.generatingQuestion');
   }
 
   if (operationType === 'feedback_analysis') {
-    if (status === 'completed') return 'Feedback ready!';
-    if (status === 'failed') return 'Analysis failed';
-    return 'Analyzing feedback...';
+    if (status === 'completed') return t('operation.feedbackReady');
+    if (status === 'failed') return t('operation.analysisFailed');
+    return t('operation.analyzingFeedback');
   }
 
   return status;
@@ -93,6 +95,8 @@ export function OperationStatus({
   showTimeoutWarning = false,
   className,
 }: Props) {
+  const { t } = useTranslation();
+
   const statusColorClass =
     status === 'completed'
       ? 'text-green-700'
@@ -116,17 +120,19 @@ export function OperationStatus({
 
       <div>
         <p className={`font-medium ${statusColorClass}`}>
-          {getStatusText(status, operationType)}
+          {getStatusText(status, operationType, t)}
         </p>
 
         {(status === 'pending' || status === 'processing') &&
         elapsedSeconds > 10 ? (
-          <p className="mt-1 text-sm text-gray-600">{elapsedSeconds} seconds</p>
+          <p className="mt-1 text-sm text-gray-600">
+            {elapsedSeconds} {t('operation.seconds')}
+          </p>
         ) : null}
 
         {showTimeoutWarning ? (
           <p className="mt-1 text-sm text-orange-600">
-            Taking longer than expected. Still processing...
+            {t('operation.takingLonger')}
           </p>
         ) : null}
       </div>

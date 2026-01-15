@@ -2,6 +2,7 @@
  * Score Comparison component.
  * Displays chronological session scores with deltas showing improvements/regressions.
  */
+import { useTranslation } from 'react-i18next';
 import { useSessionsWithFeedback } from '../hooks/useSessionsWithFeedback';
 import type {
   SessionScoreWithDelta,
@@ -32,9 +33,9 @@ function calculateDeltas(
   });
 }
 
-function formatDate(dateString: string): string {
+function formatDate(dateString: string, locale: string): string {
   const date = new Date(dateString);
-  return new Intl.DateTimeFormat('en-US', {
+  return new Intl.DateTimeFormat(locale === 'ua' ? 'uk-UA' : 'en-US', {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
@@ -47,8 +48,14 @@ interface ScoreDeltaProps {
 }
 
 function ScoreDelta({ delta, direction }: ScoreDeltaProps) {
+  const { t } = useTranslation();
+
   if (delta === undefined || direction === 'none') {
-    return <span className="text-gray-400 text-sm">N/A</span>;
+    return (
+      <span className="text-gray-400 text-sm">
+        {t('progress.scoreComparison.na')}
+      </span>
+    );
   }
 
   const colorClass = direction === 'up' ? 'text-green-600' : 'text-red-600';
@@ -67,6 +74,7 @@ function ScoreDelta({ delta, direction }: ScoreDeltaProps) {
 }
 
 export function ScoreComparison() {
+  const { t, i18n } = useTranslation();
   const { data: sessions, isLoading, isError } = useSessionsWithFeedback();
 
   if (isLoading) {
@@ -84,7 +92,7 @@ export function ScoreComparison() {
   if (isError) {
     return (
       <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-        Failed to load score comparison data
+        {t('progress.scoreComparison.error')}
       </div>
     );
   }
@@ -106,11 +114,10 @@ export function ScoreComparison() {
           />
         </svg>
         <h3 className="text-lg font-semibold text-gray-900 mb-2">
-          Need More Data
+          {t('progress.scoreComparison.needMoreData')}
         </h3>
         <p className="text-gray-600">
-          Complete more interviews with feedback to see your progress
-          comparison.
+          {t('progress.scoreComparison.needMoreDataDescription')}
         </p>
       </div>
     );
@@ -122,10 +129,10 @@ export function ScoreComparison() {
     <div className="bg-white rounded-lg shadow overflow-hidden">
       <div className="px-6 py-4 border-b border-gray-200">
         <h2 className="text-xl font-semibold text-gray-900">
-          Score Comparison
+          {t('progress.scoreComparison.title')}
         </h2>
         <p className="text-sm text-gray-600 mt-1">
-          Track your improvement across sessions
+          {t('progress.scoreComparison.description')}
         </p>
       </div>
 
@@ -137,25 +144,25 @@ export function ScoreComparison() {
                 scope="col"
                 className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
               >
-                Date
+                {t('progress.scoreComparison.date')}
               </th>
               <th
                 scope="col"
                 className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
               >
-                Job Posting
+                {t('progress.scoreComparison.jobPosting')}
               </th>
               <th
                 scope="col"
                 className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
               >
-                Score
+                {t('progress.scoreComparison.score')}
               </th>
               <th
                 scope="col"
                 className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
               >
-                Change
+                {t('progress.scoreComparison.change')}
               </th>
             </tr>
           </thead>
@@ -166,7 +173,7 @@ export function ScoreComparison() {
                 className="hover:bg-gray-50 transition-colors"
               >
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {formatDate(session.created_at)}
+                  {formatDate(session.created_at, i18n.language)}
                 </td>
                 <td className="px-6 py-4 text-sm">
                   <div>

@@ -1,14 +1,18 @@
 /**
  * AnswerMessage component - displays user's answer.
  */
+import { useTranslation } from 'react-i18next';
 import type { Message } from '../types/session';
 import { formatDistanceToNow } from 'date-fns';
+import { uk } from 'date-fns/locale';
 
 interface AnswerMessageProps {
   message: Message;
 }
 
 export default function AnswerMessage({ message }: AnswerMessageProps) {
+  const { i18n } = useTranslation();
+
   return (
     <div
       className="bg-gray-50 border-r-4 border-gray-400 p-3 sm:p-4 rounded-l-lg ml-0 sm:ml-8"
@@ -25,6 +29,7 @@ export default function AnswerMessage({ message }: AnswerMessageProps) {
           <p className="text-xs sm:text-sm text-gray-500">
             {formatDistanceToNow(new Date(message.created_at), {
               addSuffix: true,
+              locale: i18n.language === 'ua' ? uk : undefined,
             })}
           </p>
         </div>

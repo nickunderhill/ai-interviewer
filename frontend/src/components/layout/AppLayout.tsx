@@ -3,9 +3,12 @@
  */
 import { useAuth } from '../../features/auth/hooks/useAuth';
 import { Outlet, Link } from 'react-router-dom';
+import { LanguageSwitcher } from '../common/LanguageSwitcher';
+import { useTranslation } from 'react-i18next';
 
 const AppLayout = () => {
   const { logout } = useAuth();
+  const { t } = useTranslation();
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -17,35 +20,36 @@ const AppLayout = () => {
                 to="/dashboard"
                 className="text-xl font-bold text-gray-900 hover:text-indigo-600 transition-colors"
               >
-                AI Interviewer
+                {t('app.title')}
               </Link>
               <div className="flex space-x-4">
                 <Link
                   to="/dashboard"
                   className="text-gray-700 hover:text-gray-900 px-3 py-2 text-sm font-medium"
                 >
-                  Dashboard
+                  {t('nav.dashboard')}
                 </Link>
                 <Link
                   to="/history"
                   className="text-gray-700 hover:text-gray-900 px-3 py-2 text-sm font-medium"
                 >
-                  History
+                  {t('nav.history')}
                 </Link>
                 <Link
                   to="/progress"
                   className="text-gray-700 hover:text-gray-900 px-3 py-2 text-sm font-medium"
                 >
-                  Progress
+                  {t('nav.progress')}
                 </Link>
               </div>
             </div>
-            <div className="flex items-center">
+            <div className="flex items-center space-x-2">
+              <LanguageSwitcher />
               <button
                 onClick={logout}
-                className="ml-4 px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
               >
-                Logout
+                {t('nav.logout')}
               </button>
             </div>
           </div>

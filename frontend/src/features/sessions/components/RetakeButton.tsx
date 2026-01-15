@@ -4,6 +4,7 @@
  */
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { retakeInterview } from '../api/sessionApi';
 
 interface RetakeButtonProps {
@@ -14,6 +15,7 @@ interface RetakeButtonProps {
 export function RetakeButton({ sessionId, className = '' }: RetakeButtonProps) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { t } = useTranslation();
 
   const retakeMutation = useMutation({
     mutationFn: () => retakeInterview(sessionId),
@@ -38,9 +40,11 @@ export function RetakeButton({ sessionId, className = '' }: RetakeButtonProps) {
       }}
       disabled={retakeMutation.isPending}
       className={`px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors ${className}`}
-      aria-label="Retake this interview"
+      aria-label={t('sessions.retakeButton.retake')}
     >
-      {retakeMutation.isPending ? 'Creating...' : 'Retake Interview'}
+      {retakeMutation.isPending
+        ? t('sessions.retakeButton.creating')
+        : t('sessions.retakeButton.retake')}
     </button>
   );
 }

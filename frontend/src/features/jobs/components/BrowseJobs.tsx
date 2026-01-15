@@ -3,24 +3,35 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useJobPostings } from '../hooks/useJobPostings';
 import { createJobPosting } from '../api/jobPostingApi';
 import { createSession } from '../../sessions/api/sessionApi';
 
-const jobPostingSchema = z.object({
-  title: z.string().min(1, 'Title is required').max(255),
-  company: z.string().max(255).optional().or(z.literal('')),
-  experience_level: z.string().max(50).optional().or(z.literal('')),
-  tech_stack: z.string().optional().or(z.literal('')),
-  description: z.string().min(1, 'Description is required').max(10_000),
-});
-
-type JobPostingFormData = z.infer<typeof jobPostingSchema>;
+type JobPostingFormData = {
+  title: string;
+  company?: string;
+  experience_level?: string;
+  tech_stack?: string;
+  description: string;
+};
 
 export default function BrowseJobs() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { t } = useTranslation();
   const { data: jobPostings, isLoading, isError } = useJobPostings();
+
+  const jobPostingSchema = z.object({
+    title: z.string().min(1, t('jobs.validation.titleRequired')).max(255),
+    company: z.string().max(255).optional().or(z.literal('')),
+    experience_level: z.string().max(50).optional().or(z.literal('')),
+    tech_stack: z.string().optional().or(z.literal('')),
+    description: z
+      .string()
+      .min(1, t('jobs.validation.descriptionRequired'))
+      .max(10_000),
+  });
 
   const {
     register,
@@ -69,14 +80,14 @@ export default function BrowseJobs() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold text-gray-900 mb-2">Browse Jobs</h1>
-      <p className="text-gray-600 mb-6">
-        Pick a job posting to start a new mock interview session.
-      </p>
+      <h1 className="text-3xl font-bold text-gray-900 mb-2">
+        {t('jobs.title')}
+      </h1>
+      <p className="text-gray-600 mb-6">{t('jobs.description')}</p>
 
       <div className="bg-white border border-gray-200 rounded-lg p-6 mb-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">
-          Create Job Posting
+          {t('jobs.create.title')}
         </h2>
         <form
           className="space-y-4"
@@ -85,12 +96,12 @@ export default function BrowseJobs() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700">
-                Title
+                {t('jobs.create.titleField')}
               </label>
               <input
                 type="text"
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm"
-                placeholder="e.g. Senior Python Developer"
+                placeholder={t('jobs.create.titlePlaceholder')}
                 {...register('title')}
               />
               {errors.title ? (
@@ -102,12 +113,12 @@ export default function BrowseJobs() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700">
-                Company (optional)
+                {t('jobs.create.company')} ({t('jobs.create.optional')})
               </label>
               <input
                 type="text"
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm"
-                placeholder="e.g. Acme Inc"
+                placeholder={t('jobs.create.companyPlaceholder')}
                 {...register('company')}
               />
               {errors.company ? (
@@ -121,12 +132,12 @@ export default function BrowseJobs() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700">
-                Experience level (optional)
+                {t('jobs.create.experienceLevel')} ({t('jobs.create.optional')})
               </label>
               <input
                 type="text"
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm"
-                placeholder="e.g. Junior / Mid / Senior"
+                placeholder={t('jobs.create.experiencePlaceholder')}
                 {...register('experience_level')}
               />
               {errors.experience_level ? (
@@ -138,12 +149,12 @@ export default function BrowseJobs() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700">
-                Tech stack (optional)
+                {t('jobs.create.techStack')} ({t('jobs.create.optional')})
               </label>
               <input
                 type="text"
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm"
-                placeholder="e.g. Python, FastAPI, PostgreSQL"
+                placeholder={t('jobs.create.techStackPlaceholder')}
                 {...register('tech_stack')}
               />
               {errors.tech_stack ? (
@@ -156,12 +167,12 @@ export default function BrowseJobs() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700">
-              Description
+              {t('jobs.create.description')}
             </label>
             <textarea
               rows={6}
               className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm"
-              placeholder="Paste the job description here"
+              placeholder={t('jobs.create.descriptionPlaceholder')}
               {...register('description')}
             />
             {errors.description ? (
@@ -177,21 +188,22 @@ export default function BrowseJobs() {
               className="inline-flex items-center justify-center bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 disabled:opacity-50"
               disabled={createJobPostingMutation.isPending}
             >
-              {createJobPostingMutation.isPending ? 'Creating…' : 'Create'}
+              {createJobPostingMutation.isPending
+                ? t('jobs.create.submitting')
+                : t('jobs.create.submit')}
             </button>
 
             <Link
               to="/dashboard"
               className="text-sm text-blue-600 hover:text-blue-800"
             >
-              Back to Dashboard
+              {t('jobs.create.backToDashboard')}
             </Link>
           </div>
 
           {createJobPostingMutation.isError ? (
             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-              Failed to create job posting. Please check the fields and try
-              again.
+              {t('jobs.create.error')}
             </div>
           ) : null}
         </form>
@@ -221,10 +233,10 @@ export default function BrowseJobs() {
       {!isLoading && !isError && (!jobPostings || jobPostings.length === 0) ? (
         <div className="bg-white border border-gray-200 rounded-lg p-8 text-center">
           <h2 className="text-lg font-semibold text-gray-900 mb-2">
-            No job postings yet
+            {t('jobs.list.empty')}
           </h2>
           <p className="text-gray-600 mb-4">
-            Create a job posting above, then start an interview.
+            {t('jobs.list.emptyDescription')}
           </p>
         </div>
       ) : null}
@@ -242,16 +254,16 @@ export default function BrowseJobs() {
                     {job.title}
                   </h3>
                   <p className="text-sm text-gray-600">
-                    {job.company ?? 'Company not specified'}
+                    {job.company ?? t('jobs.create.companyNotSpecified')}
                   </p>
                   {job.experience_level ? (
                     <p className="text-sm text-gray-500 mt-1">
-                      Experience: {job.experience_level}
+                      {t('jobs.list.experience')}: {job.experience_level}
                     </p>
                   ) : null}
                   {job.tech_stack?.length ? (
                     <p className="text-sm text-gray-500 mt-1">
-                      Tech: {job.tech_stack.join(', ')}
+                      {t('jobs.list.tech')}: {job.tech_stack.join(', ')}
                     </p>
                   ) : null}
                 </div>
@@ -263,8 +275,8 @@ export default function BrowseJobs() {
                   disabled={createSessionMutation.isPending}
                 >
                   {createSessionMutation.isPending
-                    ? 'Starting…'
-                    : 'Start Interview'}
+                    ? t('jobs.list.starting')
+                    : t('jobs.list.startInterview')}
                 </button>
               </div>
             </div>
@@ -274,7 +286,7 @@ export default function BrowseJobs() {
 
       {createSessionMutation.isError ? (
         <div className="mt-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-          Failed to start interview. Please try again.
+          {t('jobs.errorCreatingSession')}
         </div>
       ) : null}
     </div>

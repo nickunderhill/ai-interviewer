@@ -4,6 +4,7 @@
  */
 
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import type { DimensionScoresProps } from '../types/feedback';
 
 /**
@@ -32,18 +33,31 @@ export const DimensionScores: React.FC<DimensionScoresProps> = ({
   problemSolving,
   relevance,
 }) => {
+  const { t } = useTranslation();
+
   const dimensions: DimensionData[] = [
-    { label: 'Technical Accuracy', score: technicalAccuracy },
-    { label: 'Communication Clarity', score: communicationClarity },
-    { label: 'Problem Solving', score: problemSolving },
-    { label: 'Relevance', score: relevance },
+    {
+      label: t('feedback.dimensionScores.technicalAccuracy'),
+      score: technicalAccuracy,
+    },
+    {
+      label: t('feedback.dimensionScores.communicationClarity'),
+      score: communicationClarity,
+    },
+    {
+      label: t('feedback.dimensionScores.problemSolving'),
+      score: problemSolving,
+    },
+    { label: t('feedback.dimensionScores.relevance'), score: relevance },
   ];
 
   return (
     <div className="space-y-6" data-testid="dimension-scores">
       {/* Overall Score - Prominent Display */}
       <div className="border-b pb-4">
-        <h3 className="text-2xl font-bold text-gray-900 mb-2">Overall Score</h3>
+        <h3 className="text-2xl font-bold text-gray-900 mb-2">
+          {t('feedback.overallScore')}
+        </h3>
         <div className="flex items-center gap-4">
           <div
             className={`text-5xl font-bold ${
@@ -65,7 +79,7 @@ export const DimensionScores: React.FC<DimensionScoresProps> = ({
       {/* Individual Dimension Scores */}
       <div className="space-y-4">
         <h4 className="text-lg font-semibold text-gray-800">
-          Detailed Breakdown
+          {t('feedback.detailedBreakdown')}
         </h4>
         {dimensions.map(({ label, score }) => (
           <div

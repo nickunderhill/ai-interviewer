@@ -2,6 +2,7 @@
  * JobPostingContext component - displays job posting details in session detail view.
  */
 import { useId, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import type { JobPostingDetail } from '../types/session';
 
@@ -12,6 +13,7 @@ interface JobPostingContextProps {
 export default function JobPostingContext({
   jobPosting,
 }: JobPostingContextProps) {
+  const { t } = useTranslation();
   const [isDescriptionOpen, setIsDescriptionOpen] = useState(false);
   const descriptionId = useId();
 
@@ -35,7 +37,7 @@ export default function JobPostingContext({
       <div className="mb-4">
         <div className="flex items-center justify-between gap-3 mb-2">
           <h3 className="text-base sm:text-lg font-semibold text-gray-900">
-            Job Description
+            {t('sessions.detail.jobDescription')}
           </h3>
           <button
             type="button"
@@ -44,7 +46,9 @@ export default function JobPostingContext({
             aria-controls={descriptionId}
             onClick={() => setIsDescriptionOpen(open => !open)}
           >
-            {isDescriptionOpen ? 'Hide' : 'Show'}
+            {isDescriptionOpen
+              ? t('sessions.detail.hide')
+              : t('sessions.detail.show')}
           </button>
         </div>
 
@@ -61,7 +65,7 @@ export default function JobPostingContext({
       {jobPosting.tech_stack && jobPosting.tech_stack.length > 0 && (
         <div>
           <h3 className="text-lg font-semibold text-gray-900 mb-2">
-            Tech Stack
+            {t('sessions.detail.techStack')}
           </h3>
           <div className="flex flex-wrap gap-2">
             {jobPosting.tech_stack.map((tech, index) => (

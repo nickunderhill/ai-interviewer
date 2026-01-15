@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useMutation, useQuery } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import DimensionScores from './DimensionScores';
 import KnowledgeGaps from './KnowledgeGaps';
 import LearningRecommendations from './LearningRecommendations';
@@ -14,6 +15,7 @@ import { useOperationPolling } from '../../sessions/hooks/useOperationPolling';
 export default function FeedbackView() {
   const { id } = useParams<{ id: string }>();
   const sessionId = id ?? '';
+  const { t } = useTranslation();
 
   const [operationId, setOperationId] = useState<string | null>(null);
 
@@ -77,9 +79,11 @@ export default function FeedbackView() {
         to={`/sessions/${id}`}
         className="text-sm sm:text-base text-blue-600 hover:text-blue-800 mb-4 inline-block"
       >
-        ← Back to Session
+        ← {t('feedback.backToSession')}
       </Link>
-      <h1 className="text-2xl font-bold text-gray-900">Feedback</h1>
+      <h1 className="text-2xl font-bold text-gray-900">
+        {t('feedback.title')}
+      </h1>
 
       {operation ? (
         <div className="mt-4 flex items-center justify-between gap-4">
@@ -129,9 +133,7 @@ export default function FeedbackView() {
           )}
 
           <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-            <p className="text-gray-700">
-              Feedback has not been generated for this session yet.
-            </p>
+            <p className="text-gray-700">{t('feedback.generating')}</p>
             <button
               type="button"
               className="mt-3 inline-flex items-center justify-center bg-blue-600 text-white px-4 sm:px-6 py-2 rounded-lg hover:bg-blue-700 font-medium text-sm sm:text-base disabled:opacity-50"
@@ -142,8 +144,8 @@ export default function FeedbackView() {
               disabled={generateMutation.isPending || operationFetching}
             >
               {generateMutation.isPending || operationFetching
-                ? 'Generating...'
-                : 'Generate Feedback'}
+                ? t('feedback.generating')
+                : t('feedback.generateButton')}
             </button>
           </div>
         </div>
@@ -166,7 +168,7 @@ export default function FeedbackView() {
           <div className="bg-white border border-gray-200 rounded-lg p-4 sm:p-6 space-y-6">
             <div>
               <h2 className="text-xl font-bold text-gray-900">
-                Detailed Feedback
+                {t('feedback.detailedFeedback.title')}
               </h2>
               <p className="text-gray-700 mt-2">
                 {feedbackQuery.data.overall_comments ||
@@ -177,7 +179,7 @@ export default function FeedbackView() {
             <div className="space-y-3">
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">
-                  Technical Accuracy
+                  {t('feedback.detailedFeedback.technical')}
                 </h3>
                 <p className="text-gray-700 mt-1">
                   {feedbackQuery.data.technical_feedback}
@@ -185,7 +187,7 @@ export default function FeedbackView() {
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">
-                  Communication Clarity
+                  {t('feedback.detailedFeedback.communication')}
                 </h3>
                 <p className="text-gray-700 mt-1">
                   {feedbackQuery.data.communication_feedback}
@@ -193,7 +195,7 @@ export default function FeedbackView() {
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">
-                  Problem Solving
+                  {t('feedback.detailedFeedback.problemSolving')}
                 </h3>
                 <p className="text-gray-700 mt-1">
                   {feedbackQuery.data.problem_solving_feedback}
@@ -201,7 +203,7 @@ export default function FeedbackView() {
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">
-                  Relevance
+                  {t('feedback.detailedFeedback.relevance')}
                 </h3>
                 <p className="text-gray-700 mt-1">
                   {feedbackQuery.data.relevance_feedback}

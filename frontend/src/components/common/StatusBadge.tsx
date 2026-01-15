@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import type { OperationStatus } from '../../types/operation';
 
 type Props = {
@@ -7,6 +8,8 @@ type Props = {
 };
 
 export function StatusBadge({ status, size = 'md', className }: Props) {
+  const { t } = useTranslation();
+
   const sizeClasses =
     size === 'sm'
       ? 'text-xs px-2 py-0.5'
@@ -23,12 +26,12 @@ export function StatusBadge({ status, size = 'md', className }: Props) {
 
   const statusText =
     status === 'pending'
-      ? 'Queued'
+      ? t('operation.queued')
       : status === 'processing'
-      ? 'Processing'
+      ? t('operation.processing')
       : status === 'completed'
-      ? 'Completed'
-      : 'Failed';
+      ? t('operation.completed')
+      : t('operation.failed');
 
   return (
     <span

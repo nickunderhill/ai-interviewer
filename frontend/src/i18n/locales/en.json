@@ -1,0 +1,357 @@
+{
+  "app": {
+    "title": "AI Interviewer"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "history": "History",
+    "progress": "Progress",
+    "logout": "Logout",
+    "browseJobs": "Browse Jobs"
+  },
+  "auth": {
+    "login": {
+      "title": "Sign in to your account",
+      "email": "Email address",
+      "password": "Password",
+      "submit": "Sign in",
+      "submitting": "Signing in...",
+      "registerLink": "Don't have an account? Register",
+      "error": "Invalid email or password. Please try again."
+    },
+    "register": {
+      "title": "Create your account",
+      "email": "Email address",
+      "password": "Password",
+      "confirmPassword": "Confirm Password",
+      "submit": "Create account",
+      "submitting": "Creating account...",
+      "loginLink": "Already have an account? Sign in",
+      "error": "Registration failed. Please check your information and try again.",
+      "passwordMismatch": "Passwords don't match"
+    },
+    "validation": {
+      "emailInvalid": "Invalid email address",
+      "passwordMin": "Password must be at least 8 characters",
+      "passwordMax": "Password must be 128 characters or fewer"
+    }
+  },
+  "dashboard": {
+    "title": "Performance Dashboard",
+    "noData": {
+      "title": "No Data Yet",
+      "description": "Complete your first interview to see your performance metrics here.",
+      "action": "Browse Jobs"
+    },
+    "metrics": {
+      "completedInterviews": "Completed Interviews",
+      "averageScore": "Average Score",
+      "questionsAnswered": "Questions Answered",
+      "noFeedback": "No feedback yet"
+    },
+    "mostPracticed": {
+      "title": "Most Practiced Roles",
+      "noData": "No interview data yet. Start your first interview to see your most practiced roles!",
+      "interview": "interview",
+      "interviews": "interviews"
+    },
+    "profile": {
+      "title": "Profile Settings",
+      "description": "Configure your OpenAI API key and resume to enable AI questions and feedback.",
+      "apiKey": "OpenAI API key",
+      "apiKeyPlaceholder": "sk-...",
+      "saveApiKey": "Save API key",
+      "saving": "Saving…",
+      "apiKeySuccess": "API key configured successfully",
+      "apiKeyInfo": "Your key is stored encrypted and never shown again.",
+      "resume": "Resume (plain text)",
+      "resumePlaceholder": "Paste your resume here…",
+      "saveResume": "Save resume",
+      "resumeSuccess": "Resume saved successfully",
+      "resumeInfo": "Feedback generation requires a resume.",
+      "error": "Failed to save. Please try again."
+    },
+    "createJobPosting": "Create Job Posting",
+    "errorLoading": "Failed to load dashboard metrics"
+  },
+  "jobs": {
+    "title": "Browse Jobs",
+    "description": "Pick a job posting to start a new mock interview session.",
+    "create": {
+      "title": "Create Job Posting",
+      "titleField": "Title",
+      "titlePlaceholder": "e.g. Senior Python Developer",
+      "company": "Company",
+      "companyPlaceholder": "e.g. TechCorp Inc.",
+      "companyNotSpecified": "Company not specified",
+      "experienceLevel": "Experience Level",
+      "experiencePlaceholder": "e.g. Mid-level, Senior",
+      "techStack": "Tech Stack",
+      "techStackPlaceholder": "e.g. Python, FastAPI, PostgreSQL",
+      "description": "Description",
+      "descriptionPlaceholder": "Paste job description here…",
+      "submit": "Create",
+      "submitting": "Creating…",
+      "backToDashboard": "Back to Dashboard",
+      "success": "Job posting created successfully!",
+      "error": "Failed to create job posting. Please check the fields and try again.",
+      "optional": "optional"
+    },
+    "list": {
+      "empty": "No job postings yet",
+      "emptyDescription": "Create a job posting above, then start an interview.",
+      "startInterview": "Start Interview",
+      "starting": "Starting…",
+      "experience": "Experience",
+      "tech": "Tech"
+    },
+    "validation": {
+      "titleRequired": "Title is required",
+      "descriptionRequired": "Description is required"
+    },
+    "errorCreatingSession": "Failed to start interview session"
+  },
+  "sessions": {
+    "emptyState": {
+      "title": "No completed interviews yet",
+      "message": "Start your first mock interview to track your progress and receive AI-powered feedback!",
+      "buttonText": "Start Interview"
+    },
+    "history": {
+      "title": "Session History",
+      "loading": "Loading sessions...",
+      "error": "Failed to load session history",
+      "empty": "No completed interviews yet",
+      "emptyDescription": "Start your first mock interview to track your progress and receive AI-powered feedback!",
+      "filterByJob": "Filter by Job Posting",
+      "allJobs": "All job postings",
+      "clear": "Clear",
+      "showing": "Showing",
+      "sessions": "sessions",
+      "filterByDate": "Filter by Date Range",
+      "startDate": "Start Date",
+      "endDate": "End Date",
+      "last7Days": "Last 7 days",
+      "last30Days": "Last 30 days",
+      "last90Days": "Last 90 days",
+      "last3Months": "Last 3 months",
+      "from": "From",
+      "to": "To"
+    },
+    "historyItem": {
+      "viewDetails": "View Details",
+      "remove": "Remove",
+      "removing": "Removing…",
+      "removeError": "Failed to remove this attempt. Please try again.",
+      "completedLabel": "Completed:",
+      "questionsAnswered": "Questions Answered:",
+      "filtering": "Filtering:",
+      "at": "at"
+    },
+    "detail": {
+      "title": "Session Detail",
+      "status": "Status",
+      "jobPosting": "Job Posting",
+      "company": "Company",
+      "created": "Created",
+      "questions": "questions",
+      "loading": "Loading session...",
+      "error": "Failed to load session details",
+      "viewFeedback": "View Feedback",
+      "conversation": "Conversation",
+      "nextQuestion": "Next Question",
+      "completeInterview": "Complete Interview",
+      "noMessages": "No messages yet. Answer the question to continue.",
+      "question": "Question",
+      "answer": "Answer",
+      "jobDescription": "Job Description",
+      "show": "Show",
+      "hide": "Hide",
+      "techStack": "Tech Stack",
+      "completedOn": "Completed on",
+      "retake": "Retake",
+      "retakeOf": "Retake of",
+      "originalSession": "Original Session",
+      "viewOriginal": "View Original Session",
+      "viewRetakes": "View Retakes",
+      "originalAttempt": "Original Attempt",
+      "attemptNumber": "Attempt #{{number}}",
+      "viewAllAttempts": "View all attempts",
+      "nthAttempt": "This is your {{ordinal}} attempt at this role",
+      "interviewQA": "Interview Questions & Answers",
+      "generateNextQuestion": "Generate Next Question",
+      "generating": "Generating...",
+      "completeSession": "Complete Session",
+      "completing": "Completing...",
+      "noMessagesYet": "No messages in this session yet.",
+      "errorCompleteSession": "Unable to complete session.\n\nWhat to do: Try again."
+    },
+    "feedbackLink": {
+      "available": "AI Feedback Available",
+      "generate": "Generate AI Feedback",
+      "availableDescription": "Your interview performance has been analyzed. View detailed feedback on your answers.",
+      "generateDescription": "Feedback has not been generated for this session yet.",
+      "viewButton": "View Feedback",
+      "generateButton": "Generate Feedback"
+    },
+    "retakeButton": {
+      "retake": "Retake Interview",
+      "creating": "Creating..."
+    },
+    "answer": {
+      "label": "Your answer",
+      "placeholder": "Type your answer here...",
+      "submit": "Submit Answer",
+      "submitting": "Submitting...",
+      "analyzing": "Analyzing feedback…",
+      "errorEmpty": "Please enter an answer before submitting.",
+      "errorTooLong": "Your answer is too long. Please keep it under {{max}} characters.",
+      "errorSubmit": "Unable to submit answer. Try again.",
+      "errorFeedback": "Unable to analyze feedback. Try again.",
+      "feedbackTimeout": "Feedback analysis is taking longer than expected. Check back later.",
+      "charactersRemaining": "{{count}} characters remaining"
+    },
+    "questionType": {
+      "technical": "TECHNICAL",
+      "behavioral": "BEHAVIORAL",
+      "situational": "SITUATIONAL"
+    },
+    "status": {
+      "completed": "Completed",
+      "active": "Active",
+      "in_progress": "In Progress",
+      "failed": "Failed"
+    }
+  },
+  "feedback": {
+    "title": "Interview Feedback",
+    "loading": "Loading feedback...",
+    "error": "Failed to load feedback",
+    "generating": "Generating feedback…",
+    "generateButton": "Generate Feedback",
+    "overallScore": "Overall Score",
+    "detailedBreakdown": "Detailed Breakdown",
+    "dimensionScores": {
+      "title": "Dimension Scores",
+      "technicalAccuracy": "Technical Accuracy",
+      "communicationClarity": "Communication Clarity",
+      "problemSolving": "Problem Solving",
+      "relevance": "Relevance to Job"
+    },
+    "detailedFeedback": {
+      "title": "Detailed Feedback",
+      "technical": "Technical Accuracy",
+      "communication": "Communication Clarity",
+      "problemSolving": "Problem Solving",
+      "relevance": "Relevance",
+      "overallComments": "Overall Comments"
+    },
+    "knowledgeGaps": {
+      "title": "Knowledge Gaps",
+      "empty": "No specific gaps identified. Great work!"
+    },
+    "recommendations": {
+      "title": "Learning Recommendations",
+      "empty": "No specific recommendations provided. Keep up the great work!"
+    },
+    "backToSession": "Back to Session",
+    "backToHistory": "Back to History"
+  },
+  "progress": {
+    "title": "Your Progress",
+    "description": "Track your improvement across interviews",
+    "scoreComparison": {
+      "title": "Score Comparison",
+      "description": "Track your improvement across sessions",
+      "loading": "Loading score comparison...",
+      "error": "Failed to load score comparison data",
+      "empty": "Complete at least 2 interviews with feedback to see your progress.",
+      "needMoreData": "Need More Data",
+      "needMoreDataDescription": "Complete more interviews with feedback to see your progress comparison.",
+      "date": "Date",
+      "jobPosting": "Job Posting",
+      "score": "Score",
+      "change": "Change",
+      "session": "Session",
+      "improved": "Improved",
+      "declined": "Declined",
+      "na": "N/A"
+    },
+    "scoreTrends": {
+      "title": "Score Trends",
+      "description": "Your performance over time",
+      "improving": "improving",
+      "declining": "declining",
+      "stable": "stable",
+      "bestScore": "Best Score",
+      "averageScore": "Average Score",
+      "latestScore": "Latest Score",
+      "needMoreData": "Need More Data",
+      "needMoreDataDescription": "You need at least 2 completed interviews with feedback to see your score trends.",
+      "overall": "Overall",
+      "technical": "Technical",
+      "communication": "Communication",
+      "problemSolving": "Problem Solving",
+      "relevance": "Relevance",
+      "noData": "No completed sessions yet",
+      "noDataDescription": "Start interviews to track your progress over time."
+    }
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "submit": "Submit",
+    "close": "Close",
+    "confirm": "Confirm",
+    "yes": "Yes",
+    "no": "No",
+    "optional": "Optional",
+    "required": "Required",
+    "search": "Search",
+    "filter": "Filter",
+    "clearFilter": "Clear Filter",
+    "noResults": "No results found",
+    "retry": "Retry"
+  },
+  "errors": {
+    "generic": "Something went wrong. Please try again.",
+    "network": "Network error. Please check your connection.",
+    "unauthorized": "You are not authorized to perform this action.",
+    "notFound": "The requested resource was not found.",
+    "serverError": "Server error. Please try again later.",
+    "somethingWentWrong": "Something went wrong",
+    "whatToDo": "What to do:",
+    "tryAgain": "Try again.",
+    "reloadPage": "Reload Page",
+    "goToDashboard": "Go to Dashboard",
+    "takingLonger": "Taking longer than expected. Still processing..."
+  },
+  "operation": {
+    "generatingQuestion": "Generating question...",
+    "questionReady": "Question ready!",
+    "generationFailed": "Generation failed",
+    "analyzingFeedback": "Analyzing feedback...",
+    "feedbackReady": "Feedback ready!",
+    "analysisFailed": "Analysis failed",
+    "processing": "Processing...",
+    "completed": "Completed",
+    "failed": "Failed",
+    "seconds": "seconds",
+    "thisUsuallyTakes": "This usually takes 5-10 seconds",
+    "takingLonger": "Taking longer than expected. Still processing...",
+    "queued": "Queued",
+    "pending": "Pending"
+  },
+  "language": {
+    "en": "EN",
+    "ua": "UA",
+    "switchTo": "Switch to {{language}}"
+  }
+}

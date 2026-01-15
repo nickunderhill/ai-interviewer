@@ -4,6 +4,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { useSession } from '../hooks/useSession';
 import { useMessages } from '../hooks/useMessages';
 import JobPostingContext from './JobPostingContext';
@@ -21,6 +22,7 @@ import { completeSession } from '../api/sessionApi';
 
 export default function SessionDetail() {
   const { id } = useParams<{ id: string }>();
+  const { t } = useTranslation();
 
   const [questionOperationId, setQuestionOperationId] = useState<string | null>(
     null
@@ -103,18 +105,16 @@ export default function SessionDetail() {
     return (
       <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         <ErrorDisplay
-          message={
-            'Failed to load session.\n\nWhat to do: Try again. If the problem persists, return to your session history and try again.'
-          }
+          message={t('sessions.detail.error')}
           onRetry={handleRetry}
           severity="error"
         />
         <Link
           to="/history"
           className="mt-4 inline-block text-sm sm:text-base text-blue-600 hover:text-blue-800"
-          aria-label="Back to session history"
+          aria-label={t('feedback.backToHistory')}
         >
-          ← Back to Session History
+          ← {t('feedback.backToHistory')}
         </Link>
       </div>
     );
@@ -133,9 +133,9 @@ export default function SessionDetail() {
       <Link
         to="/history"
         className="text-sm sm:text-base text-blue-600 hover:text-blue-800 mb-4 inline-block"
-        aria-label="Back to session history"
+        aria-label={t('feedback.backToHistory')}
       >
-        ← Back to Session History
+        ← {t('feedback.backToHistory')}
       </Link>
 
       {/* Retake Badge and Session Context */}
@@ -148,7 +148,7 @@ export default function SessionDetail() {
               to={`/history?original=${session.original_session_id}`}
               className="inline-flex items-center text-sm text-purple-600 hover:text-purple-700 font-medium"
             >
-              View all attempts →
+              {t('sessions.detail.viewAllAttempts')} →
             </Link>
           )}
           {!session.original_session_id && session.retake_number === 1 && (
@@ -156,19 +156,20 @@ export default function SessionDetail() {
               to={`/history?original=${session.id}`}
               className="inline-flex items-center text-sm text-purple-600 hover:text-purple-700 font-medium"
             >
-              View all attempts →
+              {t('sessions.detail.viewAllAttempts')} →
             </Link>
           )}
         </div>
         {session.retake_number > 1 && (
           <p className="text-sm text-gray-600 mt-2">
-            This is your{' '}
-            {session.retake_number === 2
-              ? '2nd'
-              : session.retake_number === 3
-              ? '3rd'
-              : `${session.retake_number}th`}{' '}
-            attempt at this role
+            {t('sessions.detail.nthAttempt', {
+              ordinal:
+                session.retake_number === 2
+                  ? '2nd'
+                  : session.retake_number === 3
+                  ? '3rd'
+                  : `${session.retake_number}th`,
+            })}
           </p>
         )}
       </div>
@@ -181,7 +182,7 @@ export default function SessionDetail() {
       {/* Q&A Messages */}
       <div className="mt-6 sm:mt-8">
         <h2 className="text-xl sm:text-2xl font-bold mb-4">
-          Interview Questions & Answers
+          {t('sessions.detail.interviewQA')}
         </h2>
 
         {session.status === 'active' && (
@@ -221,8 +222,8 @@ export default function SessionDetail() {
               }
             >
               {generateQuestionMutation.isPending || questionOperationFetching
-                ? 'Generating...'
-                : 'Generate Next Question'}
+                ? t('sessions.detail.generating')
+                : t('sessions.detail.generateNextQuestion')}
             </button>
           </div>
         )}
@@ -231,9 +232,7 @@ export default function SessionDetail() {
           <div className="mb-4 space-y-3">
             {completeSessionMutation.isError ? (
               <ErrorDisplay
-                message={
-                  'Unable to complete session.\n\nWhat to do: Try again.'
-                }
+                message={t('sessions.detail.errorCompleteSession')}
                 onRetry={() => completeSessionMutation.mutate()}
                 severity="error"
               />
@@ -244,11 +243,11 @@ export default function SessionDetail() {
               className="inline-flex items-center justify-center bg-gray-100 text-gray-900 border border-gray-300 px-4 sm:px-6 py-2 rounded-lg hover:bg-gray-200 font-medium text-sm sm:text-base disabled:opacity-50"
               onClick={() => completeSessionMutation.mutate()}
               disabled={completeSessionMutation.isPending}
-              aria-label="Complete session"
+              aria-label={t('sessions.detail.completeSession')}
             >
               {completeSessionMutation.isPending
-                ? 'Completing...'
-                : 'Complete Session'}
+                ? t('sessions.detail.completing')
+                : t('sessions.detail.completeSession')}
             </button>
           </div>
         )}
@@ -271,7 +270,7 @@ export default function SessionDetail() {
           </div>
         ) : (
           <p className="text-gray-500 text-center py-8">
-            No messages in this session yet.
+            {t('sessions.detail.noMessagesYet')}
           </p>
         )}
       </div>

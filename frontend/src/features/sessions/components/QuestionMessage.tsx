@@ -1,8 +1,10 @@
 /**
  * QuestionMessage component - displays an interview question.
  */
+import { useTranslation } from 'react-i18next';
 import type { Message } from '../types/session';
 import { formatDistanceToNow } from 'date-fns';
+import { uk } from 'date-fns/locale';
 
 interface QuestionMessageProps {
   message: Message;
@@ -15,6 +17,7 @@ const questionTypeColors = {
 };
 
 export default function QuestionMessage({ message }: QuestionMessageProps) {
+  const { t, i18n } = useTranslation();
   const colorClass = message.question_type
     ? questionTypeColors[message.question_type]
     : 'bg-gray-100 text-gray-800';
@@ -33,7 +36,7 @@ export default function QuestionMessage({ message }: QuestionMessageProps) {
             <span
               className={`inline-block text-xs font-semibold px-2 py-1 rounded mb-2 ${colorClass}`}
             >
-              {message.question_type.toUpperCase()}
+              {t(`sessions.questionType.${message.question_type}`)}
             </span>
           )}
           <p className="text-sm sm:text-base text-gray-900 font-medium mb-2">
@@ -42,6 +45,7 @@ export default function QuestionMessage({ message }: QuestionMessageProps) {
           <p className="text-xs sm:text-sm text-gray-500">
             {formatDistanceToNow(new Date(message.created_at), {
               addSuffix: true,
+              locale: i18n.language === 'ua' ? uk : undefined,
             })}
           </p>
         </div>

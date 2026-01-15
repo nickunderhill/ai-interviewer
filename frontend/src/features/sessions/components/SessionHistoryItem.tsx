@@ -4,6 +4,7 @@
  */
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { deleteSession } from '../api/sessionApi';
 import type { Session } from '../types/session';
 import { RetakeBadge } from './RetakeBadge';
@@ -13,20 +14,18 @@ interface SessionHistoryItemProps {
   session: Session;
 }
 
-/**
- * Format date to readable format (e.g., "Dec 25, 2025").
- */
-const formatDate = (dateString: string): string => {
-  const date = new Date(dateString);
-  return date.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
-};
-
 export const SessionHistoryItem = ({ session }: SessionHistoryItemProps) => {
+  const { t, i18n } = useTranslation();
   const queryClient = useQueryClient();
+
+  const formatDate = (dateString: string): string => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString(i18n.language === 'ua' ? 'uk-UA' : 'en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
+  };
 
   const deleteMutation = useMutation({
     mutationFn: () => deleteSession(session.id),
@@ -35,7 +34,7 @@ export const SessionHistoryItem = ({ session }: SessionHistoryItemProps) => {
     },
     onError: (error: unknown) => {
       console.error('Failed to delete session:', error);
-      alert('Failed to remove this attempt. Please try again.');
+      alert(t('sessions.historyItem.removeError'));
     },
   });
 
@@ -54,18 +53,22 @@ export const SessionHistoryItem = ({ session }: SessionHistoryItemProps) => {
         <div className="flex flex-col gap-2 items-end">
           <RetakeBadge retakeNumber={session.retake_number} />
           <span className="px-3 py-1 bg-green-100 text-green-800 text-sm font-medium rounded-full">
-            Completed
+            {t('sessions.status.completed')}
           </span>
         </div>
       </div>
 
       <div className="flex gap-6 text-sm text-gray-600 mb-4">
         <div>
-          <span className="font-medium">Completed:</span>{' '}
+          <span className="font-medium">
+            {t('sessions.historyItem.completedLabel')}
+          </span>{' '}
           {formatDate(session.updated_at)}
         </div>
         <div>
-          <span className="font-medium">Questions Answered:</span>{' '}
+          <span className="font-medium">
+            {t('sessions.historyItem.questionsAnswered')}
+          </span>{' '}
           {session.current_question_number}
         </div>
       </div>
@@ -75,7 +78,7 @@ export const SessionHistoryItem = ({ session }: SessionHistoryItemProps) => {
           to={`/sessions/${session.id}`}
           className="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium"
         >
-          View Details
+          {t('sessions.historyItem.viewDetails')}
           <svg
             className="ml-2 w-4 h-4"
             fill="none"
@@ -99,7 +102,9 @@ export const SessionHistoryItem = ({ session }: SessionHistoryItemProps) => {
             className="text-sm font-medium text-red-600 hover:text-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
             aria-label="Remove this attempt from history"
           >
-            {deleteMutation.isPending ? 'Removing…' : 'Remove'}
+            {deleteMutation.isPending
+              ? t('sessions.historyItem.removing')
+              : t('sessions.historyItem.remove')}
           </button>
           <RetakeButton sessionId={session.id} />
         </div>

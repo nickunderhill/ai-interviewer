@@ -4,18 +4,20 @@
  */
 
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import type { LearningRecommendationsProps } from '../types/feedback';
 
 export const LearningRecommendations: React.FC<
   LearningRecommendationsProps
 > = ({ learningRecommendations }) => {
+  const { t } = useTranslation();
   const hasRecommendations =
     learningRecommendations && learningRecommendations.length > 0;
 
   return (
     <div className="space-y-3" data-testid="learning-recommendations">
       <h3 className="text-xl font-bold text-gray-900">
-        Learning Recommendations
+        {t('feedback.recommendations.title')}
       </h3>
 
       {!hasRecommendations ? (
@@ -24,7 +26,7 @@ export const LearningRecommendations: React.FC<
           data-testid="learning-recommendations-empty"
         >
           <p className="text-blue-800 font-medium">
-            No specific recommendations provided. Keep up the great work!
+            {t('feedback.recommendations.empty')}
           </p>
         </div>
       ) : (

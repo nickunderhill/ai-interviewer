@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 
 import { submitAnswer } from '../api/sessionApi';
 import { generateFeedback } from '../../../services/sessionAiApi';
@@ -15,6 +16,7 @@ type Props = {
 };
 
 export function AnswerForm({ sessionId, className, onSubmitted }: Props) {
+  const { t } = useTranslation();
   const MAX_ANSWER_LENGTH = 20000;
   const [answerText, setAnswerText] = useState('');
   const [feedbackOperationId, setFeedbackOperationId] = useState<string | null>(
@@ -96,7 +98,7 @@ export function AnswerForm({ sessionId, className, onSubmitted }: Props) {
           htmlFor="answer"
           className="block text-sm font-medium text-gray-900"
         >
-          Your answer
+          {t('sessions.answer.label')}
         </label>
         <textarea
           id="answer"
@@ -106,7 +108,7 @@ export function AnswerForm({ sessionId, className, onSubmitted }: Props) {
           maxLength={MAX_ANSWER_LENGTH}
           rows={4}
           className="w-full rounded-lg border border-gray-300 p-3 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          placeholder="Type your answer here..."
+          placeholder={t('sessions.answer.placeholder')}
           disabled={isBusy}
         />
 
@@ -119,7 +121,9 @@ export function AnswerForm({ sessionId, className, onSubmitted }: Props) {
           className="inline-flex items-center justify-center bg-blue-600 text-white px-4 sm:px-6 py-2 rounded-lg hover:bg-blue-700 font-medium text-sm sm:text-base disabled:opacity-50"
           disabled={isBusy}
         >
-          {submitMutation.isPending ? 'Submitting...' : 'Submit Answer'}
+          {submitMutation.isPending
+            ? t('sessions.answer.submitting')
+            : t('sessions.answer.submit')}
         </button>
       </form>
 

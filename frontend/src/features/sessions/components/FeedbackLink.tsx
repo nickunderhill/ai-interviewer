@@ -2,6 +2,7 @@
  * FeedbackLink component - displays link to view feedback if it exists.
  */
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useFeedbackStatus } from '../hooks/useFeedbackStatus';
 
 interface FeedbackLinkProps {
@@ -13,6 +14,7 @@ export default function FeedbackLink({
   sessionId,
   sessionStatus,
 }: FeedbackLinkProps) {
+  const { t } = useTranslation();
   const { data: feedbackExists, isLoading } = useFeedbackStatus(sessionId);
 
   if (sessionStatus !== 'completed') {
@@ -24,12 +26,14 @@ export default function FeedbackLink({
   }
 
   const title = feedbackExists
-    ? 'AI Feedback Available'
-    : 'Generate AI Feedback';
+    ? t('sessions.feedbackLink.available')
+    : t('sessions.feedbackLink.generate');
   const description = feedbackExists
-    ? 'Your interview performance has been analyzed. View detailed feedback on your answers.'
-    : 'Feedback has not been generated for this session yet.';
-  const buttonText = feedbackExists ? 'View Feedback' : 'Generate Feedback';
+    ? t('sessions.feedbackLink.availableDescription')
+    : t('sessions.feedbackLink.generateDescription');
+  const buttonText = feedbackExists
+    ? t('sessions.feedbackLink.viewButton')
+    : t('sessions.feedbackLink.generateButton');
 
   return (
     <div className="mt-6 sm:mt-8 p-4 sm:p-6 bg-blue-50 border border-blue-200 rounded-lg">

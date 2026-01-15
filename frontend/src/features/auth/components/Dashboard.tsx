@@ -3,6 +3,7 @@ import type { PracticedRole } from '../../metrics';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { setOpenAiApiKey } from '../../users/api/userApi';
 import {
   createResume,
@@ -45,17 +46,15 @@ interface MostPracticedRolesProps {
 
 function MostPracticedRoles({ roles }: MostPracticedRolesProps) {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   if (roles.length === 0) {
     return (
       <div className="bg-white p-6 rounded-lg shadow">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">
-          Most Practiced Roles
+          {t('dashboard.mostPracticed.title')}
         </h3>
-        <p className="text-gray-500">
-          No interview data yet. Start your first interview to see your most
-          practiced roles!
-        </p>
+        <p className="text-gray-500">{t('dashboard.mostPracticed.noData')}</p>
       </div>
     );
   }
@@ -63,7 +62,7 @@ function MostPracticedRoles({ roles }: MostPracticedRolesProps) {
   return (
     <div className="bg-white p-6 rounded-lg shadow">
       <h3 className="text-lg font-semibold text-gray-900 mb-4">
-        Most Practiced Roles
+        {t('dashboard.mostPracticed.title')}
       </h3>
       <div className="space-y-3">
         {roles.map((role, index) => (
@@ -81,7 +80,10 @@ function MostPracticedRoles({ roles }: MostPracticedRolesProps) {
               )}
             </div>
             <span className="bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full text-sm font-medium">
-              {role.count} {role.count === 1 ? 'interview' : 'interviews'}
+              {role.count}{' '}
+              {role.count === 1
+                ? t('dashboard.mostPracticed.interview')
+                : t('dashboard.mostPracticed.interviews')}
             </span>
           </button>
         ))}
@@ -120,25 +122,26 @@ function ProfileSettingsCard({
   resumeSavedMessage,
   resumeErrorMessage,
 }: ProfileSettingsCardProps) {
+  const { t } = useTranslation();
+
   return (
     <div className="bg-white p-6 rounded-lg shadow">
       <h2 className="text-lg font-semibold text-gray-900 mb-2">
-        Profile Settings
+        {t('dashboard.profile.title')}
       </h2>
       <p className="text-sm text-gray-600 mb-4">
-        Configure your OpenAI API key and resume to enable AI questions and
-        feedback.
+        {t('dashboard.profile.description')}
       </p>
 
       <div className="space-y-3">
         <div>
           <label className="block text-sm font-medium text-gray-700">
-            OpenAI API key
+            {t('dashboard.profile.apiKey')}
           </label>
           <input
             type="password"
             className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm"
-            placeholder="sk-..."
+            placeholder={t('dashboard.profile.apiKeyPlaceholder')}
             value={apiKey}
             onChange={e => onApiKeyChange(e.target.value)}
           />
@@ -150,7 +153,9 @@ function ProfileSettingsCard({
           disabled={isSaving || apiKey.trim().length === 0}
           onClick={onSave}
         >
-          {isSaving ? 'Saving…' : 'Save API key'}
+          {isSaving
+            ? t('dashboard.profile.saving')
+            : t('dashboard.profile.saveApiKey')}
         </button>
 
         {savedMessage ? (
@@ -166,18 +171,18 @@ function ProfileSettingsCard({
         ) : null}
 
         <p className="text-xs text-gray-500">
-          Your key is stored encrypted and never shown again.
+          {t('dashboard.profile.apiKeyInfo')}
         </p>
 
         <div className="pt-4 border-t border-gray-200" />
 
         <div>
           <label className="block text-sm font-medium text-gray-700">
-            Resume (plain text)
+            {t('dashboard.profile.resume')}
           </label>
           <textarea
             className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm min-h-[140px]"
-            placeholder="Paste your resume here…"
+            placeholder={t('dashboard.profile.resumePlaceholder')}
             value={resumeContent}
             onChange={e => onResumeChange(e.target.value)}
           />
@@ -189,7 +194,9 @@ function ProfileSettingsCard({
           disabled={isSavingResume || resumeContent.trim().length === 0}
           onClick={onSaveResume}
         >
-          {isSavingResume ? 'Saving…' : 'Save resume'}
+          {isSavingResume
+            ? t('dashboard.profile.saving')
+            : t('dashboard.profile.saveResume')}
         </button>
 
         {resumeSavedMessage ? (
@@ -205,7 +212,7 @@ function ProfileSettingsCard({
         ) : null}
 
         <p className="text-xs text-gray-500">
-          Feedback generation requires a resume.
+          {t('dashboard.profile.resumeInfo')}
         </p>
       </div>
     </div>
@@ -218,6 +225,7 @@ function ProfileSettingsCard({
 export const Dashboard = () => {
   const { data: metrics, isLoading, isError } = useDashboardMetrics();
   const queryClient = useQueryClient();
+  const { t } = useTranslation();
   const [apiKey, setApiKey] = useState('');
   const [apiKeySavedMessage, setApiKeySavedMessage] = useState<string | null>(
     null
@@ -258,7 +266,7 @@ export const Dashboard = () => {
       return createResume({ content });
     },
     onSuccess: () => {
-      setResumeSavedMessage('Resume saved successfully');
+      setResumeSavedMessage(t('dashboard.profile.resumeSuccess'));
       queryClient.invalidateQueries({ queryKey: ['resume', 'me'] });
     },
   });
@@ -298,14 +306,14 @@ export const Dashboard = () => {
     return (
       <div className="px-4 py-6">
         <h1 className="text-3xl font-bold text-gray-900 mb-8">
-          Performance Dashboard
+          {t('dashboard.title')}
         </h1>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="bg-white p-6 rounded-lg shadow flex justify-center items-center min-h-[200px]">
             <div
               className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"
               role="status"
-              aria-label="Loading dashboard metrics"
+              aria-label={t('dashboard.loading')}
             ></div>
           </div>
           <ProfileSettingsCard {...profileSettingsCardProps} />
@@ -318,11 +326,11 @@ export const Dashboard = () => {
     return (
       <div className="px-4 py-6">
         <h1 className="text-3xl font-bold text-gray-900 mb-8">
-          Performance Dashboard
+          {t('dashboard.title')}
         </h1>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-            Failed to load dashboard metrics
+            {t('dashboard.errorLoading')}
           </div>
           <ProfileSettingsCard {...profileSettingsCardProps} />
         </div>
@@ -334,7 +342,7 @@ export const Dashboard = () => {
     return (
       <div className="px-4 py-6">
         <h1 className="text-3xl font-bold text-gray-900 mb-8">
-          Performance Dashboard
+          {t('dashboard.title')}
         </h1>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="bg-white p-12 rounded-lg shadow text-center">
@@ -352,17 +360,16 @@ export const Dashboard = () => {
               />
             </svg>
             <h3 className="text-xl font-semibold text-gray-900 mb-2">
-              No Data Yet
+              {t('dashboard.noData.title')}
             </h3>
             <p className="text-gray-600 mb-6">
-              Complete your first interview to see your performance metrics
-              here.
+              {t('dashboard.noData.description')}
             </p>
             <Link
               to="/browse-jobs"
               className="inline-block bg-indigo-600 text-white px-6 py-3 rounded-md hover:bg-indigo-700 transition-colors"
             >
-              Browse Jobs
+              {t('dashboard.noData.action')}
             </Link>
           </div>
           <ProfileSettingsCard {...profileSettingsCardProps} />
@@ -378,7 +385,7 @@ export const Dashboard = () => {
     <div className="px-4 py-6">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold text-gray-900">
-          Performance Dashboard
+          {t('dashboard.title')}
         </h1>
         <Link
           to="/browse-jobs"
@@ -397,24 +404,26 @@ export const Dashboard = () => {
               d="M12 4v16m8-8H4"
             />
           </svg>
-          Create Job Posting
+          {t('dashboard.createJobPosting')}
         </Link>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
         <MetricCard
-          title="Completed Interviews"
+          title={t('dashboard.metrics.completedInterviews')}
           value={metrics.completed_interviews}
         />
         <MetricCard
-          title="Average Score"
+          title={t('dashboard.metrics.averageScore')}
           value={avgScoreDisplay}
           subtitle={
-            metrics.average_score === null ? 'No feedback yet' : undefined
+            metrics.average_score === null
+              ? t('dashboard.metrics.noFeedback')
+              : undefined
           }
         />
         <MetricCard
-          title="Questions Answered"
+          title={t('dashboard.metrics.questionsAnswered')}
           value={metrics.total_questions_answered}
         />
       </div>

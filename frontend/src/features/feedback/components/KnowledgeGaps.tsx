@@ -4,16 +4,20 @@
  */
 
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import type { KnowledgeGapsProps } from '../types/feedback';
 
 export const KnowledgeGaps: React.FC<KnowledgeGapsProps> = ({
   knowledgeGaps,
 }) => {
+  const { t } = useTranslation();
   const hasGaps = knowledgeGaps && knowledgeGaps.length > 0;
 
   return (
     <div className="space-y-3" data-testid="knowledge-gaps">
-      <h3 className="text-xl font-bold text-gray-900">Knowledge Gaps</h3>
+      <h3 className="text-xl font-bold text-gray-900">
+        {t('feedback.knowledgeGaps.title')}
+      </h3>
 
       {!hasGaps ? (
         <div
@@ -21,7 +25,7 @@ export const KnowledgeGaps: React.FC<KnowledgeGapsProps> = ({
           data-testid="knowledge-gaps-empty"
         >
           <p className="text-green-800 font-medium">
-            No major knowledge gaps identified. Great job!
+            {t('feedback.knowledgeGaps.empty')}
           </p>
         </div>
       ) : (

@@ -2,6 +2,7 @@
  * Score Trends visualization component.
  * Displays line chart showing score progression over time.
  */
+import { useTranslation } from 'react-i18next';
 import {
   LineChart,
   Line,
@@ -21,17 +22,17 @@ interface ChartDataPoint {
   company: string | null;
 }
 
-function formatDateShort(dateString: string): string {
+function formatDateShort(dateString: string, locale: string): string {
   const date = new Date(dateString);
-  return new Intl.DateTimeFormat('en-US', {
+  return new Intl.DateTimeFormat(locale === 'ua' ? 'uk-UA' : 'en-US', {
     month: 'short',
     day: 'numeric',
   }).format(date);
 }
 
-function formatDateLong(dateString: string): string {
+function formatDateLong(dateString: string, locale: string): string {
   const date = new Date(dateString);
-  return new Intl.DateTimeFormat('en-US', {
+  return new Intl.DateTimeFormat(locale === 'ua' ? 'uk-UA' : 'en-US', {
     month: 'long',
     day: 'numeric',
     year: 'numeric',
@@ -65,6 +66,7 @@ function CustomTooltip(props: any) {
 }
 
 export function ScoreTrends() {
+  const { t, i18n } = useTranslation();
   const { data: sessions, isLoading, isError } = useSessionsWithFeedback();
 
   if (isLoading) {
@@ -82,7 +84,7 @@ export function ScoreTrends() {
   if (isError) {
     return (
       <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-        Failed to load score trends data
+        {t('progress.scoreTrends.error')}
       </div>
     );
   }
@@ -104,11 +106,10 @@ export function ScoreTrends() {
           />
         </svg>
         <h3 className="text-lg font-semibold text-gray-900 mb-2">
-          Need More Data
+          {t('progress.scoreTrends.needMoreData')}
         </h3>
         <p className="text-gray-600">
-          You need at least 2 completed interviews with feedback to see your
-          score trends.
+          {t('progress.scoreTrends.needMoreDataDescription')}
         </p>
       </div>
     );
@@ -116,7 +117,7 @@ export function ScoreTrends() {
 
   const chartData: ChartDataPoint[] = sessions.map(session => ({
     date: session.created_at,
-    dateFormatted: formatDateLong(session.created_at),
+    dateFormatted: formatDateLong(session.created_at, i18n.language),
     score: session.overall_score,
     jobTitle: session.job_posting.title,
     company: session.job_posting.company,
@@ -141,9 +142,11 @@ export function ScoreTrends() {
   return (
     <div className="bg-white rounded-lg shadow p-6">
       <div className="mb-6">
-        <h2 className="text-xl font-semibold text-gray-900">Score Trends</h2>
+        <h2 className="text-xl font-semibold text-gray-900">
+          {t('progress.scoreTrends.title')}
+        </h2>
         <p className="text-sm text-gray-600 mt-1">
-          Your performance over time
+          {t('progress.scoreTrends.description')}
           {trendDirection !== 'stable' && (
             <span
               className={`ml-2 font-medium ${
@@ -152,7 +155,8 @@ export function ScoreTrends() {
                   : 'text-red-600'
               }`}
             >
-              ({trendDirection === 'improving' ? '↑' : '↓'} {trendDirection})
+              ({trendDirection === 'improving' ? '↑' : '↓'}{' '}
+              {t(`progress.scoreTrends.${trendDirection}`)})
             </span>
           )}
         </p>
@@ -166,7 +170,7 @@ export function ScoreTrends() {
           <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
           <XAxis
             dataKey="date"
-            tickFormatter={formatDateShort}
+            tickFormatter={date => formatDateShort(date, i18n.language)}
             stroke="#6b7280"
             style={{ fontSize: '12px' }}
           />
@@ -191,13 +195,17 @@ export function ScoreTrends() {
       {sessions.length > 0 && (
         <div className="mt-6 grid grid-cols-3 gap-4 border-t border-gray-200 pt-4">
           <div>
-            <p className="text-xs text-gray-500 mb-1">Best Score</p>
+            <p className="text-xs text-gray-500 mb-1">
+              {t('progress.scoreTrends.bestScore')}
+            </p>
             <p className="text-lg font-bold text-gray-900">
               {Math.max(...sessions.map(s => s.overall_score)).toFixed(1)}
             </p>
           </div>
           <div>
-            <p className="text-xs text-gray-500 mb-1">Average Score</p>
+            <p className="text-xs text-gray-500 mb-1">
+              {t('progress.scoreTrends.averageScore')}
+            </p>
             <p className="text-lg font-bold text-gray-900">
               {(
                 sessions.reduce((sum, s) => sum + s.overall_score, 0) /
@@ -206,7 +214,9 @@ export function ScoreTrends() {
             </p>
           </div>
           <div>
-            <p className="text-xs text-gray-500 mb-1">Latest Score</p>
+            <p className="text-xs text-gray-500 mb-1">
+              {t('progress.scoreTrends.latestScore')}
+            </p>
             <p className="text-lg font-bold text-gray-900">
               {sessions[sessions.length - 1].overall_score.toFixed(1)}
             </p>

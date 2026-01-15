@@ -6,19 +6,25 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useAuth } from '../hooks/useAuth';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import LanguageSwitcher from '../../../components/common/LanguageSwitcher';
 
-const loginSchema = z.object({
-  email: z.string().email('Invalid email address'),
-  password: z
-    .string()
-    .min(8, 'Password must be at least 8 characters')
-    .max(128, 'Password must be 128 characters or fewer'),
-});
-
-type LoginFormData = z.infer<typeof loginSchema>;
+type LoginFormData = {
+  email: string;
+  password: string;
+};
 
 const LoginForm = () => {
   const { login, isLoading, error } = useAuth();
+  const { t } = useTranslation();
+
+  const loginSchema = z.object({
+    email: z.string().email(t('auth.validation.emailInvalid')),
+    password: z
+      .string()
+      .min(8, t('auth.validation.passwordMin'))
+      .max(128, t('auth.validation.passwordMax')),
+  });
   const {
     register,
     handleSubmit,
@@ -34,15 +40,18 @@ const LoginForm = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="max-w-md w-full space-y-8 p-8 bg-white rounded-lg shadow">
+        <div className="flex justify-end mb-4">
+          <LanguageSwitcher />
+        </div>
         <div>
           <h2 className="text-center text-3xl font-bold text-gray-900">
-            Sign in to your account
+            {t('auth.login.title')}
           </h2>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)}>
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-              Invalid email or password. Please try again.
+              {t('auth.login.error')}
             </div>
           )}
           <div className="space-y-4">
@@ -51,7 +60,7 @@ const LoginForm = () => {
                 htmlFor="email"
                 className="block text-sm font-medium text-gray-700"
               >
-                Email address
+                {t('auth.login.email')}
               </label>
               <input
                 id="email"
@@ -70,7 +79,7 @@ const LoginForm = () => {
                 htmlFor="password"
                 className="block text-sm font-medium text-gray-700"
               >
-                Password
+                {t('auth.login.password')}
               </label>
               <input
                 id="password"
@@ -92,7 +101,7 @@ const LoginForm = () => {
               disabled={isLoading}
               className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-gray-400"
             >
-              {isLoading ? 'Signing in...' : 'Sign in'}
+              {isLoading ? t('auth.login.submitting') : t('auth.login.submit')}
             </button>
           </div>
           <div className="text-center">
@@ -100,7 +109,7 @@ const LoginForm = () => {
               to="/register"
               className="text-sm text-indigo-600 hover:text-indigo-500"
             >
-              Don't have an account? Register
+              {t('auth.login.registerLink')}
             </Link>
           </div>
         </form>

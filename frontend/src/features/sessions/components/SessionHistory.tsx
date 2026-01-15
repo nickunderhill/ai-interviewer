@@ -4,6 +4,7 @@
  */
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useSessions } from '../hooks/useSessions';
 import { SessionHistoryItem } from './SessionHistoryItem';
 import { EmptyState } from './EmptyState';
@@ -11,6 +12,7 @@ import { DateRangeFilter } from './DateRangeFilter';
 import { JobPostingFilter } from './JobPostingFilter';
 
 export const SessionHistory = () => {
+  const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
 
   // Initialize from URL params or empty
@@ -68,7 +70,7 @@ export const SessionHistory = () => {
     return (
       <div className="max-w-4xl mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-8">
-          Session History
+          {t('sessions.history.title')}
         </h1>
         <div className="space-y-4">
           {/* Loading skeleton matching SessionHistoryItem layout */}
@@ -100,7 +102,9 @@ export const SessionHistory = () => {
     return (
       <div className="max-w-4xl mx-auto px-4 py-8">
         <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-          <h3 className="text-red-800 font-medium">Error loading sessions</h3>
+          <h3 className="text-red-800 font-medium">
+            {t('sessions.history.error')}
+          </h3>
           <p className="text-red-600 text-sm mt-1">
             {error instanceof Error
               ? error.message
@@ -113,7 +117,9 @@ export const SessionHistory = () => {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8" data-testid="session-history">
-      <h1 className="text-3xl font-bold text-gray-900 mb-8">Session History</h1>
+      <h1 className="text-3xl font-bold text-gray-900 mb-8">
+        {t('sessions.history.title')}
+      </h1>
 
       {/* Filters */}
       <div className="mb-6 space-y-4">
@@ -138,16 +144,23 @@ export const SessionHistory = () => {
           <div className="mb-4 text-sm text-gray-600">
             {originalSessionId ? (
               <>
-                Showing all attempts for this job posting (
+                {t('sessions.history.showing')}{' '}
                 <span className="font-semibold">{sessions.length}</span>{' '}
-                {sessions.length === 1 ? 'attempt' : 'attempts'})
+                {sessions.length === 1
+                  ? t('sessions.history.sessions')
+                  : t('sessions.history.sessions')}
               </>
             ) : (
               <>
-                Showing <span className="font-semibold">{sessions.length}</span>{' '}
-                {sessions.length === 1 ? 'session' : 'sessions'}
-                {(startDate || endDate) && ' in date range'}
-                {jobPostingId && ' for selected job posting'}
+                {t('sessions.history.showing')}{' '}
+                <span className="font-semibold">{sessions.length}</span>{' '}
+                {sessions.length === 1
+                  ? t('sessions.history.sessions')
+                  : t('sessions.history.sessions')}
+                {(startDate || endDate) &&
+                  ` ${t('sessions.history.filterByDate').toLowerCase()}`}
+                {jobPostingId &&
+                  ` ${t('sessions.history.filterByJob').toLowerCase()}`}
               </>
             )}
           </div>
