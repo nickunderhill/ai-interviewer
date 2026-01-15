@@ -181,7 +181,7 @@
       "originalAttempt": "Оригінальна спроба",
       "attemptNumber": "Спроба #{{number}}",
       "viewAllAttempts": "Переглянути всі спроби",
-      "nthAttempt": "Це ваша {{ordinal}} спроба цієї ролі",
+      "nthAttempt": "Це ваша {{attemptNumber}} спроба цієї ролі",
       "interviewQA": "Запитання та відповіді співбесіди",
       "generateNextQuestion": "Згенерувати наступне питання",
       "generating": "Генерація...",

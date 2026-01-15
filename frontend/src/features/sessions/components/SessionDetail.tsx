@@ -163,7 +163,7 @@ export default function SessionDetail() {
         {session.retake_number > 1 && (
           <p className="text-sm text-gray-600 mt-2">
             {t('sessions.detail.nthAttempt', {
-              ordinal:
+              attemptNumber:
                 session.retake_number === 2
                   ? '2nd'
                   : session.retake_number === 3

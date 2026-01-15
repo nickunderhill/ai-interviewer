@@ -90,7 +90,7 @@ export function DateRangeFilter({
           <DatePicker
             id="start-date"
             selected={startDate ? new Date(startDate) : null}
-            onChange={date =>
+            onChange={(date: Date | null) =>
               onStartDateChange(date ? date.toISOString().split('T')[0] : '')
             }
             dateFormat="dd.MM.yyyy"
@@ -109,7 +109,7 @@ export function DateRangeFilter({
           <DatePicker
             id="end-date"
             selected={endDate ? new Date(endDate) : null}
-            onChange={date =>
+            onChange={(date: Date | null) =>
               onEndDateChange(date ? date.toISOString().split('T')[0] : '')
             }
             dateFormat="dd.MM.yyyy"

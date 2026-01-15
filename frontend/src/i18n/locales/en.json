@@ -181,7 +181,7 @@
       "originalAttempt": "Original Attempt",
       "attemptNumber": "Attempt #{{number}}",
       "viewAllAttempts": "View all attempts",
-      "nthAttempt": "This is your {{ordinal}} attempt at this role",
+      "nthAttempt": "This is your {{attemptNumber}} attempt at this role",
       "interviewQA": "Interview Questions & Answers",
       "generateNextQuestion": "Generate Next Question",
       "generating": "Generating...",
