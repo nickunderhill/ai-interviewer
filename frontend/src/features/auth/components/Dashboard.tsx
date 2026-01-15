@@ -1,7 +1,7 @@
 import { useDashboardMetrics } from '../../metrics';
 import type { PracticedRole } from '../../metrics';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useEffect, useState } from 'react';
+import { useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { setOpenAiApiKey } from '../../users/api/userApi';
@@ -231,11 +231,9 @@ export const Dashboard = () => {
     null
   );
 
-  const [resumeContent, setResumeContent] = useState('');
   const [resumeSavedMessage, setResumeSavedMessage] = useState<string | null>(
     null
   );
-  const [resumeInitialized, setResumeInitialized] = useState(false);
 
   const resumeQuery = useQuery({
     queryKey: ['resume', 'me'],
@@ -243,12 +241,14 @@ export const Dashboard = () => {
     staleTime: 5 * 60 * 1000,
   });
 
-  useEffect(() => {
-    if (resumeInitialized) return;
-    if (resumeQuery.data === undefined) return;
+  // Initialize resume content from query data (only once)
+  const [resumeContent, setResumeContent] = useState('');
+  const isInitializedRef = useRef(false);
+
+  if (!isInitializedRef.current && resumeQuery.data !== undefined) {
     setResumeContent(resumeQuery.data?.content || '');
-    setResumeInitialized(true);
-  }, [resumeInitialized, resumeQuery.data]);
+    isInitializedRef.current = true;
+  }
 
   const saveApiKeyMutation = useMutation({
     mutationFn: (value: string) => setOpenAiApiKey({ api_key: value }),
