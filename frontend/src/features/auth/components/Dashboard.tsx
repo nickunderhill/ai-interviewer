@@ -1,7 +1,7 @@
 import { useDashboardMetrics } from '../../metrics';
 import type { PracticedRole } from '../../metrics';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { setOpenAiApiKey } from '../../users/api/userApi';
@@ -241,14 +241,11 @@ export const Dashboard = () => {
     staleTime: 5 * 60 * 1000,
   });
 
-  // Initialize resume content from query data (only once)
-  const [resumeContent, setResumeContent] = useState('');
-  const isInitializedRef = useRef(false);
+  // Use query data directly as the controlled value, with local override when edited
+  const [resumeContent, setResumeContent] = useState<string | null>(null);
 
-  if (!isInitializedRef.current && resumeQuery.data !== undefined) {
-    setResumeContent(resumeQuery.data?.content || '');
-    isInitializedRef.current = true;
-  }
+  // Use local state if set, otherwise fall back to query data
+  const currentResumeContent = resumeContent ?? resumeQuery.data?.content ?? '';
 
   const saveApiKeyMutation = useMutation({
     mutationFn: (value: string) => setOpenAiApiKey({ api_key: value }),
@@ -284,12 +281,12 @@ export const Dashboard = () => {
       ? getErrorMessage(saveApiKeyMutation.error)
       : null,
 
-    resumeContent,
+    resumeContent: currentResumeContent,
     onResumeChange: value => {
       setResumeSavedMessage(null);
       setResumeContent(value);
     },
-    onSaveResume: () => saveResumeMutation.mutate(resumeContent),
+    onSaveResume: () => saveResumeMutation.mutate(currentResumeContent),
     isSavingResume: saveResumeMutation.isPending,
     resumeSavedMessage,
     resumeErrorMessage:

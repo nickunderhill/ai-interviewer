@@ -30,7 +30,7 @@ describe('DimensionScores', () => {
     expect(screen.getByText('Technical Accuracy')).toBeInTheDocument();
     expect(screen.getByText('Communication Clarity')).toBeInTheDocument();
     expect(screen.getByText('Problem Solving')).toBeInTheDocument();
-    expect(screen.getByText('Relevance')).toBeInTheDocument();
+    expect(screen.getByText('Relevance to Job')).toBeInTheDocument();
   });
 
   it('displays score values for each dimension', () => {
@@ -44,7 +44,9 @@ describe('DimensionScores', () => {
     expect(screen.getByTestId('score-problem-solving')).toHaveTextContent(
       '85/100'
     );
-    expect(screen.getByTestId('score-relevance')).toHaveTextContent('65/100');
+    expect(screen.getByTestId('score-relevance-to-job')).toHaveTextContent(
+      '65/100'
+    );
   });
 
   describe('Color coding', () => {
