@@ -55,7 +55,11 @@ async def analyze_session(
         )
 
     # Load user's resume
-    user_stmt = select(User).where(User.id == current_user.id).options(selectinload(User.resume))
+    user_stmt = (
+        select(User)
+        .where(User.id == current_user.id)
+        .options(selectinload(User.resume))
+    )
     user_result = await db.execute(user_stmt)
     user = user_result.scalar_one()
 
@@ -99,6 +103,7 @@ async def analyze_session(
         job_posting=session.job_posting,
         resume_content=user.resume.content,
         qa_pairs=qa_pairs,
+        language=session.job_posting.language,
     )
 
     # Call OpenAI
@@ -130,6 +135,7 @@ def _build_analysis_prompt(
     job_posting,
     resume_content: str,
     qa_pairs: list[dict],
+    language: str = "en",
 ) -> str:
     """
     Build the prompt for OpenAI feedback analysis.
@@ -142,14 +148,23 @@ def _build_analysis_prompt(
     Returns:
         Formatted prompt string
     """
-    tech_stack_str = ", ".join(job_posting.tech_stack) if job_posting.tech_stack else "Not specified"
+    tech_stack_str = (
+        ", ".join(job_posting.tech_stack) if job_posting.tech_stack else "Not specified"
+    )
 
     qa_transcript = "\n\n".join(
         f"Q{i+1}: {pair['question']}\nA{i+1}: {pair.get('answer', '[No answer provided]')}"
         for i, pair in enumerate(qa_pairs)
     )
 
-    prompt = f"""You are an expert technical interviewer analyzing a candidate's interview performance.
+    # Language instruction based on job posting language
+    language_instruction = ""
+    if language == "ua":
+        language_instruction = "\n\n**IMPORTANT: Provide ALL feedback, comments, knowledge gaps, and learning recommendations in UKRAINIAN language. All text fields in the JSON response must be in Ukrainian.**"
+    else:
+        language_instruction = "\n\n**IMPORTANT: Provide ALL feedback, comments, knowledge gaps, and learning recommendations in ENGLISH language.**"
+
+    prompt = f"""You are an expert technical interviewer analyzing a candidate's interview performance.{language_instruction}
 
 JOB POSTING:
 Title: {job_posting.title}

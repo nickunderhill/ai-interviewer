@@ -30,6 +30,7 @@ async def create_job_posting(
     company: str | None = None,
     experience_level: str | None = None,
     tech_stack: list[str] | None = None,
+    language: str = "en",
 ) -> JobPosting:
     """
     Create a new job posting for a user.
@@ -42,6 +43,7 @@ async def create_job_posting(
         company: Company name (optional)
         experience_level: Experience level (optional)
         tech_stack: List of technologies (optional)
+        language: Language for AI-generated content (default: 'en')
 
     Returns:
         Created JobPosting object
@@ -53,6 +55,7 @@ async def create_job_posting(
         description=description,
         experience_level=experience_level,
         tech_stack=tech_stack,
+        language=language,
     )
     db.add(job_posting)
     await db.commit()
@@ -131,6 +134,7 @@ async def update_job_posting(
     company: str | None = None,
     experience_level: str | None = None,
     tech_stack: list[str] | None = None,
+    language: str = "en",
 ) -> JobPosting:
     """
     Update a job posting.
@@ -144,6 +148,7 @@ async def update_job_posting(
         company: Updated company name (optional)
         experience_level: Updated experience level (optional)
         tech_stack: Updated tech stack (optional)
+        language: Updated language for AI-generated content (default: 'en')
 
     Returns:
         Updated JobPosting object
@@ -168,6 +173,7 @@ async def update_job_posting(
     job_posting.description = description
     job_posting.experience_level = experience_level
     job_posting.tech_stack = tech_stack
+    job_posting.language = language
     job_posting.updated_at = dt.datetime.now(dt.UTC)
 
     await db.commit()

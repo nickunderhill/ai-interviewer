@@ -5,6 +5,8 @@ Pydantic schemas for Job Posting API requests and responses.
 import datetime as dt
 import uuid
 
+from typing import Literal
+
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app.utils.validators import ensure_not_blank, normalize_optional_text
@@ -39,6 +41,10 @@ class JobPostingCreate(BaseModel):
         default_factory=list,
         description="Technologies required (e.g., ['Python', 'React'])",
     )
+    language: Literal["en", "ua"] = Field(
+        default="en",
+        description="Language for AI-generated content",
+    )
 
     @field_validator("title", "description", mode="before")
     @classmethod
@@ -59,6 +65,10 @@ class JobPostingUpdate(BaseModel):
     description: str = Field(..., min_length=1, max_length=10000)
     experience_level: str | None = Field(None, max_length=50)
     tech_stack: list[str] | None = Field(default_factory=list)
+    language: Literal["en", "ua"] = Field(
+        default="en",
+        description="Language for AI-generated content",
+    )
 
     @field_validator("title", "description", mode="before")
     @classmethod
@@ -79,7 +89,8 @@ class JobPostingUpdate(BaseModel):
                 if not tech or not tech.strip():
                     raise ValueError("Tech stack items cannot be empty")
                 if len(tech) > 100:
-                    raise ValueError("Tech stack items cannot exceed 100 characters")
+                    msg = "Tech stack items cannot exceed 100 characters"
+                    raise ValueError(msg)
         return v or []
 
 
@@ -93,6 +104,7 @@ class JobPostingResponse(BaseModel):
     description: str
     experience_level: str | None
     tech_stack: list[str] | None
+    language: str
     created_at: dt.datetime
     updated_at: dt.datetime
 

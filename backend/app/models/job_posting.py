@@ -64,6 +64,12 @@ class JobPosting(Base):
         nullable=True,
     )
 
+    language: Mapped[str] = mapped_column(
+        String(2),
+        nullable=False,
+        default="en",
+    )
+
     created_at: Mapped[dt.datetime] = mapped_column(
         DateTime(timezone=True),
         default=utcnow,

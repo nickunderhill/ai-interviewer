@@ -63,6 +63,7 @@ async def create_job_posting(
         company=job_posting_data.company,
         experience_level=job_posting_data.experience_level,
         tech_stack=job_posting_data.tech_stack,
+        language=job_posting_data.language,
     )
     return job_posting
 
@@ -154,6 +155,7 @@ async def update_job_posting(
         company=job_posting_data.company,
         experience_level=job_posting_data.experience_level,
         tech_stack=job_posting_data.tech_stack,
+        language=job_posting_data.language,
     )
     return job_posting
 

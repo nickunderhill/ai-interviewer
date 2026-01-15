@@ -8,6 +8,7 @@ export interface JobPosting {
   company: string | null;
   experience_level: string | null;
   tech_stack: string[];
+  language: string;
   created_at: string;
 }
 
@@ -17,10 +18,12 @@ export interface JobPostingCreateRequest {
   company?: string | null;
   experience_level?: string | null;
   tech_stack?: string[];
+  language?: 'en' | 'ua';
 }
 
 export interface JobPostingResponse extends JobPosting {
   user_id: string;
   description: string;
+  language: string;
   updated_at: string;
 }

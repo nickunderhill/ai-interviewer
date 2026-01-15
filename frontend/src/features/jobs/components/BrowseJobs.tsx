@@ -14,12 +14,13 @@ type JobPostingFormData = {
   experience_level?: string;
   tech_stack?: string;
   description: string;
+  language: 'en' | 'ua';
 };
 
 export default function BrowseJobs() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { data: jobPostings, isLoading, isError } = useJobPostings();
 
   const jobPostingSchema = z.object({
@@ -31,6 +32,7 @@ export default function BrowseJobs() {
       .string()
       .min(1, t('jobs.validation.descriptionRequired'))
       .max(10_000),
+    language: z.enum(['en', 'ua']),
   });
 
   const {
@@ -46,6 +48,7 @@ export default function BrowseJobs() {
       experience_level: '',
       tech_stack: '',
       description: '',
+      language: i18n.language === 'ua' ? 'ua' : 'en',
     },
   });
 
@@ -64,6 +67,7 @@ export default function BrowseJobs() {
               .map(t => t.trim())
               .filter(Boolean)
           : [],
+        language: data.language,
       }),
     onSuccess: () => {
       reset();
@@ -178,6 +182,27 @@ export default function BrowseJobs() {
             {errors.description ? (
               <p className="mt-1 text-sm text-red-600">
                 {errors.description.message}
+              </p>
+            ) : null}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700">
+              {t('jobs.create.language')}
+            </label>
+            <select
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm"
+              {...register('language')}
+            >
+              <option value="en">{t('jobs.create.languageEnglish')}</option>
+              <option value="ua">{t('jobs.create.languageUkrainian')}</option>
+            </select>
+            <p className="mt-1 text-sm text-gray-500">
+              {t('jobs.create.languageHelp')}
+            </p>
+            {errors.language ? (
+              <p className="mt-1 text-sm text-red-600">
+                {errors.language.message}
               </p>
             ) : null}
           </div>

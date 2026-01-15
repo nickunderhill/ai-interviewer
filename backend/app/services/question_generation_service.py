@@ -34,6 +34,7 @@ def build_question_prompt(
     experience_level: str | None,
     resume_content: str | None,
     question_type: str,
+    language: str = "en",
 ) -> str:
     """
     Build dual-context prompt for question generation.
@@ -80,7 +81,16 @@ def build_question_prompt(
 
     instruction = type_instructions.get(question_type, type_instructions["technical"])
 
-    prompt = f"""You are an expert technical interviewer. Generate ONE interview question based on the context below.
+    # Language instruction based on job posting language
+    language_instruction = ""
+    if language == "ua":
+        language_instruction = "\n\n**IMPORTANT: Generate the question in UKRAINIAN language. The entire question must be in Ukrainian.**"
+    else:
+        language_instruction = (
+            "\n\n**IMPORTANT: Generate the question in ENGLISH language.**"
+        )
+
+    prompt = f"""You are an expert technical interviewer. Generate ONE interview question based on the context below.{language_instruction}
 
 {job_context}
 {candidate_context}
@@ -143,6 +153,7 @@ async def generate_question(session: InterviewSession) -> dict[str, str]:
         experience_level=experience_level,
         resume_content=resume_content,
         question_type=question_type,
+        language=job_posting.language,
     )
 
     # Call OpenAI service
